@@ -1,0 +1,6 @@
+{
+  "name": "Toolsbar",
+  "description": "The all-in-one digital utility platform. Fast, simple, and private browser-first tools for everyday tasks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

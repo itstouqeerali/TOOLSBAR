@@ -1,0 +1,294 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --bg-main: #030303;
+    --text-main: #f4f4f5;
+    --text-muted: #a1a1aa;
+    --text-subtle: #71717a;
+    --glass: rgba(255, 255, 255, 0.03);
+    --glass-hover: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(255, 255, 255, 0.18);
+    --glass-active: rgba(255, 255, 255, 0.1);
+    --accent: #6366f1;
+    --accent-glow: rgba(99, 102, 241, 0.18);
+    --accent-secondary: #a855f7;
+    --dot-color: rgba(255, 255, 255, 0.04);
+    --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    color-scheme: dark;
+  }
+
+  html.light {
+    --bg-main: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --text-subtle: #64748b;
+    --glass: rgba(255, 255, 255, 0.85);
+    --glass-hover: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(226, 232, 240, 0.9);
+    --glass-border-hover: rgba(99, 102, 241, 0.4);
+    --glass-active: rgba(241, 245, 249, 0.9);
+    --accent: #4f46e5;
+    --accent-glow: rgba(99, 102, 241, 0.08);
+    --accent-secondary: #9333ea;
+    --dot-color: rgba(15, 23, 42, 0.04);
+    color-scheme: light;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
+  code, pre, kbd {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Immersive Glassmorphic & Surface Utilities */
+.glass-panel {
+  background: rgba(10, 12, 18, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(99, 102, 241, 0.35);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 25px -5px rgba(99, 102, 241, 0.12);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  outline: none;
+}
+
+/* Light theme overrides for glass utilities */
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+}
+
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+html.light .glass-card:hover {
+  background: #ffffff;
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 25px -5px rgba(99, 102, 241, 0.1);
+}
+
+html.light .glass-input {
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  color: #0f172a;
+}
+
+html.light .glass-input:focus {
+  background: #ffffff;
+  border-color: rgba(99, 102, 241, 0.8);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* Glow Orbs & Ambient Lighting */
+.glow-orb-primary {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 45%, transparent 70%);
+}
+
+.glow-orb-cyan {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, rgba(59, 130, 246, 0.06) 50%, transparent 70%);
+}
+
+.glow-orb-purple {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.14) 0%, rgba(236, 72, 153, 0.05) 50%, transparent 70%);
+}
+
+html.light .glow-orb-primary {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.04) 45%, transparent 70%);
+}
+
+html.light .glow-orb-cyan {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.06) 0%, rgba(59, 130, 246, 0.03) 50%, transparent 70%);
+}
+
+html.light .glow-orb-purple {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.07) 0%, rgba(236, 72, 153, 0.03) 50%, transparent 70%);
+}
+
+/* Card interactive states */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+}
+
+html.light .card-hover:hover {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+}
+
+/* Custom refined scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(3, 3, 3, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.8);
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* Global Light Mode Surface and Typography Mappings for Tool Components */
+html.light [id$="-tool"] .bg-neutral-900\/60,
+html.light [id$="-tool"] .bg-neutral-900\/70,
+html.light [id$="-tool"] .bg-neutral-900\/80,
+html.light [id$="-tool"] .bg-neutral-900\/90,
+html.light [id$="-tool"] .bg-neutral-950\/80,
+html.light [id$="-tool"] .bg-black\/20,
+html.light [id$="-tool"] .bg-black\/30,
+html.light [id$="-tool"] .bg-black\/40,
+html.light [id$="-tool"] .bg-black\/50,
+html.light [id$="-tool"] .bg-white\/5,
+html.light [id$="-tool"] .bg-white\/\[0\.02\],
+html.light [id$="-tool"] .bg-white\/\[0\.025\],
+html.light [id$="-tool"] .bg-white\/\[0\.03\],
+html.light [id$="-tool"] .bg-white\/\[0\.04\],
+html.light [id$="-tool"] .bg-white\/\[0\.055\] {
+  background-color: rgba(255, 255, 255, 0.88);
+}
+
+html.light [id$="-tool"] .border-white\/5,
+html.light [id$="-tool"] .border-white\/10,
+html.light [id$="-tool"] .border-white\/\[0\.04\],
+html.light [id$="-tool"] .border-white\/\[0\.06\],
+html.light [id$="-tool"] .border-white\/\[0\.08\],
+html.light [id$="-tool"] .border-white\/\[0\.1\],
+html.light [id$="-tool"] .border-white\/\[0\.12\] {
+  border-color: rgba(226, 232, 240, 0.9);
+}
+
+html.light [id$="-tool"] input:not([type="checkbox"]):not([type="radio"]),
+html.light [id$="-tool"] textarea,
+html.light [id$="-tool"] select {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: rgba(203, 213, 225, 0.9);
+}
+
+html.light [id$="-tool"] input::placeholder,
+html.light [id$="-tool"] textarea::placeholder {
+  color: #94a3b8;
+}
+
+html.light [id$="-tool"] select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+/* Text adjustments in light mode for tool shells */
+html.light [id$="-tool"] .text-white:not(.bg-indigo-600 *):not(.bg-indigo-500 *):not(.bg-emerald-600 *):not(.bg-red-600 *):not(button.bg-indigo-600):not(button.bg-indigo-500) {
+  color: #0f172a;
+}
+
+html.light [id$="-tool"] .text-neutral-100,
+html.light [id$="-tool"] .text-neutral-200,
+html.light [id$="-tool"] .text-neutral-300 {
+  color: #334155;
+}
+
+html.light [id$="-tool"] .text-neutral-400 {
+  color: #64748b;
+}
+
+html.light [id$="-tool"] .text-neutral-500 {
+  color: #94a3b8;
+}
+
+/* Preserve button text contrast */
+html.light .bg-indigo-600,
+html.light .bg-indigo-500,
+html.light .bg-emerald-600,
+html.light .bg-red-600 {
+  color: #ffffff !important;
+}
+
+html.light .bg-indigo-600 *,
+html.light .bg-indigo-500 *,
+html.light .bg-emerald-600 *,
+html.light .bg-red-600 * {
+  color: #ffffff !important;
+}
+
+/* Subtle breathing animation */
+@keyframes ambient-float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.03);
+    opacity: 0.95;
+  }
+}
+
+.animate-ambient-float {
+  animation: ambient-float 10s ease-in-out infinite;
+}
