@@ -192,8 +192,86 @@ export function getCategorySEOMetadata(category: Category, toolCount: number): P
 /**
  * Generates SEO metadata for static primary routes
  */
-export function getStaticRouteSEOMetadata(route: '' | 'tools' | 'categories' | 'popular'): PageSEOMetadata {
+export function getStaticRouteSEOMetadata(route: '' | 'tools' | 'categories' | 'popular' | 'privacy' | 'terms' | 'contact'): PageSEOMetadata {
   switch (route) {
+    case 'privacy':
+      return {
+        title: 'Privacy Policy — Toolsbar',
+        description: 'Read the Toolsbar Privacy Policy. Learn about our 100% browser-first client-side data processing, user authentication, and privacy protections.',
+        keywords: ['privacy policy', 'client-side privacy', 'data security', 'browser utilities privacy', 'toolsbar privacy'],
+        canonicalPath: 'privacy',
+        ogType: 'website',
+        jsonLd: [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'Privacy Policy — Toolsbar',
+            description: 'Comprehensive Privacy Policy detailing client-side computing and data protections.',
+            url: getCanonicalUrl('privacy'),
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_CONFIG.baseUrl}/` },
+              { '@type': 'ListItem', position: 2, name: 'Privacy Policy', item: getCanonicalUrl('privacy') },
+            ],
+          },
+        ],
+      };
+
+    case 'terms':
+      return {
+        title: 'Terms of Service — Toolsbar',
+        description: 'Review the Terms of Service for using Toolsbar utilities, calculators, developer formatters, and browser-based productivity tools.',
+        keywords: ['terms of service', 'terms of use', 'legal agreement', 'disclaimer', 'toolsbar terms'],
+        canonicalPath: 'terms',
+        ogType: 'website',
+        jsonLd: [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'Terms of Service — Toolsbar',
+            description: 'Terms of Service and conditions for using Toolsbar.',
+            url: getCanonicalUrl('terms'),
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_CONFIG.baseUrl}/` },
+              { '@type': 'ListItem', position: 2, name: 'Terms of Service', item: getCanonicalUrl('terms') },
+            ],
+          },
+        ],
+      };
+
+    case 'contact':
+      return {
+        title: 'Contact Us — Support & Inquiries — Toolsbar',
+        description: 'Get in touch with the Toolsbar team. Send inquiries, report bugs, suggest new tools, or ask questions about our browser-first utilities.',
+        keywords: ['contact toolsbar', 'support', 'tool suggestions', 'bug report', 'feedback'],
+        canonicalPath: 'contact',
+        ogType: 'website',
+        jsonLd: [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'ContactPage',
+            name: 'Contact Us — Toolsbar',
+            description: 'Contact and support page for Toolsbar.',
+            url: getCanonicalUrl('contact'),
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_CONFIG.baseUrl}/` },
+              { '@type': 'ListItem', position: 2, name: 'Contact Us', item: getCanonicalUrl('contact') },
+            ],
+          },
+        ],
+      };
+
     case 'tools':
       return {
         title: 'All Digital Utilities & Online Tools Directory — Toolsbar',

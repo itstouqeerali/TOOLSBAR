@@ -86,15 +86,27 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </ul>
           </div>
 
-          {/* Trust & Architecture */}
+          {/* Trust & Legal */}
           <div className="space-y-3">
-            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white">Privacy & Principles</span>
-            <ul className="space-y-2 text-xs text-slate-600 dark:text-neutral-400">
-              <li>No tracking cookies</li>
-              <li>Zero data upload on browser tools</li>
-              <li>Cryptographically secure RNG</li>
-              <li>Universal accessibility</li>
-              <li>Instant keyboard search (⌘K)</li>
+            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white">Legal & Privacy</span>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <button onClick={() => onNavigate('privacy')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('terms')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                  Terms of Service
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('contact')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                  Contact Support
+                </button>
+              </li>
+              <li className="pt-1 text-slate-500 dark:text-neutral-500">Zero data upload on browser tools</li>
+              <li className="text-slate-500 dark:text-neutral-500">Cryptographically secure RNG</li>
             </ul>
           </div>
         </div>
@@ -104,11 +116,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           <div>
             &copy; {new Date().getFullYear()} Toolsbar. Everything you need. In one place.
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => onNavigate('tools')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors">Directory</button>
-            <button onClick={() => onNavigate('categories')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors">Categories</button>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-2">
+            <button onClick={() => onNavigate('tools')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Directory</button>
+            <button onClick={() => onNavigate('categories')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Categories</button>
             <span>&bull;</span>
-            <span>Crafted with precision</span>
+            <button onClick={() => onNavigate('privacy')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Privacy Policy</button>
+            <button onClick={() => onNavigate('terms')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Terms of Service</button>
+            <button onClick={() => onNavigate('contact')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Contact</button>
           </div>
         </div>
       </div>

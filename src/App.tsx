@@ -20,6 +20,9 @@ import { CategoryDetailView } from './components/views/CategoryDetailView';
 import { PopularView } from './components/views/PopularView';
 import { AdminView } from './components/views/AdminView';
 import { AccountView } from './components/views/AccountView';
+import { PrivacyView } from './components/views/PrivacyView';
+import { TermsView } from './components/views/TermsView';
+import { ContactView } from './components/views/ContactView';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { getToolBySlug, TOOLS } from './data/tools';
@@ -87,6 +90,42 @@ function PopularRouteWrapper({
   }, []);
 
   return <PopularView onNavigate={onNavigate} onOpenAuth={onOpenAuth} />;
+}
+
+function PrivacyRouteWrapper({
+  onNavigate,
+}: {
+  onNavigate: (path: string) => void;
+}) {
+  useEffect(() => {
+    applyPageSEO(getStaticRouteSEOMetadata('privacy'));
+  }, []);
+
+  return <PrivacyView onNavigate={onNavigate} />;
+}
+
+function TermsRouteWrapper({
+  onNavigate,
+}: {
+  onNavigate: (path: string) => void;
+}) {
+  useEffect(() => {
+    applyPageSEO(getStaticRouteSEOMetadata('terms'));
+  }, []);
+
+  return <TermsView onNavigate={onNavigate} />;
+}
+
+function ContactRouteWrapper({
+  onNavigate,
+}: {
+  onNavigate: (path: string) => void;
+}) {
+  useEffect(() => {
+    applyPageSEO(getStaticRouteSEOMetadata('contact'));
+  }, []);
+
+  return <ContactView onNavigate={onNavigate} />;
 }
 
 function ToolRouteWrapper({
@@ -449,6 +488,18 @@ function AppContent() {
                 <AdminView onNavigate={handleNavigate} />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path="/privacy"
+            element={<PrivacyRouteWrapper onNavigate={handleNavigate} />}
+          />
+          <Route
+            path="/terms"
+            element={<TermsRouteWrapper onNavigate={handleNavigate} />}
+          />
+          <Route
+            path="/contact"
+            element={<ContactRouteWrapper onNavigate={handleNavigate} />}
           />
           <Route
             path="*"
