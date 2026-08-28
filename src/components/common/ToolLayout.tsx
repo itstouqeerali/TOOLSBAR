@@ -155,22 +155,45 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
             </ol>
           </div>
 
-          {/* Privacy & Fast Architecture */}
+          {/* Key Features & Privacy Architecture */}
           <div className="lg:col-span-6 rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl space-y-4 flex flex-col justify-between">
-            <div>
-              <span className="text-xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2 mb-3">
-                <ShieldCheck className="w-4 h-4" /> Private & Browser-First Guarantee
+            <div className="space-y-3">
+              <span className="text-xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4" /> Key Features & Capabilities
               </span>
-              <p className="text-sm text-slate-700 dark:text-neutral-300 leading-relaxed">
-                All data, calculations, and conversions performed in {tool.name} happen exclusively in your local device's memory. We do not store, monitor, or transmit your inputs to external servers.
-              </p>
+              {tool.seo.features && tool.seo.features.length > 0 ? (
+                <ul className="space-y-2 text-sm text-slate-700 dark:text-neutral-300">
+                  {tool.seo.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
+                      <span className="text-indigo-600 dark:text-indigo-400 font-bold select-none shrink-0">•</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-700 dark:text-neutral-300 leading-relaxed">
+                  All data, calculations, and conversions performed in {tool.name} happen exclusively in your local device's memory. We do not store, monitor, or transmit your inputs to external servers.
+                </p>
+              )}
             </div>
 
-            <div className="pt-4 border-t border-slate-200 dark:border-white/[0.06] grid grid-cols-2 gap-3 text-xs text-slate-500 dark:text-neutral-400">
-              <div>&bull; Instant execution</div>
-              <div>&bull; Works offline after load</div>
-              <div>&bull; Zero tracking logs</div>
-              <div>&bull; Free & unthrottled</div>
+            <div className="pt-4 border-t border-slate-200 dark:border-white/[0.06] grid grid-cols-2 gap-2.5 text-xs text-slate-500 dark:text-neutral-400">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Client-side execution</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Works offline</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Zero server logs</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Free & unthrottled</span>
+              </div>
             </div>
           </div>
         </div>

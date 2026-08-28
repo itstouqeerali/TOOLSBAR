@@ -34,6 +34,7 @@ export interface ToolSEO {
   h1: string;
   intro: string;
   howToUse: string[];
+  features?: string[];
   faq: ToolFaq[];
   educationalNotes?: string[];
 }

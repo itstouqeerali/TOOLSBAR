@@ -63,7 +63,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['discount-calculator', 'gst-tax-calculator', 'average-calculator'],
     seo: {
       title: 'Percentage Calculator — Fast & Instant Percentage Calculations',
-      description: 'Free online percentage calculator. Calculate percentage of a number, percentage increase or decrease, find whole amounts, and discount rates instantly.',
+      description: 'Free online percentage calculator. Calculate percentages, percentage increase or decrease, whole values, and sales discounts with live formula breakdowns.',
       keywords: ['percentage calculator', 'percent of number', 'percentage change', 'discount calculator'],
       h1: 'Percentage Calculator',
       intro: 'Calculate percentages instantly with step-by-step algebraic breakdown, decimal precision customization, and multiple calculation modes.',
@@ -72,10 +72,24 @@ export const TOOLS: Tool[] = [
         'Enter your input values into the number fields.',
         'View the instant result, copy the answer, or review the exact mathematical equation.'
       ],
+      features: [
+        'Five calculation modes covering percentage of number, percentage change, and proportions',
+        'Step-by-step formula breakdown explaining the exact algebraic solution',
+        'Adjustable decimal precision up to 6 decimal places',
+        'Instant clipboard copy for computed answers and mathematical steps'
+      ],
       faq: [
         {
           question: 'How do you calculate percentage of a number?',
-          answer: 'To calculate P percent of a number N, convert P into a decimal by dividing by 100, then multiply by N: (P ÷ 100) × N.'
+          answer: 'To calculate P percent of a number N, convert the percentage into a decimal by dividing by 100, then multiply by N: (P ÷ 100) × N.'
+        },
+        {
+          question: 'How is percentage increase or decrease calculated?',
+          answer: 'Subtract the original value from the new value, divide the difference by the original value, and multiply by 100: ((New − Original) / Original) × 100.'
+        },
+        {
+          question: 'Can this calculator handle negative numbers and decimals?',
+          answer: 'Yes, you can enter positive, negative, and decimal values across all percentage calculation modes with real-time precision.'
         }
       ]
     }
@@ -100,7 +114,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['percentage-calculator', 'unit-converter', 'word-counter'],
     seo: {
       title: 'Age Calculator — Exact Age in Years, Months, Days & Seconds',
-      description: 'Calculate exact chronological age from date of birth. See total days, hours, live seconds alive, next birthday countdown, and horoscope sign.',
+      description: 'Calculate your exact chronological age from date of birth. View completed years, months, days, hours, live ticking seconds, and next birthday countdowns.',
       keywords: ['age calculator', 'chronological age', 'birthday calculator', 'days alive'],
       h1: 'Age Calculator',
       intro: 'Determine exact chronological age with live second ticking, total lifetime duration in all units, and birthday celebration countdown.',
@@ -109,10 +123,24 @@ export const TOOLS: Tool[] = [
         'Optionally add your exact birth time for pinpoint second precision.',
         'Review your age breakdown and copy your shareable summary.'
       ],
+      features: [
+        'Real-time chronological age breakdown down to the exact second',
+        'Total elapsed duration calculated in years, months, days, hours, and minutes',
+        'Upcoming birthday countdown with remaining days and weekday indicator',
+        'Automatic Gregorian leap year adjustment across all lifespans'
+      ],
       faq: [
         {
-          question: 'How does leap year affect age calculations?',
-          answer: 'Our calculator handles Gregorian leap years accurately by checking each February in your lifespan.'
+          question: 'How does the age calculator handle leap years?',
+          answer: 'The calculation checks each February in your lifespan to accurately account for 366-day leap years, ensuring exact day counts.'
+        },
+        {
+          question: 'Can I find my exact age at a specific future or past date?',
+          answer: 'Yes, by adjusting the target calculation date, you can determine your exact age on any historical or future milestone.'
+        },
+        {
+          question: 'Is my birthdate data saved or sent to a server?',
+          answer: 'No, all date calculations run locally in your web browser memory. Your birth date is never recorded, stored, or transmitted.'
         }
       ]
     }
@@ -137,7 +165,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['character-counter', 'case-converter', 'remove-extra-spaces'],
     seo: {
       title: 'Word Counter — Free Online Word & Character Count Tool',
-      description: 'Accurate real-time word counter with reading time estimation, speaking duration, keyword density frequency, and Flesch reading ease analysis.',
+      description: 'Free online word counter and text analyzer. Measure word count, character volume, reading duration, speaking time, and Flesch-Kincaid readability in real time.',
       keywords: ['word counter', 'character counter', 'word count tool', 'reading time calculator'],
       h1: 'Word Counter',
       intro: 'Analyze text statistics instantly: word count, character count, sentence volume, reading speeds, and top keyword frequencies.',
@@ -146,10 +174,24 @@ export const TOOLS: Tool[] = [
         'View the automatically updating metrics bar for total words, characters, and reading times.',
         'Check the sidebar for readability grade level and top keyword repetitions.'
       ],
+      features: [
+        'Live metric updates for word count, character count (with/without spaces), and paragraphs',
+        'Estimated reading time (200 wpm) and speaking duration (130 wpm) metrics',
+        'Flesch Reading Ease and Flesch-Kincaid Grade Level readability scoring',
+        'Top keyword density table highlighting recurring words and phrases'
+      ],
       faq: [
         {
-          question: 'What is the average reading speed used?',
-          answer: 'Standard reading speed is calculated at 225 words per minute (WPM).'
+          question: 'How is estimated reading time calculated?',
+          answer: 'Reading time is estimated using the standard adult reading benchmark of 200 words per minute across English prose.'
+        },
+        {
+          question: 'What does the Flesch Reading Ease score mean?',
+          answer: 'The Flesch score rates text from 0 to 100. Higher scores (60–100) indicate clear, accessible text, while lower scores (0–50) reflect complex academic material.'
+        },
+        {
+          question: 'Does the word counter support long articles and essays?',
+          answer: 'Yes, the tool processes essays, articles, and long-form documents instantly in browser memory without character limits or truncation.'
         }
       ]
     }
@@ -174,7 +216,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['word-counter', 'case-converter', 'slug-generator'],
     seo: {
       title: 'Character Counter — Track Social Media & SEO Text Limits',
-      description: 'Count characters, spaces, letters, and UTF-8 bytes with live progress indicators for Twitter, Instagram, LinkedIn, and SEO meta tags.',
+      description: 'Online character counter with live limit trackers for Twitter/X, Instagram captions, LinkedIn posts, SMS messages, and SEO title and description lengths.',
       keywords: ['character counter', 'twitter character count', 'social media character limit', 'seo character counter'],
       h1: 'Character Counter',
       intro: 'Monitor character count with live visual limit meters for Twitter/X, Instagram captions, LinkedIn posts, and SEO titles.',
@@ -183,10 +225,24 @@ export const TOOLS: Tool[] = [
         'Examine real-time social platform limit gauges.',
         'Copy the verified text with one click.'
       ],
+      features: [
+        'Visual progress bars for major social platforms (Twitter/X, Instagram, LinkedIn, Pinterest)',
+        'SEO character benchmarks for search page titles (60 chars) and meta descriptions (160 chars)',
+        'Detailed counts for characters with spaces, characters without spaces, words, and lines',
+        'One-click copy and clear actions for quick drafting'
+      ],
       faq: [
         {
-          question: 'What is the character limit on X (Twitter)?',
-          answer: 'Standard X (Twitter) posts have a limit of 280 characters.'
+          question: 'What is the character limit for Twitter/X posts?',
+          answer: 'Standard Twitter/X posts allow up to 280 characters, with emojis and special characters counted accurately.'
+        },
+        {
+          question: 'What are the recommended character lengths for SEO titles and descriptions?',
+          answer: 'Search engines typically display 50–60 characters for page titles and 145–160 characters for meta descriptions before truncating.'
+        },
+        {
+          question: 'Does the counter differentiate between characters with and without spaces?',
+          answer: 'Yes, both totals are displayed simultaneously alongside line counts and byte estimations.'
         }
       ]
     }
@@ -211,7 +267,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['slug-generator', 'remove-extra-spaces', 'text-sorter'],
     seo: {
       title: 'Case Converter — Convert Text to Uppercase, Lowercase, CamelCase',
-      description: 'Convert text formatting instantly across 12 different case styles including Title Case, UPPERCASE, lowercase, camelCase, kebab-case, and snake_case.',
+      description: 'Transform text case online instantly. Convert text to UPPERCASE, lowercase, Title Case, Sentence case, camelCase, kebab-case, snake_case, and PascalCase.',
       keywords: ['case converter', 'convert uppercase to lowercase', 'camelcase converter', 'title case tool'],
       h1: 'Case Converter',
       intro: 'Transform text into 12 different typographic and programming cases in real-time with one-click clipboard copying.',
@@ -220,10 +276,24 @@ export const TOOLS: Tool[] = [
         'Browse the live transformed versions in the case grid.',
         'Click the copy button on any case card.'
       ],
+      features: [
+        '12 text case transformations including Title Case, Sentence case, camelCase, and snake_case',
+        'Grammar-aware Title Case engine respecting minor words (articles, conjunctions, prepositions)',
+        'Developer-focused naming styles for code identifiers (PascalCase, kebab-case, CONSTANT_CASE)',
+        'One-click clipboard copy with character and word counters'
+      ],
       faq: [
         {
-          question: 'What is kebab-case used for?',
-          answer: 'Kebab-case uses hyphens (e.g. my-slug) and is popular for URL slugs and CSS class names.'
+          question: 'What is the difference between camelCase and PascalCase?',
+          answer: 'In camelCase, the first word begins with a lowercase letter and subsequent words are capitalized (e.g., userProfileData). In PascalCase, every word begins with a capital letter (e.g., UserProfileData).'
+        },
+        {
+          question: 'How does Title Case handle articles and prepositions?',
+          answer: 'The Title Case converter capitalizes major words while keeping minor prepositions, articles, and coordinating conjunctions (like "of", "and", "the") in lowercase unless they start the sentence.'
+        },
+        {
+          question: 'Can I convert code identifiers like snake_case to camelCase?',
+          answer: 'Yes, developers can convert database column names (snake_case) or URL slugs (kebab-case) directly into JavaScript-friendly camelCase or PascalCase.'
         }
       ]
     }
@@ -248,7 +318,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['json-minifier', 'base64', 'url-encoder-decoder'],
     seo: {
       title: 'JSON Formatter & Validator — Beautify & Validate JSON Online',
-      description: 'Free online JSON formatter, validator, and tree inspector. Beautify JSON with custom indentation, fix syntax errors, and minify JSON data safely.',
+      description: 'Format, beautify, validate, and minify JSON online. Features collapsible tree viewer, syntax error diagnostics with line numbers, and custom indentation.',
       keywords: ['json formatter', 'json beautifier', 'json validator online', 'minify json'],
       h1: 'JSON Formatter & Validator',
       intro: 'Beautify, validate, and debug JSON payloads with instant error detection and tree navigation.',
@@ -257,10 +327,24 @@ export const TOOLS: Tool[] = [
         'Click "Beautify / Format" to format with 2-space or 4-space indentation.',
         'Copy the formatted output or download it as a `.json` file.'
       ],
+      features: [
+        'Real-time JSON syntax validation with pinpoint error locations and line numbers',
+        'Interactive collapsible tree viewer with expandable nodes and data type badges',
+        'Configurable beautification formatting (2 spaces, 4 spaces, or tabs) and one-click minifier',
+        'Local client-side execution ensuring sensitive API payloads remain private'
+      ],
       faq: [
         {
-          question: 'Is my data secure?',
-          answer: '100% secure. Everything is processed directly in your local browser memory.'
+          question: 'Why does my JSON fail validation?',
+          answer: 'Common JSON syntax errors include trailing commas after the last object key, single quotes instead of double quotes around strings, and unescaped special characters.'
+        },
+        {
+          question: 'Is my JSON data uploaded to an external server?',
+          answer: 'No, all parsing, formatting, and validation runs entirely within your browser JavaScript engine. Your data never leaves your device.'
+        },
+        {
+          question: 'Can this tool minify JSON payloads for production APIs?',
+          answer: 'Yes, switching to minify mode strips all unnecessary whitespace and newlines, reducing payload byte size for faster network transfer.'
         }
       ]
     }
@@ -285,7 +369,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['url-encoder-decoder', 'hash-generator', 'uuid-generator'],
     seo: {
       title: 'Base64 Encoder & Decoder — Text & File to Base64',
-      description: 'Encode and decode Base64 strings with UTF-8 support. Convert images and files into Base64 Data URIs with ready-to-use HTML and CSS code.',
+      description: 'Encode and decode Base64 text and files online. Convert plain text, UTF-8 strings, and images into Base64 Data URIs with ready-to-use HTML and CSS snippets.',
       keywords: ['base64 encoder', 'base64 decoder', 'base64 image converter'],
       h1: 'Base64 Encoder & Decoder',
       intro: 'Encode and decode strings with full UTF-8 compliance and drag-and-drop file to Data URI conversion.',
@@ -294,10 +378,24 @@ export const TOOLS: Tool[] = [
         'In text mode, choose Encode or Decode and enter your string.',
         'Copy the generated output with one click.'
       ],
+      features: [
+        'Two-way encoding and decoding for plain text and UTF-8 strings with Unicode support',
+        'File to Base64 Data URI converter supporting images, icons, and document attachments',
+        'One-click copy for raw Base64, HTML <img> tags, and CSS background-image declarations',
+        'Zero server upload processing for maximum security and data privacy'
+      ],
       faq: [
         {
-          question: 'What is URL-Safe Base64?',
-          answer: 'URL-safe Base64 replaces `+` with `-` and `/` with `_` to be safe in URL queries.'
+          question: 'What is Base64 encoding used for?',
+          answer: 'Base64 represents binary data in an ASCII string format, allowing images, files, and cryptographic keys to be safely embedded directly into HTML, CSS, JSON, or email headers.'
+        },
+        {
+          question: 'Does Base64 encoding increase file size?',
+          answer: 'Yes, Base64 encoding typically increases binary data size by approximately 33% because 3 bytes of raw binary data are represented using 4 ASCII characters.'
+        },
+        {
+          question: 'Can this tool handle UTF-8 characters and non-Latin scripts?',
+          answer: 'Yes, the encoder uses full UTF-8 byte serialization to accurately encode accented letters, emojis, and international alphabets.'
         }
       ]
     }
@@ -322,7 +420,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['data-storage-converter', 'temperature-converter', 'percentage-calculator'],
     seo: {
       title: 'Universal Unit Converter — Length, Weight, Temperature & More',
-      description: 'Convert between metric and imperial units. Interactive unit converter for length, mass, temperature, data storage, volume, speed, and time.',
+      description: 'Universal unit converter for length, weight, temperature, area, volume, speed, time, and digital data. Convert metric and imperial units with live matrix tables.',
       keywords: ['unit converter', 'metric converter', 'measurement converter'],
       h1: 'Universal Unit Converter',
       intro: 'Convert between imperial and metric units with bidirectional calculation and comparison tables.',
@@ -331,10 +429,24 @@ export const TOOLS: Tool[] = [
         'Enter the value and choose source and target units.',
         'Review the multi-unit comparison table.'
       ],
+      features: [
+        'Multi-category conversion matrix covering length, mass, temperature, area, volume, speed, and data',
+        'Simultaneous multi-unit comparison table showing conversions across all units at once',
+        'High-precision decimal calculation with scientific notation for microscopic and astronomical numbers',
+        'Instant swapping of source and target units with one click'
+      ],
       faq: [
         {
-          question: 'Are conversions calibrated to standard SI units?',
-          answer: 'Yes, all multipliers strictly follow NIST and BIPM international standards.'
+          question: 'How do I convert between metric and imperial measurements?',
+          answer: 'Select your measurement category, choose your starting unit (such as kilometers or pounds), enter the value, and the corresponding imperial or metric values update instantly.'
+        },
+        {
+          question: 'How accurate are the conversion formulas?',
+          answer: 'All conversions utilize international standard conversion constants (such as NIST and ISO standards) with floating-point precision.'
+        },
+        {
+          question: 'Can I view conversions across all units simultaneously?',
+          answer: 'Yes, the multi-unit matrix displays how your input value translates across every unit in the selected category at a single glance.'
         }
       ]
     }
@@ -359,7 +471,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['password-generator', 'url-encoder-decoder', 'slug-generator'],
     seo: {
       title: 'QR Code Generator — Free Custom QR Codes (PNG & SVG)',
-      description: 'Create custom high-resolution QR codes for websites, WiFi networks, vCards, emails, and phone numbers. Download in PNG or vector SVG format.',
+      description: 'Free online QR code generator. Create custom QR codes for URLs, WiFi passwords, vCard contacts, emails, phone numbers, and SMS with PNG and SVG vector export.',
       keywords: ['qr code generator', 'custom qr code', 'wifi qr code generator'],
       h1: 'QR Code Generator',
       intro: 'Generate vector-sharp QR codes with custom foreground/background colors and pre-formatted templates.',
@@ -368,10 +480,24 @@ export const TOOLS: Tool[] = [
         'Enter your information in the form fields.',
         'Download the QR code as PNG or SVG.'
       ],
+      features: [
+        'Support for URLs, plain text, WiFi network logins, vCard contact cards, email, SMS, and phone calls',
+        'High-resolution PNG raster image and lossless SVG vector graphic downloads',
+        'Adjustable error correction levels (L, M, Q, H) for optimal scannability with custom styling',
+        'Real-time live preview updating as you type'
+      ],
       faq: [
         {
-          question: 'Do generated QR codes expire?',
-          answer: 'No. They are static QR codes that encode your data directly and never expire.'
+          question: 'Do the generated QR codes expire?',
+          answer: 'No, static QR codes encode data directly into the pixel matrix and will never expire or require recurring subscription fees.'
+        },
+        {
+          question: 'What is the best error correction level for printing?',
+          answer: 'For standard printing, Level M (15%) or Level Q (25%) is ideal. For outdoor signage or high-wear environments, choose Level H (30% recovery).'
+        },
+        {
+          question: 'How do I create a QR code for WiFi access?',
+          answer: 'Select the WiFi tab, enter your network name (SSID), password, and encryption type (WPA/WPA2/WEP). Scanning the code allows guests to join automatically.'
         }
       ]
     }
@@ -396,7 +522,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['uuid-generator', 'hash-generator', 'base64'],
     seo: {
       title: 'Secure Password Generator — Strong Random Passwords & Passphrases',
-      description: 'Generate cryptographically secure random passwords and memorable passphrases. Customizable length, character sets, and live entropy strength ratings.',
+      description: 'Generate strong, secure passwords and memorable passphrases online. Features cryptographic entropy scoring, character customization, and bulk password batches.',
       keywords: ['password generator', 'strong password generator', 'random password generator'],
       h1: 'Secure Password Generator',
       intro: 'Create passwords powered by browser `crypto.getRandomValues`, supporting custom symbol sets, passphrases, and bulk batches.',
@@ -405,10 +531,24 @@ export const TOOLS: Tool[] = [
         'Adjust the length slider and toggle character options.',
         'Copy the generated password.'
       ],
+      features: [
+        'Cryptographically secure pseudo-random generation using the browser Web Crypto API',
+        'Custom character sets: uppercase, lowercase, numbers, symbols, and ambiguous character exclusion',
+        'Diceware-style memorable passphrase generator with customizable word counts and separators',
+        'Real-time password entropy estimation and brute-force cracking resistance metrics'
+      ],
       faq: [
         {
-          question: 'How random are generated passwords?',
-          answer: 'They use Web Crypto API CSPRNG hardware-grade pseudorandom generation.'
+          question: 'How secure are the generated passwords?',
+          answer: 'Passwords are generated using window.crypto.getRandomValues, providing cryptographically strong pseudo-random numbers suitable for high-security credentials.'
+        },
+        {
+          question: 'What makes a password strong against brute-force attacks?',
+          answer: 'Length and character diversity are key. A password with 16+ characters combining uppercase, lowercase, numbers, and symbols provides over 90 bits of entropy.'
+        },
+        {
+          question: 'Are generated passwords saved or stored anywhere?',
+          answer: 'Never. Passwords are created entirely in your browser RAM and are completely erased when you close or refresh the page.'
         }
       ]
     }
@@ -433,7 +573,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['percentage-calculator', 'average-calculator', 'unit-converter'],
     seo: {
       title: 'BMI Calculator — Body Mass Index & Ideal Weight Targets',
-      description: 'Free online Body Mass Index (BMI) calculator. Supports Metric (kg/cm) and Imperial (lbs/ft/in) with WHO classification and ideal weight targets.',
+      description: 'Free BMI calculator for adults. Calculate Body Mass Index, ideal weight targets, and health category classifications in Metric (cm/kg) or Imperial (ft/lbs) units.',
       keywords: ['bmi calculator', 'body mass index', 'ideal weight calculator', 'healthy weight range'],
       h1: 'BMI & Body Health Calculator',
       intro: 'Evaluate your Body Mass Index with instant WHO classification, healthy weight range calculation, and visual health meter.',
@@ -442,10 +582,24 @@ export const TOOLS: Tool[] = [
         'Enter height and weight values.',
         'View your BMI score, WHO category, and target healthy weight range.'
       ],
+      features: [
+        'Dual unit support for Metric (kilograms, centimeters) and Imperial (feet, inches, pounds) systems',
+        'World Health Organization (WHO) BMI classification chart with visual gauge indicator',
+        'Calculation of healthy weight target ranges for your specific height',
+        'Ponderal Index and Prime BMI metrics for comprehensive body mass assessment'
+      ],
       faq: [
         {
-          question: 'What is a healthy BMI range according to the WHO?',
-          answer: 'The World Health Organization defines a normal healthy BMI range between 18.5 and 24.9.'
+          question: 'What is considered a healthy BMI range?',
+          answer: 'According to the World Health Organization, a BMI between 18.5 and 24.9 is classified as normal/healthy weight for adults.'
+        },
+        {
+          question: 'How is Body Mass Index calculated?',
+          answer: 'In Metric units, BMI = weight (kg) ÷ height (m)². In Imperial units, BMI = (weight (lbs) × 703) ÷ height (inches)².'
+        },
+        {
+          question: 'Does BMI distinguish between muscle mass and body fat?',
+          answer: 'BMI is a screening tool based on height and weight. It does not measure body fat percentage directly or account for high muscle density in athletes.'
         }
       ]
     }
@@ -470,7 +624,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['percentage-calculator', 'gst-tax-calculator', 'loan-emi-calculator'],
     seo: {
       title: 'Discount Calculator — Calculate Sale Prices & Total Savings',
-      description: 'Calculate final prices after discounts, stackable promo codes, and sales tax. See exact dollars saved and effective discount percentages.',
+      description: 'Calculate sale discounts, final clearance prices, percentage savings, stackable double coupons, and local sales tax with real-time visual breakdowns.',
       keywords: ['discount calculator', 'sale price calculator', 'percentage off calculator'],
       h1: 'Discount & Sale Price Calculator',
       intro: 'Determine exact sale prices with support for primary percentage discounts, stacked coupons, and local sales tax.',
@@ -479,10 +633,24 @@ export const TOOLS: Tool[] = [
         'Enter primary discount rate (or click quick presets like 20% or 50%).',
         'Optionally add stackable coupon or sales tax to view final cost and total savings.'
       ],
+      features: [
+        'Instant calculation of final discounted price and exact monetary savings',
+        'Stackable secondary discount support (e.g., 20% off plus an extra 10% coupon)',
+        'Integrated sales tax calculation for accurate final checkout cost estimation',
+        'Clear breakdown showing original price, total deductions, and tax addition'
+      ],
       faq: [
         {
-          question: 'How do stacked discounts work?',
-          answer: 'A second discount is applied to the reduced price after the first discount, not added together directly.'
+          question: 'How do stackable double discounts work?',
+          answer: 'Double discounts apply sequentially. The second discount is calculated from the already discounted subtotal, not the original retail price.'
+        },
+        {
+          question: 'How do you calculate a percentage discount manually?',
+          answer: 'Multiply the original price by the discount percentage divided by 100 to find the savings, then subtract that amount from the original price.'
+        },
+        {
+          question: 'Can this tool calculate prices with sales tax included?',
+          answer: 'Yes, simply enter your local sales tax percentage to calculate the exact final total due at the checkout register.'
         }
       ]
     }
@@ -507,7 +675,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['percentage-calculator', 'ratio-calculator', 'unit-converter'],
     seo: {
       title: 'Average Calculator — Mean, Median, Mode & Standard Deviation',
-      description: 'Free statistical calculator. Enter numbers to calculate arithmetic mean, median, mode, sample standard deviation, variance, and sum instantly.',
+      description: 'Calculate Mean, Median, Mode, Range, Geometric Mean, Standard Deviation, and Variance from any number list. Features sorted dataset views and sum totals.',
       keywords: ['average calculator', 'mean median mode calculator', 'standard deviation calculator'],
       h1: 'Average & Statistics Calculator',
       intro: 'Calculate comprehensive descriptive statistics across any dataset with customizable decimal precision.',
@@ -516,10 +684,24 @@ export const TOOLS: Tool[] = [
         'Review the calculated Mean, Median, Mode, Sum, Range, and Standard Deviation.',
         'Copy the summary statistics report.'
       ],
+      features: [
+        'Comprehensive statistical analysis: Mean, Median, Mode, Range, Sum, and Count',
+        'Advanced dispersion metrics including Population & Sample Standard Deviation and Variance',
+        'Automatic dataset cleanup with support for comma, space, or newline delimited inputs',
+        'Ascending and descending sorted number sequence display'
+      ],
       faq: [
         {
-          question: 'What is the difference between Mean and Median?',
-          answer: 'The Mean is the arithmetic average (sum divided by count), while the Median is the middle value when numbers are sorted.'
+          question: 'What is the difference between Mean, Median, and Mode?',
+          answer: 'The Mean is the arithmetic average (sum divided by count), the Median is the middle value when sorted, and the Mode is the number that appears most frequently.'
+        },
+        {
+          question: 'When should I use Median instead of Mean?',
+          answer: 'Median is preferred when analyzing datasets with extreme outliers (such as income or housing prices) because it is not skewed by unusually high or low numbers.'
+        },
+        {
+          question: 'How does the calculator handle multiple modes (multimodal data)?',
+          answer: 'If multiple numbers share the highest frequency, the tool lists all matching modes or indicates if no mode exists (all unique numbers).'
         }
       ]
     }
@@ -544,7 +726,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['percentage-calculator', 'average-calculator', 'discount-calculator'],
     seo: {
       title: 'Ratio Calculator — Solve Proportions & Simplify Ratios',
-      description: 'Solve for unknown terms in proportions A:B = C:D, reduce ratios to simplest whole numbers with GCD, and scale aspect ratios for design and video.',
+      description: 'Solve proportions (A:B = C:D), simplify ratios to lowest terms using GCD, scale aspect ratios (16:9, 4:3, 21:9), and divide values proportionally online.',
       keywords: ['ratio calculator', 'aspect ratio calculator', 'simplify ratio', 'proportion solver'],
       h1: 'Ratio & Aspect Ratio Calculator',
       intro: 'Solve proportions, simplify ratios, scale dimensions, and divide amounts with step-by-step mathematical explanations.',
@@ -553,10 +735,24 @@ export const TOOLS: Tool[] = [
         'Enter known parameters.',
         'View the calculated proportion and explanation.'
       ],
+      features: [
+        'Four calculation modes: Solve Proportions, Simplify Ratios, Aspect Ratio Resizing, and Split Total',
+        'Greatest Common Divisor (GCD) step-by-step reduction for exact integer simplification',
+        'Aspect ratio scaling for digital video, photography, and responsive UI design',
+        'Proportional sharing mode for dividing money, ingredients, or resources among ratios'
+      ],
       faq: [
         {
-          question: 'How do you solve a proportion A:B = C:D?',
-          answer: 'Cross-multiplication states that A × D = B × C. If one value is unknown, solve using basic algebra.'
+          question: 'How do you simplify a ratio to its lowest terms?',
+          answer: 'Find the Greatest Common Divisor (GCD) of both numbers in the ratio and divide both terms by that common factor.'
+        },
+        {
+          question: 'How do you solve for an unknown value in a proportion?',
+          answer: 'Use cross-multiplication: if A/B = C/D, then A × D = B × C. Divide by the known term to solve for the unknown variable.'
+        },
+        {
+          question: 'What are common display aspect ratios?',
+          answer: 'Common ratios include 16:9 (modern widescreen monitors and HDTV), 4:3 (classic displays), 21:9 (ultrawide monitors), and 1:1 or 9:16 (social media feeds and stories).'
         }
       ]
     }
@@ -581,7 +777,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['compound-interest-calculator', 'loan-emi-calculator', 'percentage-calculator'],
     seo: {
       title: 'Simple Interest Calculator — Calculate Interest & Maturity Value',
-      description: 'Free simple interest calculator. Calculate interest earnings and total return based on principal, annual rate, and duration in years, months, or days.',
+      description: 'Calculate simple interest yield, total maturity value, and annual percentage returns on loans, deposits, and promissory notes with clear tenure breakdowns.',
       keywords: ['simple interest calculator', 'interest calculator', 'principal interest'],
       h1: 'Simple Interest Calculator',
       intro: 'Calculate simple interest earnings using formula I = (P × R × T) / 100 with customizable tenures and currency formatting.',
@@ -590,10 +786,24 @@ export const TOOLS: Tool[] = [
         'Enter annual interest rate percentage.',
         'Choose tenure in years, months, or days to view maturity value.'
       ],
+      features: [
+        'Simple interest computation using the standard formula: Interest = Principal × Rate × Time',
+        'Flexible tenure input in years, months, or days with exact leap year options',
+        'Visual breakdown chart comparing the original principal amount against accumulated interest',
+        'Instant calculation of total payout amount and annual equivalent yields'
+      ],
       faq: [
         {
-          question: 'What is the simple interest formula?',
-          answer: 'Interest = (Principal × Rate × Time) ÷ 100.'
+          question: 'What is the formula for calculating simple interest?',
+          answer: 'The formula is I = P × r × t, where P is Principal, r is the Annual Interest Rate (as a decimal), and t is Time in years.'
+        },
+        {
+          question: 'How does simple interest differ from compound interest?',
+          answer: 'Simple interest is calculated solely on the original principal amount, whereas compound interest calculates interest on both the principal and previously earned interest.'
+        },
+        {
+          question: 'Can I calculate simple interest for periods less than one year?',
+          answer: 'Yes, you can enter tenure in months or days; the calculator converts the time duration into the exact fractional year equivalent.'
         }
       ]
     }
@@ -618,7 +828,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['simple-interest-calculator', 'loan-emi-calculator', 'percentage-calculator'],
     seo: {
       title: 'Compound Interest Calculator — Investment Growth & APY',
-      description: 'Project future investment growth with monthly contributions and compounding frequencies (daily, monthly, quarterly, annually). Includes annual breakdown schedule.',
+      description: 'Project investment growth and savings wealth with regular monthly contributions, custom compounding frequencies (daily, monthly, yearly), and APY tables.',
       keywords: ['compound interest calculator', 'investment calculator', 'apy calculator', 'future value'],
       h1: 'Compound Interest Calculator',
       intro: 'Plan financial growth by calculating compound interest returns over time with periodic deposits and customizable compounding schedules.',
@@ -627,10 +837,24 @@ export const TOOLS: Tool[] = [
         'Set expected annual interest rate and time horizon in years.',
         'Choose compounding frequency to view future balance and annual growth schedule.'
       ],
+      features: [
+        'Support for regular recurring contributions (monthly, quarterly, or annually) at the start or end of periods',
+        'Multiple compounding cycles: Daily (365 days), Monthly, Quarterly, Semi-Annually, and Annually',
+        'Year-by-year amortization schedule with total interest earned vs principal invested',
+        'Annual Percentage Yield (APY) computation based on nominal interest rate'
+      ],
       faq: [
         {
-          question: 'What is compounding frequency?',
-          answer: 'Compounding frequency specifies how often accrued interest is added back to principal to earn further interest.'
+          question: 'How does compounding frequency impact investment returns?',
+          answer: 'More frequent compounding (such as daily or monthly vs yearly) generates higher returns because interest begins earning interest sooner.'
+        },
+        {
+          question: 'What is the difference between nominal interest rate and APY?',
+          answer: 'The nominal rate is the stated annual interest rate, while APY (Annual Percentage Yield) reflects the true annual return accounting for compounding frequency.'
+        },
+        {
+          question: 'Can I calculate savings growth with ongoing monthly deposits?',
+          answer: 'Yes, enter your starting principal, ongoing monthly contribution amount, expected annual rate, and investment timeline to view your projected wealth.'
         }
       ]
     }
@@ -655,7 +879,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['simple-interest-calculator', 'compound-interest-calculator', 'gst-tax-calculator'],
     seo: {
       title: 'Loan EMI Calculator — Monthly Payment & Amortization Schedule',
-      description: 'Calculate monthly loan EMI payments, total interest costs, and amortization repayment breakdown for home loans, auto loans, and mortgages.',
+      description: 'Calculate loan EMI payments, total interest payable, processing fees, and full monthly amortization schedules for home, auto, and personal loans.',
       keywords: ['loan emi calculator', 'mortgage calculator', 'monthly payment calculator'],
       h1: 'Loan & Mortgage EMI Calculator',
       intro: 'Calculate monthly loan EMI and view full principal vs. interest breakdown with amortization preview.',
@@ -664,10 +888,24 @@ export const TOOLS: Tool[] = [
         'Specify loan tenure in years or months.',
         'Review monthly EMI payment and amortization breakdown.'
       ],
+      features: [
+        'Equated Monthly Installment (EMI) calculation with principal and interest amortization breakdown',
+        'Interactive visual chart displaying the exact ratio between principal repayment and total interest',
+        'Complete month-by-month and year-by-year payment schedule with remaining balance tracking',
+        'Optional processing fee calculation for accurate total borrowing cost assessment'
+      ],
       faq: [
         {
           question: 'How is loan EMI calculated?',
-          answer: 'EMI is computed using formula: EMI = [P × r × (1+r)^n] ÷ [(1+r)^n - 1] where r is monthly interest and n is tenure in months.'
+          answer: 'EMI is calculated using the formula: EMI = [P × r × (1 + r)^n] / [(1 + r)^n − 1], where P is Principal, r is the monthly interest rate, and n is tenure in months.'
+        },
+        {
+          question: 'Why is interest higher in the early months of a loan?',
+          answer: 'Because interest is computed on the outstanding loan balance. In the beginning, the balance is highest, so a larger portion of each EMI payment goes toward interest.'
+        },
+        {
+          question: 'Can I use this calculator for both mortgages and personal loans?',
+          answer: 'Yes, the EMI engine works for home loans, car loans, personal loans, and student loans with flexible tenure in months or years.'
         }
       ]
     }
@@ -692,7 +930,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['discount-calculator', 'percentage-calculator', 'loan-emi-calculator'],
     seo: {
       title: 'GST & Sales Tax Calculator — Add or Remove Tax Online',
-      description: 'Calculate Goods and Services Tax (GST) or VAT. Add tax (exclusive to inclusive) or remove tax (inclusive to exclusive) with CGST/SGST breakdowns.',
+      description: 'Free GST & sales tax calculator. Add or remove tax (Exclusive vs Inclusive), calculate CGST/SGST splits, and generate clear itemized tax invoices online.',
       keywords: ['gst calculator', 'tax calculator', 'sales tax calculator', 'vat calculator'],
       h1: 'GST & Sales Tax Calculator',
       intro: 'Calculate gross and net amounts with standard tax slab presets and CGST/SGST splits.',
@@ -701,10 +939,24 @@ export const TOOLS: Tool[] = [
         'Enter amount and select tax percentage rate.',
         'View itemized tax summary and copy invoice breakdown.'
       ],
+      features: [
+        'Two calculation directions: Add GST (Tax Exclusive) or Remove GST (Tax Inclusive)',
+        'Pre-configured standard tax slab buttons (5%, 12%, 18%, 28%) plus custom percentage entry',
+        'Automatic split breakdown for Central GST (CGST) and State GST (SGST)',
+        'Itemized summary displaying Net Amount, GST Amount, and Gross Invoice Total'
+      ],
       faq: [
         {
-          question: 'How do you remove GST from a total amount?',
-          answer: 'To extract pre-tax amount: Net = Gross Amount ÷ (1 + Tax Rate ÷ 100).'
+          question: 'How do you calculate the base price before tax from a tax-inclusive total?',
+          answer: 'To remove tax from an inclusive price, use the formula: Base Price = Total Price / (1 + Tax Rate / 100).'
+        },
+        {
+          question: 'What is the difference between CGST and SGST?',
+          answer: 'Under the GST system for intra-state transactions, the total GST rate is divided equally between Central GST (CGST) and State GST (SGST).'
+        },
+        {
+          question: 'Can this tool calculate international sales taxes like VAT or state sales tax?',
+          answer: 'Yes, simply enter your regional VAT or state tax percentage to add or remove sales tax from any transaction amount.'
         }
       ]
     }
@@ -729,7 +981,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['text-sorter', 'remove-extra-spaces', 'word-counter'],
     seo: {
       title: 'Remove Duplicate Lines — Online Text Deduplication Tool',
-      description: 'Remove duplicate lines from lists and text files instantly. Supports case sensitivity, trimming whitespace, removing blank lines, and sorting.',
+      description: 'Remove duplicate lines from text lists online. Clean repeat rows, filter empty lines, trim whitespace, and sort unique items with case sensitivity controls.',
       keywords: ['remove duplicate lines', 'text deduplicator', 'find unique lines'],
       h1: 'Remove Duplicate Lines',
       intro: 'Clean up lists and datasets by stripping repeat lines while maintaining original ordering or applying alphabetical sorting.',
@@ -738,10 +990,24 @@ export const TOOLS: Tool[] = [
         'Configure case sensitivity and trimming options.',
         'Copy or download the deduplicated clean list.'
       ],
+      features: [
+        'Instant deduplication with case-sensitive or case-insensitive matching options',
+        'Optional automatic trimming of leading/trailing spaces before duplicate comparison',
+        'Empty line filtering and line-sorting options (alphabetical A-Z, reverse Z-A, or preserve original order)',
+        'Real-time stats showing original line count, duplicate count, and unique line total'
+      ],
       faq: [
         {
-          question: 'Can I preserve original line ordering?',
-          answer: 'Yes, original ordering is preserved by default.'
+          question: 'Does the tool preserve the original order of lines?',
+          answer: 'Yes, by default the first occurrence of each unique line is kept in its original sequence, unless you select an alphabetical sorting option.'
+        },
+        {
+          question: 'Can the tool ignore differences in capitalization when finding duplicates?',
+          answer: 'Yes, toggle the "Case Sensitive" option off to treat uppercase and lowercase variations of the same line as duplicates.'
+        },
+        {
+          question: 'Is there a limit on how many lines I can deduplicate?',
+          answer: 'The deduplication runs locally in your browser memory and can process tens of thousands of lines in milliseconds.'
         }
       ]
     }
@@ -766,7 +1032,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['remove-duplicate-lines', 'case-converter', 'word-counter'],
     seo: {
       title: 'Remove Extra Spaces — Clean Whitespace & Format Text',
-      description: 'Remove multiple consecutive spaces, trim line edges, eliminate blank lines, and clean tab indents from text.',
+      description: 'Clean whitespace online. Collapse consecutive spaces, trim leading and trailing spaces, remove blank lines, and normalize tab indents in one click.',
       keywords: ['remove extra spaces', 'clean whitespace tool', 'trim lines'],
       h1: 'Remove Extra Spaces & Whitespace',
       intro: 'Normalize messy text by collapsing duplicate spaces into single spaces and cleaning line endings.',
@@ -775,10 +1041,24 @@ export const TOOLS: Tool[] = [
         'Toggle formatting rules (collapse spaces, trim line ends, remove blank lines).',
         'Copy the formatted clean text.'
       ],
+      features: [
+        'Collapse multiple consecutive spaces into a single space across your entire document',
+        'Trim trailing and leading whitespace from every line individually',
+        'Remove blank or empty lines and normalize tab indents into standard spaces',
+        'One-click clipboard copy with before-and-after character count reduction metrics'
+      ],
       faq: [
         {
-          question: 'Does this join all lines into a single paragraph?',
-          answer: 'Yes, enable "Join All to 1 Line" to flatten multiline text into one continuous sentence.'
+          question: 'What whitespace cleanup options are available?',
+          answer: 'You can collapse multiple spaces into single spaces, trim line edges, remove empty lines, convert tabs to spaces, and remove all line breaks.'
+        },
+        {
+          question: 'Why should I remove extra spaces from my text or code?',
+          answer: 'Removing unnecessary whitespace improves typography, ensures clean database inputs, eliminates formatting glitches, and reduces document file size.'
+        },
+        {
+          question: 'Will this tool alter special formatting inside paragraphs?',
+          answer: 'The tool only targets redundant whitespace and spaces according to the cleanup options you enable, preserving your words and sentences.'
         }
       ]
     }
@@ -790,7 +1070,7 @@ export const TOOLS: Tool[] = [
     name: 'Text & Line Sorter',
     slug: 'text-sorter',
     category: 'text',
-    description: 'Sort lines alphabetically (A-Z, Z-A), natural numerical order, line length, reverse order, or shuffle randomly.',
+    description: 'Sort lines of text online alphabetically (A-Z or Z-A), by line length, in natural numeric order, reverse line order, or shuffle lists randomly in your browser.',
     shortDesc: 'Sort lines alphabetically, naturally, by length, or shuffle.',
     icon: 'ArrowUpDown',
     keywords: ['text sorter', 'alphabetize list', 'sort lines', 'natural sort', 'shuffle list', 'reverse text'],
@@ -803,7 +1083,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['remove-duplicate-lines', 'case-converter', 'word-counter'],
     seo: {
       title: 'Text & Line Sorter — Alphabetize & Sort Lists Online',
-      description: 'Sort lists alphabetically (A to Z, Z to A), by natural numbering, by character length, reverse lines, or randomize order.',
+      description: 'Sort lines of text online alphabetically (A-Z or Z-A), by line length, in natural numeric order, reverse line order, or shuffle lists randomly.',
       keywords: ['text sorter', 'alphabetical order tool', 'sort lines online'],
       h1: 'Text & Line Sorter',
       intro: 'Organize lists with multiple sorting algorithms including natural sort (e.g., File 2 before File 10), length, and random shuffling.',
@@ -812,10 +1092,24 @@ export const TOOLS: Tool[] = [
         'Choose your desired sorting algorithm.',
         'Copy or download the sorted text.'
       ],
+      features: [
+        'Multiple sorting algorithms: Alphabetical (A-Z / Z-A), Natural Numeric (1, 2, 10), and Line Length',
+        'Random shuffle order and reverse line sequence tools',
+        'Case-sensitive or case-insensitive sorting options',
+        'Trim whitespace and duplicate elimination options during sort'
+      ],
       faq: [
         {
-          question: 'What is Natural Sort?',
-          answer: 'Natural sort orders numbers logically inside strings (e.g. Item 2 before Item 10 rather than alphabetical Item 10 before Item 2).'
+          question: 'What is Natural Numeric Sorting?',
+          answer: 'Natural sorting orders numbers logically (e.g., Item 1, Item 2, Item 10) rather than standard ASCII alphabetical sorting (where Item 10 would precede Item 2).'
+        },
+        {
+          question: 'Can I sort a list by the length of each line?',
+          answer: 'Yes, choose the "Line Length" sorting mode to organize lines from shortest to longest or longest to shortest.'
+        },
+        {
+          question: 'How do I randomize or shuffle a list of items?',
+          answer: 'Select the "Shuffle / Randomize" option to randomize list ordering, which is ideal for raffles, prize draws, and team assignment lists.'
         }
       ]
     }
@@ -840,7 +1134,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['case-converter', 'url-encoder-decoder', 'character-counter'],
     seo: {
       title: 'URL Slug Generator — SEO Friendly Permalinks',
-      description: 'Convert article titles and headlines into clean, URL-safe slugs with customizable separators (hyphen, underscore), accent transliteration, and SEO stop-word removal.',
+      description: 'Generate clean, SEO-friendly URL slugs online. Convert titles into permalinks with accent transliteration, custom separators, and stop-word filters.',
       keywords: ['slug generator', 'url slug creator', 'seo permalink generator'],
       h1: 'URL Slug Generator',
       intro: 'Generate clean, readable URL slugs with live website preview and customizable separators.',
@@ -849,10 +1143,24 @@ export const TOOLS: Tool[] = [
         'Select separator and optional stop-word removal.',
         'Copy the generated slug.'
       ],
+      features: [
+        'Automatic Unicode transliteration converting accented characters (e.g. é → e, ü → u) into ASCII',
+        'Customizable slug separators: Hyphen (-), Underscore (_), or Dot (.)',
+        'Optional common stop-word filter (removing "the", "and", "a", "for", "with") for shorter URLs',
+        'Strict lowercase transformation and special character removal for clean web addresses'
+      ],
       faq: [
         {
-          question: 'What is a URL slug?',
-          answer: 'A slug is the human-readable portion of a URL identifying a specific page (e.g. /blog/my-awesome-post).'
+          question: 'What makes a URL slug SEO-friendly?',
+          answer: 'SEO-friendly slugs are short, descriptive, lowercase, use hyphens to separate words, and avoid special symbols, numbers, or unnecessary filler words.'
+        },
+        {
+          question: 'How does the slug generator handle accented letters or foreign alphabets?',
+          answer: 'The generator uses standard Unicode transliteration to convert accented characters (like à, é, ö, ñ) into their plain ASCII Latin equivalents.'
+        },
+        {
+          question: 'Why should I remove stop words from URL slugs?',
+          answer: 'Removing common stop words (like "in", "the", "a") makes URLs shorter, cleaner to read on social media, and more focused on primary keywords.'
         }
       ]
     }
@@ -864,7 +1172,7 @@ export const TOOLS: Tool[] = [
     name: 'Lorem Ipsum Placeholder Generator',
     slug: 'lorem-ipsum-generator',
     category: 'text',
-    description: 'Generate customizable placeholder dummy text by paragraphs, sentences, words, or lists in Classic Latin, Tech Startup, or Pirate themes.',
+    description: 'Generate customizable placeholder dummy text by paragraphs, sentences, words, or lists in Classic Latin, Modern Tech Startup, or Pirate Talk themes online.',
     shortDesc: 'Generate dummy placeholder text, sentences, words & HTML markup.',
     icon: 'FileText',
     keywords: ['lorem ipsum', 'dummy text', 'placeholder text', 'filler text', 'mockup text', 'generator'],
@@ -877,7 +1185,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['word-counter', 'character-counter', 'case-converter'],
     seo: {
       title: 'Lorem Ipsum Generator — Placeholder Text for Designers & Developers',
-      description: 'Generate customized dummy text for mockups, prototypes, and layouts. Choose paragraphs, sentences, words, HTML tags, or Markdown.',
+      description: 'Generate custom placeholder dummy text by paragraphs, sentences, words, or lists in Classic Latin, Modern Tech Startup, or Pirate themes.',
       keywords: ['lorem ipsum generator', 'placeholder text generator', 'dummy text'],
       h1: 'Lorem Ipsum Placeholder Generator',
       intro: 'Create filler text tailored to your layout needs with output in plain text, HTML tags, or Markdown format.',
@@ -886,10 +1194,24 @@ export const TOOLS: Tool[] = [
         'Choose a theme style (Classic Latin, Tech Startup, or Pirate).',
         'Copy or download the generated placeholder text.'
       ],
+      features: [
+        'Multiple generation lengths: specify exact paragraphs, sentences, words, or unordered list items',
+        'Three unique text themes: Classic Latin Cicero, Modern Tech Startup, and Pirate Talk',
+        'Optional "Start with Lorem ipsum dolor sit amet..." toggle for traditional layouts',
+        'HTML <p> tag wrapper export option for rapid frontend web development copy-pasting'
+      ],
       faq: [
         {
-          question: 'Where does Lorem Ipsum originate?',
-          answer: 'It originates from Cicero\'s 45 BC Latin philosophical treatise "De finibus bonorum et malorum".'
+          question: 'What is the origin of the classic Lorem Ipsum text?',
+          answer: 'Lorem Ipsum is derived from sections 1.10.32 and 1.10.33 of Cicero\'s philosophical work "De Finibus Bonorum et Malorum", written in 45 BC.'
+        },
+        {
+          question: 'Why do designers and developers use placeholder text?',
+          answer: 'Placeholder text mimics natural sentence structure and word distribution, allowing stakeholders to evaluate typography, layout, and visual balance without being distracted by real copy.'
+        },
+        {
+          question: 'Can I generate dummy text wrapped in HTML paragraph tags?',
+          answer: 'Yes, toggle the "Wrap in HTML" option to copy formatted <p>...</p> tags ready for immediate insertion into your code editor.'
         }
       ]
     }
@@ -914,7 +1236,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['json-formatter', 'base64', 'url-encoder-decoder'],
     seo: {
       title: 'JSON Minifier — Compress & Minify JSON Online',
-      description: 'Minify JSON payloads to reduce bandwidth and payload sizes. Validate syntax and format with compression ratio analytics.',
+      description: 'Compress and minify JSON payloads online. Remove whitespace, comments, and newlines to reduce payload byte sizes with real-time compression ratio stats.',
       keywords: ['json minifier', 'compress json online', 'json compressor'],
       h1: 'JSON Minifier & Compressor',
       intro: 'Remove all unnecessary whitespace from JSON payloads to reduce file size and API response payloads.',
@@ -923,10 +1245,24 @@ export const TOOLS: Tool[] = [
         'Choose Minify (Compact) or Beautify.',
         'Copy or download the minified JSON file.'
       ],
+      features: [
+        'Instant JSON compression stripping all indentation, newlines, and unnecessary whitespace',
+        'Real-time payload byte size comparison and percentage compression ratio metrics',
+        'Instant toggle to switch between minified output and 2-space / 4-space beautified view',
+        'Strict syntax validation preventing minification of broken or corrupted JSON strings'
+      ],
       faq: [
         {
-          question: 'Does minification change the data in JSON?',
-          answer: 'No. Minification only strips extraneous whitespace and indentation without altering property keys or values.'
+          question: 'How much does minifying JSON reduce payload size?',
+          answer: 'Depending on the depth of formatting and whitespace, minification typically reduces JSON payload size by 20% to 50%, saving bandwidth on API calls.'
+        },
+        {
+          question: 'Does minifying JSON change the underlying data structure?',
+          answer: 'No, minification only removes formatting whitespace, spaces, and line feeds outside of string values; the data values and keys remain 100% identical.'
+        },
+        {
+          question: 'Is this minification process safe for sensitive API tokens and keys?',
+          answer: 'Yes, the compression is executed 100% client-side in your local browser JavaScript runtime without any network requests.'
         }
       ]
     }
@@ -951,7 +1287,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['base64', 'slug-generator', 'hash-generator'],
     seo: {
       title: 'URL Encoder & Decoder — Percent-Encoding Online Tool',
-      description: 'Encode and decode URLs, query strings, and URI components online. Inspect parsed query parameters and fix URL encoding issues.',
+      description: 'Encode and decode URLs and query parameters online. Features percent-encoding (encodeURIComponent vs encodeURI), query parsing, and raw parameter inspection.',
       keywords: ['url encoder', 'url decoder', 'encodeuricomponent online'],
       h1: 'URL Encoder & Decoder',
       intro: 'Safely encode special characters for URLs or decode percent-encoded strings with automatic query parameter extraction.',
@@ -960,10 +1296,24 @@ export const TOOLS: Tool[] = [
         'Enter URL or string.',
         'Copy the result or review detected query parameters.'
       ],
+      features: [
+        'Dual encoding modes: Component-level (encodeURIComponent) and Full URL (encodeURI)',
+        'Two-way decoding for percent-encoded URLs, spaces (+ vs %20), and special characters',
+        'Interactive query parameter breakdown table listing all key-value pairs',
+        'One-click swap between encode and decode directions with instant clipboard copying'
+      ],
       faq: [
         {
-          question: 'What is percent-encoding?',
-          answer: 'Percent-encoding replaces unsafe URL characters with a `%` followed by two hexadecimal digits.'
+          question: 'What is the difference between encodeURI and encodeURIComponent?',
+          answer: 'encodeURI encodes an entire URL while preserving protocol and path delimiters (like ://, ?, &, #). encodeURIComponent encodes every special character, making it safe for query parameter values.'
+        },
+        {
+          question: 'Why are spaces sometimes encoded as + and sometimes as %20?',
+          answer: 'In application/x-www-form-urlencoded query strings, spaces are historically encoded as "+". Under standard RFC 3986 percent-encoding, spaces are represented as "%20".'
+        },
+        {
+          question: 'How does percent-encoding protect URL transmission?',
+          answer: 'Percent-encoding replaces non-ASCII or reserved characters with a "%" followed by two hexadecimal digits, preventing corruption when URLs pass through servers and browsers.'
         }
       ]
     }
@@ -975,7 +1325,7 @@ export const TOOLS: Tool[] = [
     name: 'UUID & Unique ID Generator',
     slug: 'uuid-generator',
     category: 'developer',
-    description: 'Generate cryptographically secure UUID v4 (RFC 4122), NanoIDs, and 16-byte hex tokens in bulk with custom wrappers and formatting.',
+    description: 'Generate cryptographically secure UUID v4 (RFC 4122), NanoIDs, and hex tokens in bulk batches with custom casing, hyphens, and wrapper formatting online.',
     shortDesc: 'Generate cryptographically secure UUID v4, NanoIDs & bulk tokens.',
     icon: 'Fingerprint',
     keywords: ['uuid generator', 'guid generator', 'uuid v4', 'nanoid', 'unique id', 'token generator', 'bulk uuid'],
@@ -988,7 +1338,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['password-generator', 'hash-generator', 'base64'],
     seo: {
       title: 'UUID Generator — Free Cryptographic UUID v4 & GUIDs',
-      description: 'Generate random UUID v4 and unique identifiers powered by Web Crypto CSPRNG. Bulk generate up to 100 UUIDs with custom delimiters and casing.',
+      description: 'Generate cryptographically secure UUID v4 (RFC 4122), NanoIDs, and hex tokens in bulk with custom casing, hyphens, and wrapper formatting.',
       keywords: ['uuid generator', 'guid generator', 'uuid v4 generator online'],
       h1: 'UUID & Unique ID Generator',
       intro: 'Generate standard RFC 4122 compliant UUID v4 identifiers and compact tokens for databases and APIs.',
@@ -997,10 +1347,24 @@ export const TOOLS: Tool[] = [
         'Choose count and formatting options (hyphens, uppercase, quote wrappers).',
         'Copy individual IDs or download the entire batch.'
       ],
+      features: [
+        'RFC 4122 Version 4 UUID generation using crypto.getRandomValues for true cryptographic entropy',
+        'Bulk generator producing up to 100 unique identifiers simultaneously with one click',
+        'Formatting controls: Uppercase/Lowercase, with/without hyphens, braces {}, and quotes',
+        'Alternative identifier formats including URL-safe NanoIDs and raw hexadecimal tokens'
+      ],
       faq: [
         {
-          question: 'What is the probability of a UUID v4 collision?',
-          answer: 'The collision probability is astronomically low: generating 1 billion UUIDs every second for 85 years yields less than a 50% probability of a single collision.'
+          question: 'What is a UUID v4 and how is it generated?',
+          answer: 'UUID v4 (Universally Unique Identifier) is a 128-bit identifier generated using random numbers. It has 122 bits of cryptographic randomness, providing practically zero collision probability.'
+        },
+        {
+          question: 'Can two generated UUID v4 IDs ever collide?',
+          answer: 'The chance of generating a duplicate UUID v4 is approximately 1 in 2.71 quintillion, making collisions virtually impossible in practice.'
+        },
+        {
+          question: 'What are the formatting options available for generated UUIDs?',
+          answer: 'You can generate UUIDs in standard hyphenated format (8-4-4-4-12), stripped of hyphens, in uppercase or lowercase, or wrapped in curly braces or quotes for database imports.'
         }
       ]
     }
@@ -1025,7 +1389,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['json-formatter', 'case-converter', 'hash-generator'],
     seo: {
       title: 'Regex Tester — Test Regular Expressions Online',
-      description: 'Real-time JavaScript regular expression tester. Inspect match indexes, test capture groups, configure flags (g, i, m, s), and test replacements.',
+      description: 'Test JavaScript regular expressions online in real time with live match highlighting, capture group extraction, syntax error flags, and string replacement.',
       keywords: ['regex tester', 'regular expression tester online', 'regex matcher'],
       h1: 'Regex Tester & Matcher',
       intro: 'Evaluate regex patterns against sample strings with instant syntax validation and capture group inspection.',
@@ -1034,10 +1398,24 @@ export const TOOLS: Tool[] = [
         'Paste test string to view matches and capture groups.',
         'Optionally test substitution replacements.'
       ],
+      features: [
+        'Real-time live match highlighting with support for global (g), case-insensitive (i), and multiline (m) flags',
+        'Detailed capture group breakdown displaying indices and extracted sub-string values',
+        'Interactive regex replacement testing mode with support for $1, $2 capture group backreferences',
+        'Built-in quick cheat sheet with common patterns for emails, URLs, IP addresses, and dates'
+      ],
       faq: [
         {
-          question: 'Which flags are supported?',
-          answer: 'Global (g), Case-Insensitive (i), Multiline (m), and DotAll (s) are supported.'
+          question: 'Which regular expression engine does this tester use?',
+          answer: 'This tool uses the native JavaScript RegExp engine built into your web browser, ensuring 100% compatibility with frontend and Node.js code.'
+        },
+        {
+          question: 'How do capture groups work in regular expressions?',
+          answer: 'Parentheses ( ) define capture groups in a regex. The tester extracts each matched group separately and lets you reference them as $1, $2 in replacement strings.'
+        },
+        {
+          question: 'What do regex flags like g, i, m, and s do?',
+          answer: 'The "g" flag matches all occurrences globally, "i" ignores letter casing, "m" treats start/end anchors (^ and $) across individual lines, and "s" allows dot (.) to match newlines.'
         }
       ]
     }
@@ -1049,7 +1427,7 @@ export const TOOLS: Tool[] = [
     name: 'Hash Generator & Checksum Tool',
     slug: 'hash-generator',
     category: 'developer',
-    description: 'Generate cryptographic checksums in real time: SHA-256, SHA-512, SHA-384, SHA-1, and MD5 with checksum verification matching.',
+    description: 'Generate cryptographic hash digests in real time: SHA-256, SHA-512, SHA-384, SHA-1, and MD5 with HMAC verification and checksum match validation online.',
     shortDesc: 'Compute SHA-256, SHA-512, SHA-384, SHA-1 & MD5 hashes.',
     icon: 'ShieldCheck',
     keywords: ['hash generator', 'sha256', 'sha512', 'md5', 'sha1', 'checksum', 'crypto hash', 'verify hash'],
@@ -1062,7 +1440,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['uuid-generator', 'password-generator', 'base64'],
     seo: {
       title: 'Hash Generator — SHA-256, SHA-512, SHA-1 & MD5 Online',
-      description: 'Generate cryptographic hash digests using Web Crypto API. Calculate SHA-256, SHA-512, SHA-384, SHA-1, and MD5 with instant checksum comparison.',
+      description: 'Generate cryptographic hash digests in real time: SHA-256, SHA-512, SHA-384, SHA-1, and MD5 with HMAC verification and checksum match validator.',
       keywords: ['hash generator', 'sha256 generator', 'md5 generator', 'checksum verifier'],
       h1: 'Hash Generator & Checksum Tool',
       intro: 'Compute secure cryptographic message digests directly in your browser with checksum verification support.',
@@ -1071,10 +1449,24 @@ export const TOOLS: Tool[] = [
         'View computed hashes across all major algorithms simultaneously.',
         'Copy any hash or paste an expected checksum to verify a match.'
       ],
+      features: [
+        'Supports industry-standard hashing algorithms: SHA-256, SHA-512, SHA-384, SHA-1, and MD5',
+        'Real-time cryptographic computation using the browser Web Crypto API',
+        'Checksum verification tool: compare computed hashes directly against an expected hash',
+        'Uppercase and lowercase hexadecimal digest format outputs with one-click copy'
+      ],
       faq: [
         {
-          question: 'Are hashes computed securely?',
-          answer: 'Yes, hashes are computed locally in your browser using hardware-accelerated Web Crypto API.'
+          question: 'What is the difference between SHA-256 and MD5?',
+          answer: 'SHA-256 is a modern, cryptographically secure hash function producing 256-bit digests. MD5 is an older 128-bit algorithm now used mainly for simple file integrity checks due to collision vulnerabilities.'
+        },
+        {
+          question: 'Can a cryptographic hash be reversed or decrypted?',
+          answer: 'No, cryptographic hashes are one-way mathematical functions designed so that the original input text cannot be mathematically derived from the resulting hash digest.'
+        },
+        {
+          question: 'Is my input text uploaded to a server to compute the hash?',
+          answer: 'No, all hashing calculations are performed locally inside your browser using the native Web Crypto API, keeping your secrets and passwords private.'
         }
       ]
     }
@@ -1099,7 +1491,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['unit-converter', 'temperature-converter', 'percentage-calculator'],
     seo: {
       title: 'Data Storage Converter — Bytes, KB, MB, GB, TB & Binary Units',
-      description: 'Convert digital storage across decimal (SI) and binary (IEC) units. See real-world photo, song, movie capacities and download time calculations.',
+      description: 'Convert between Decimal (Bytes, KB, MB, GB, TB, PB) and Binary (KiB, MiB, GiB, TiB) storage units with real-world download time and capacity estimates.',
       keywords: ['data storage converter', 'bytes to mb', 'gb to tb converter', 'binary storage converter'],
       h1: 'Data Storage & Bandwidth Converter',
       intro: 'Convert between decimal storage units (KB, MB, GB) and binary units (KiB, MiB, GiB) with real-world file capacity comparisons.',
@@ -1108,10 +1500,24 @@ export const TOOLS: Tool[] = [
         'View conversion results across all units simultaneously.',
         'Check estimated photos, songs, and download duration.'
       ],
+      features: [
+        'Full support for Decimal SI units (1000-based: KB, MB, GB, TB) and Binary IEC units (1024-based: KiB, MiB, GiB, TiB)',
+        'Simultaneous multi-unit matrix display converting your input across 12 storage units instantly',
+        'Download and transfer duration calculator across common internet connection bandwidths',
+        'High-precision float calculation with scientific notation for enterprise storage arrays'
+      ],
       faq: [
         {
-          question: 'What is the difference between GB and GiB?',
-          answer: '1 Gigabyte (GB) = 1,000,000,000 bytes (decimal base 1000), while 1 Gibibyte (GiB) = 1,073,741,824 bytes (binary base 1024).'
+          question: 'What is the difference between MB (Megabytes) and MiB (Mebibytes)?',
+          answer: '1 Megabyte (MB) equals 1,000,000 bytes (decimal base 10), while 1 Mebibyte (MiB) equals 1,048,576 bytes (binary base 2), which is why formatted disk capacities appear smaller in operating systems.'
+        },
+        {
+          question: 'Why does my hard drive show less capacity in Windows than advertised on the box?',
+          answer: 'Hard drive manufacturers market capacity using decimal gigabytes (1 GB = 1,000,000,000 bytes), while Windows reports capacity using binary gibibytes (1 GiB = 1,073,741,824 bytes).'
+        },
+        {
+          question: 'How do I calculate how long a file download will take?',
+          answer: 'Divide the file size in bits (Bytes × 8) by your internet download speed in bits per second (e.g., Mbps) to estimate total transfer time.'
         }
       ]
     }
@@ -1136,7 +1542,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['unit-converter', 'data-storage-converter', 'average-calculator'],
     seo: {
       title: 'Temperature Converter — Celsius, Fahrenheit, Kelvin & Rankine',
-      description: 'Convert temperatures across all major scales with exact formulas, live visual thermal gauge, and physical reference benchmarks.',
+      description: 'Convert temperatures between Celsius (°C), Fahrenheit (°F), Kelvin (K), Rankine (°R), and Réaumur with an interactive thermal gauge and physical reference points.',
       keywords: ['temperature converter', 'celsius to fahrenheit', 'kelvin to celsius'],
       h1: 'Temperature Converter',
       intro: 'Convert temperature values across Celsius, Fahrenheit, Kelvin, and Rankine with conversion formulas and thermal reference points.',
@@ -1145,10 +1551,24 @@ export const TOOLS: Tool[] = [
         'Review converted temperatures across all scales.',
         'Click physical thermal benchmarks to test notable temperatures.'
       ],
+      features: [
+        'Two-way real-time conversion across Celsius, Fahrenheit, Kelvin, Rankine, and Réaumur',
+        'Visual thermal gauge displaying the current temperature level relative to everyday physical states',
+        'Reference benchmarks table including Absolute Zero, Water Freezing, Human Body Temp, and Water Boiling',
+        'Adjustable decimal precision rounding with exact algebraic step breakdown'
+      ],
       faq: [
         {
           question: 'What is the formula to convert Celsius to Fahrenheit?',
-          answer: '°F = (°C × 9/5) + 32.'
+          answer: 'To convert Celsius to Fahrenheit, multiply by 9/5 (or 1.8) and add 32: °F = (°C × 9/5) + 32.'
+        },
+        {
+          question: 'What is Absolute Zero in Celsius and Fahrenheit?',
+          answer: 'Absolute Zero (0 Kelvin) is the theoretical temperature where all molecular motion ceases, corresponding to −273.15 °C or −459.67 °F.'
+        },
+        {
+          question: 'At what temperature are Celsius and Fahrenheit equal?',
+          answer: 'Celsius and Fahrenheit are exactly equal at −40 degrees (−40 °C = −40 °F).'
         }
       ]
     }
@@ -1160,7 +1580,7 @@ export const TOOLS: Tool[] = [
     name: 'PDF Merger',
     slug: 'pdf-merger',
     category: 'pdf',
-    description: 'Combine multiple PDF documents into a single organized file with custom ordering and fast client-side processing.',
+    description: 'Merge multiple PDF files into one document online for free. Drag and drop to reorder pages, combine files instantly, with zero server uploads for 100% privacy.',
     shortDesc: 'Merge multiple PDF files in custom order.',
     icon: 'Layers',
     keywords: ['pdf merger', 'combine pdf', 'merge pdf files', 'join pdf', 'pdf binder'],
@@ -1173,7 +1593,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['pdf-splitter', 'pdf-compressor', 'base64'],
     seo: {
       title: 'PDF Merger — Combine PDF Files Online for Free',
-      description: 'Merge multiple PDF files into one document in your web browser. 100% private, client-side, drag-and-drop ordering, zero uploads.',
+      description: 'Merge multiple PDF files into one document online for free. Drag and drop to reorder pages, combine files instantly, with zero server uploads for 100% privacy.',
       keywords: ['pdf merger', 'merge pdf', 'combine pdf files', 'join pdf online'],
       h1: 'PDF Merger',
       intro: 'Combine multiple PDF documents into a single organized file in seconds with drag-and-drop reordering, instant browser-side compilation, and zero server uploads.',
@@ -1182,14 +1602,24 @@ export const TOOLS: Tool[] = [
         'Rearrange the documents into your preferred page sequence using the up/down controls.',
         'Click "Merge PDFs" and download your newly combined document.'
       ],
+      features: [
+        'Combine unlimited PDF documents into a single organized PDF file',
+        'Interactive drag-and-drop file reordering to arrange your pages in exact sequence',
+        '100% client-side WebAssembly processing keeping your documents completely private',
+        'Preserves original vector quality, embedded fonts, and page bookmarks'
+      ],
       faq: [
         {
-          question: 'Are my PDF files uploaded to a remote server?',
-          answer: 'No. All PDF merging happens 100% locally in your browser memory using WebAssembly/JavaScript. Your documents never leave your machine.'
+          question: 'Are my uploaded PDF files saved on your servers?',
+          answer: 'No. All PDF merging occurs directly inside your web browser memory using client-side JavaScript. Your files are never uploaded to or stored on any server.'
         },
         {
-          question: 'Is there a limit on how many PDFs I can merge?',
-          answer: 'You can merge as many PDF files as your local browser memory can comfortably handle.'
+          question: 'Is there a limit on how many PDF files I can merge?',
+          answer: 'There are no artificial software limits. You can combine multiple PDF documents constrained only by your device\'s local available memory.'
+        },
+        {
+          question: 'Will the merged PDF file lose formatting or resolution?',
+          answer: 'No, the merge engine preserves original vector text, embedded image quality, color profiles, and document structure without degradation.'
         }
       ]
     }
@@ -1201,7 +1631,7 @@ export const TOOLS: Tool[] = [
     name: 'PDF Splitter',
     slug: 'pdf-splitter',
     category: 'pdf',
-    description: 'Extract specific pages or page ranges (e.g. 1-3, 5, 8-10) from any PDF document into a new standalone file.',
+    description: 'Split PDF files and extract specific pages online for free. Extract custom page ranges, split into single pages, or delete unwanted sheets with zero uploads.',
     shortDesc: 'Extract pages or split PDF by custom page ranges.',
     icon: 'Scissors',
     keywords: ['pdf splitter', 'extract pdf pages', 'split pdf', 'cut pdf', 'separate pdf pages'],
@@ -1214,7 +1644,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['pdf-merger', 'pdf-compressor', 'base64'],
     seo: {
       title: 'PDF Splitter — Extract Pages from PDF Online',
-      description: 'Extract specific pages or page ranges from PDF files online. Fast, private, browser-based PDF splitting with custom range syntax.',
+      description: 'Split PDF files and extract specific pages online for free. Extract custom page ranges, split into single pages, or delete unwanted sheets with zero uploads.',
       keywords: ['pdf splitter', 'split pdf', 'extract pdf pages', 'separate pdf'],
       h1: 'PDF Splitter',
       intro: 'Extract specific pages or custom ranges (such as 1-3, 5, 8-10) from any PDF file directly in your browser without uploading your files.',
@@ -1223,14 +1653,24 @@ export const TOOLS: Tool[] = [
         'Choose your page selection mode: Page Range Syntax (e.g. "1-3, 5") or Visual Page Grid.',
         'Click "Extract Pages" to generate and download your new PDF.'
       ],
+      features: [
+        'Extract custom page ranges (e.g. 1-3, 5, 8-12) or extract all pages as individual PDFs',
+        'Visual page grid preview allowing single-click selection and deletion of unwanted sheets',
+        'Client-side execution ensuring private financial and legal documents never leave your browser',
+        'Fast processing with instant single-click document download'
+      ],
       faq: [
         {
-          question: 'How do I specify multiple page ranges?',
-          answer: 'You can combine individual pages and ranges separated by commas, such as "1-3, 5, 7-10".'
+          question: 'How do I specify custom page ranges to extract from a PDF?',
+          answer: 'Enter page numbers and ranges separated by commas, such as "1-5, 8, 11-14", to extract those specific pages into a new combined PDF.'
         },
         {
-          question: 'Does splitting affect the quality of the pages?',
-          answer: 'No. The original page vectors, fonts, and images are preserved losslessly.'
+          question: 'Can I split a multi-page PDF into separate single-page files?',
+          answer: 'Yes, select the "Extract all pages" mode to break down your document into individual single-page PDF files.'
+        },
+        {
+          question: 'Is splitting confidential or password-free legal documents secure?',
+          answer: 'Yes, because the extraction runs locally in your browser memory, your files are never transmitted across the internet.'
         }
       ]
     }
@@ -1242,7 +1682,7 @@ export const TOOLS: Tool[] = [
     name: 'PDF Compressor',
     slug: 'pdf-compressor',
     category: 'pdf',
-    description: 'Optimize and compress PDF documents by cleaning object streams, removing unreferenced objects, and reducing file size.',
+    description: 'Compress and reduce PDF file sizes online for free. Optimize document streams and remove unreferenced objects without losing readability or text clarity.',
     shortDesc: 'Optimize and reduce PDF file size in browser.',
     icon: 'Minimize2',
     keywords: ['pdf compressor', 'reduce pdf size', 'shrink pdf', 'compress document', 'optimize pdf'],
@@ -1255,7 +1695,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['pdf-merger', 'pdf-splitter', 'base64'],
     seo: {
       title: 'PDF Compressor — Optimize & Reduce PDF File Size Online',
-      description: 'Compress and optimize PDF documents directly in your web browser. 100% private, transparent byte reduction metrics, zero server uploads.',
+      description: 'Compress and reduce PDF file sizes online for free. Optimize document streams and remove unreferenced objects without losing readability or text clarity.',
       keywords: ['pdf compressor', 'compress pdf', 'reduce pdf file size', 'optimize pdf online'],
       h1: 'PDF Compressor',
       intro: 'Optimize and compress PDF documents directly inside your browser. Re-encodes object streams, strips unused resources, and provides 100% genuine byte comparisons.',
@@ -1264,14 +1704,24 @@ export const TOOLS: Tool[] = [
         'Select your desired compression strength: Low (Highest Quality), Medium (Balanced), or High (Max Reduction).',
         'Click "Compress PDF", review the genuine byte reduction stats, and download your optimized document.'
       ],
+      features: [
+        'Client-side PDF stream optimization and redundant object cleanup',
+        'Real-time file size comparison displaying exact bytes saved and reduction percentage',
+        'Maintains vector typography and document structural integrity',
+        'Completely private with zero server uploads or external network requests'
+      ],
       faq: [
         {
-          question: 'Why does my PDF not reduce in size significantly?',
-          answer: 'PDFs that already contain highly compressed images or pure vector data may have little redundant metadata. Toolsbar provides transparent, genuine byte comparisons without faking metrics.'
+          question: 'How does in-browser PDF compression work?',
+          answer: 'The tool parses the PDF object tree, optimizes uncompressed text and metadata streams, removes redundant object references, and rebuilds a streamlined document.'
         },
         {
-          question: 'Are my confidential documents private?',
-          answer: 'Yes. All compression and stream optimization takes place strictly in your local browser memory.'
+          question: 'Will compressing my PDF reduce text readability?',
+          answer: 'No, vector text and line art retain 100% of their crispness and clarity while metadata and uncompressed data structures are optimized.'
+        },
+        {
+          question: 'Can I compress scanned PDF documents?',
+          answer: 'Yes, scanned PDFs will be optimized, though documents containing heavy raster images are best paired with image compression tools for maximum reduction.'
         }
       ]
     }
@@ -1296,7 +1746,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['image-resizer', 'webp-converter', 'png-to-jpg'],
     seo: {
       title: 'Image Compressor — Free In-Browser Photo & Image Compression',
-      description: 'Compress JPG, PNG, and WebP images directly in your browser with 100% privacy. Real calculated byte reductions and customizable quality presets.',
+      description: 'Compress JPG, PNG, and WebP images online for free. Reduce photo file sizes with custom quality controls, format conversion, and before/after comparisons.',
       keywords: ['image compressor', 'compress image online', 'reduce photo size', 'jpeg optimizer', 'png compressor'],
       h1: 'Image Compressor',
       intro: 'Optimize and reduce image file sizes locally in your browser. Features lossless/lossy encoding, WebP conversion, custom quality controls, and genuine before/after byte statistics.',
@@ -1306,11 +1756,17 @@ export const TOOLS: Tool[] = [
         'Optionally select an output format (WebP, JPEG, PNG) to maximize byte savings.',
         'Click "Compress Image", review side-by-side previews and genuine calculated metrics, and download your optimized image.'
       ],
+      features: [
+        'Adjustable compression quality slider with instant visual before-and-after comparison',
+        'Batch image compression supporting multiple photos simultaneously',
+        'Option to convert images to modern WebP format during compression for extra byte savings',
+        'Real-time metrics for original size, compressed size, and percentage saved'
+      ],
       faq: [
         {
           question: 'Are my images uploaded to any remote server?',
           answer: 'No. All image decoding, canvas manipulation, and compression encoding execute 100% locally in your browser memory.'
-        },
+    },
         {
           question: 'Why did my PNG not compress as much as a JPEG?',
           answer: 'PNG is an inherently lossless format. Toolsbar provides technically honest canvas processing: converting PNG to WebP or JPEG achieves significant compression without sacrificing visual quality.'
@@ -1329,7 +1785,7 @@ export const TOOLS: Tool[] = [
     name: 'Image Resizer',
     slug: 'image-resizer',
     category: 'images',
-    description: 'Resize photos and graphics by exact pixel dimensions, percentage scaling, or standard social media aspect ratios with bicubic smoothing.',
+    description: 'Resize photos and images online free. Scale dimensions by exact pixels or percentage, preserve aspect ratios, and choose social media resolution presets.',
     shortDesc: 'Resize photos by dimensions, scale percentage, or social presets.',
     icon: 'Maximize2',
     keywords: ['image resizer', 'resize photo', 'scale image', 'change picture dimensions', 'photo resize', 'social media image size'],
@@ -1342,7 +1798,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['image-compressor', 'webp-converter', 'jpg-to-png'],
     seo: {
       title: 'Image Resizer — Resize Photos Online Free with Aspect Lock',
-      description: 'Resize images by pixel dimensions or scale percentage without quality degradation. Supports aspect ratio locking, social presets, and instant download.',
+      description: 'Resize photos and images online free. Scale dimensions by exact pixels or percentage, preserve aspect ratios, and choose social media resolution presets.',
       keywords: ['image resizer', 'resize image online', 'photo dimension changer', 'aspect ratio resizer'],
       h1: 'Image Resizer',
       intro: 'Scale and resize images to exact dimensions for social media, avatars, banners, and websites with high-quality browser interpolation and aspect ratio locking.',
@@ -1352,14 +1808,24 @@ export const TOOLS: Tool[] = [
         'Keep aspect ratio locked to avoid distortion, or select a standard preset (1080p, Instagram Square, OpenGraph banner).',
         'Click "Resize Image" and download your newly scaled image.'
       ],
+      features: [
+        'Resize images by exact width/height in pixels or by percentage scaling (e.g. 50%, 75%)',
+        'Smart aspect ratio lock preventing image distortion and accidental stretching',
+        'Pre-configured resolution presets for social media (Instagram, YouTube, Twitter/X, Facebook)',
+        'High-quality bicubic smoothing canvas resampling for sharp, clear output'
+      ],
       faq: [
         {
-          question: 'Will resizing degrade image clarity?',
-          answer: 'Scaling down preserves sharpness using high-quality browser bicubic smoothing. Scaling up beyond original resolution will naturally produce softer pixels.'
+          question: 'How do I resize an image without distorting its proportions?',
+          answer: 'Keep the "Lock Aspect Ratio" toggle enabled. When you modify either the width or height, the other dimension calculates automatically to preserve proportions.'
         },
         {
-          question: 'Can I convert formats while resizing?',
-          answer: 'Yes. You can output to JPG, PNG, or WebP and adjust encoding quality directly from the settings panel.'
+          question: 'Can I resize photos to specific social media profile and cover sizes?',
+          answer: 'Yes, select from our built-in presets for YouTube thumbnails, Instagram posts, Twitter banners, and Facebook covers.'
+        },
+        {
+          question: 'Will enlarging a low-resolution photo reduce its sharpness?',
+          answer: 'Enlarging a raster image beyond its native resolution will naturally soften details. For best results, resize high-resolution originals down to target dimensions.'
         }
       ]
     }
@@ -1371,7 +1837,7 @@ export const TOOLS: Tool[] = [
     name: 'JPG to PNG Converter',
     slug: 'jpg-to-png',
     category: 'images',
-    description: 'Convert JPG and JPEG photos to lossless PNG format in seconds with 100% dimension preservation.',
+    description: 'Convert JPG and JPEG photos to lossless PNG format online for free. Fast, client-side conversion preserving 100% of original image dimensions and color depth.',
     shortDesc: 'Convert JPG photos to lossless PNG format.',
     icon: 'Image',
     keywords: ['jpg to png', 'jpeg to png', 'convert jpg to png', 'image format converter', 'lossless png'],
@@ -1384,7 +1850,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['png-to-jpg', 'webp-converter', 'image-compressor'],
     seo: {
       title: 'JPG to PNG Converter — Fast & Free Browser Image Conversion',
-      description: 'Convert JPG and JPEG images to lossless PNG format directly in your browser. Preserves exact pixel dimensions without server uploads.',
+      description: 'Convert JPG and JPEG photos to lossless PNG format online for free. Fast, client-side conversion preserving 100% of original image dimensions and color depth.',
       keywords: ['jpg to png', 'jpeg to png converter', 'convert jpeg to png online', 'lossless image conversion'],
       h1: 'JPG to PNG Converter',
       intro: 'Convert JPEG and JPG photographs into lossless PNG images with exact pixel fidelity and zero generational degradation.',
@@ -1394,14 +1860,24 @@ export const TOOLS: Tool[] = [
         'Click "Convert to PNG" to decode and re-encode to PNG format.',
         'Download your converted lossless PNG file.'
       ],
+      features: [
+        'Instant conversion from JPEG/JPG to lossless PNG raster format',
+        '100% preservation of original image dimensions, pixel density, and color profiles',
+        'Batch conversion support for converting multiple photos at once',
+        'Zero server upload processing for complete privacy and high-speed execution'
+      ],
       faq: [
         {
-          question: 'Why convert JPG to PNG?',
-          answer: 'PNG uses lossless compression, making it ideal for graphics, diagrams, and iterative editing where you want to prevent further lossy JPEG compression artifacts.'
+          question: 'Why should I convert a JPG to PNG format?',
+          answer: 'PNG uses lossless compression, making it the preferred format for graphic designs, screenshots, logos, and images that will be edited repeatedly without generational quality loss.'
         },
         {
-          question: 'Are my images secure?',
-          answer: 'Yes, conversion is performed client-side using browser Canvas APIs without transmitting data over the internet.'
+          question: 'Does converting JPG to PNG make the image transparent?',
+          answer: 'Converting a JPG to PNG enables PNG transparency support, but existing solid background pixels in the JPG must be made transparent in an image editor.'
+        },
+        {
+          question: 'Is there any quality loss when converting JPG to PNG?',
+          answer: 'No, PNG is a lossless format, so every pixel from the original JPEG image is preserved exactly without any secondary compression artifacts.'
         }
       ]
     }
@@ -1413,7 +1889,7 @@ export const TOOLS: Tool[] = [
     name: 'PNG to JPG Converter',
     slug: 'png-to-jpg',
     category: 'images',
-    description: 'Convert PNG images to compact JPG format with automatic transparency detection, custom background color fill, and quality controls.',
+    description: 'Convert PNG images to compact JPG format online for free. Features automatic transparency detection, custom background color fill, and quality controls.',
     shortDesc: 'Convert PNG images to JPG with custom background fills.',
     icon: 'Image',
     keywords: ['png to jpg', 'png to jpeg', 'convert png to jpg', 'remove transparency', 'png converter'],
@@ -1426,7 +1902,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['jpg-to-png', 'image-compressor', 'webp-converter'],
     seo: {
       title: 'PNG to JPG Converter — Convert PNG to JPEG with Background Color Fill',
-      description: 'Convert PNG graphics to compact JPG photographs with automatic transparency detection and customizable background fills. 100% private browser processing.',
+      description: 'Convert PNG images to compact JPG format online for free. Features automatic transparency detection, custom background color fill, and quality controls.',
       keywords: ['png to jpg', 'png to jpeg converter', 'convert png to jpg online', 'png background color fill'],
       h1: 'PNG to JPG Converter',
       intro: 'Transform heavy PNG images into lightweight JPG files. Features automated alpha transparency inspection, custom background color selection, and JPEG quality tuning.',
@@ -1436,14 +1912,24 @@ export const TOOLS: Tool[] = [
         'Adjust the JPEG encoding quality slider if desired.',
         'Click "Convert to JPG" and download your newly created JPEG image.'
       ],
+      features: [
+        'Convert PNG images to lightweight JPG/JPEG files with adjustable compression quality',
+        'Smart transparency handling: replace transparent PNG backgrounds with white, black, or custom colors',
+        'Real-time file size reduction metrics and side-by-side preview comparisons',
+        'Completely client-side processing keeping your graphics and screenshots private'
+      ],
       faq: [
         {
-          question: 'How does this tool handle transparent PNGs?',
-          answer: 'Because the JPEG format does not support alpha channels, Toolsbar automatically detects transparency and applies your chosen solid background color (default white) so your image never has black artifact borders.'
+          question: 'What happens to transparent areas in a PNG when converted to JPG?',
+          answer: 'Because the JPEG format does not support alpha transparency, transparent areas are automatically filled with your chosen background color (default is pure white).'
         },
         {
-          question: 'Can I control the output file size?',
-          answer: 'Yes. Use the quality slider (10% to 100%) to balance clarity and file size.'
+          question: 'How does converting PNG to JPG reduce file size?',
+          answer: 'JPEG uses lossy DCT compression optimized for photographs, often reducing PNG screenshot and photo file sizes by up to 70%.'
+        },
+        {
+          question: 'Can I customize the background color for converted graphics?',
+          answer: 'Yes, you can choose white, black, or enter any custom hex color code to seamlessly blend your transparent PNG onto your desired backdrop.'
         }
       ]
     }
@@ -1455,7 +1941,7 @@ export const TOOLS: Tool[] = [
     name: 'WebP Converter',
     slug: 'webp-converter',
     category: 'images',
-    description: 'Convert images between JPG, PNG, and modern WebP formats in both directions with quality controls and transparency preservation.',
+    description: 'Convert images to and from modern WebP format online. Transform JPG and PNG to WebP or WebP to JPG/PNG with transparency support and quality sliders.',
     shortDesc: 'Convert between JPG, PNG, and WebP formats.',
     icon: 'Sparkles',
     keywords: ['webp converter', 'jpg to webp', 'png to webp', 'webp to jpg', 'webp to png', 'convert webp'],
@@ -1468,7 +1954,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['image-compressor', 'image-resizer', 'jpg-to-png'],
     seo: {
       title: 'WebP Converter — Convert JPG, PNG, and WebP In Browser',
-      description: 'Free online WebP converter. Convert JPG/PNG to WebP for superior web performance, or convert WebP to JPG/PNG for universal desktop compatibility.',
+      description: 'Convert images to and from modern WebP format online. Transform JPG and PNG to WebP or WebP to JPG/PNG with transparency support and quality sliders.',
       keywords: ['webp converter', 'jpg to webp', 'png to webp', 'webp to png', 'webp to jpg converter'],
       h1: 'WebP Converter',
       intro: 'Convert seamlessly between standard photographic formats (JPG, PNG) and next-generation WebP. Reduces web page weight while preserving sharp image details.',
@@ -1478,14 +1964,24 @@ export const TOOLS: Tool[] = [
         'Fine-tune the encoding quality slider where applicable.',
         'Click "Convert Image" and download the converted output.'
       ],
+      features: [
+        'Two-way conversion: convert JPG/PNG into WebP or convert WebP images back into PNG/JPG',
+        'Full alpha transparency preservation when converting PNG to WebP',
+        'Configurable quality compression slider for fine-tuned balancing of byte size and fidelity',
+        'In-browser canvas processing ensuring instant conversion with zero server latency'
+      ],
       faq: [
         {
-          question: 'Why should I convert images to WebP?',
-          answer: 'WebP provides 25% to 35% smaller file sizes compared to JPEG and PNG at equivalent visual fidelity, speeding up website loading times.'
+          question: 'Why is WebP better than JPEG and PNG for websites?',
+          answer: 'WebP provides 25–35% smaller file sizes than JPEG at equivalent visual quality and supports both lossless compression and alpha transparency, improving website loading speeds.'
         },
         {
-          question: 'Can I convert WebP back to JPG or PNG?',
-          answer: 'Yes! Simply upload a WebP file, select JPG or PNG as the target format, and convert instantly.'
+          question: 'Do all modern web browsers support WebP images?',
+          answer: 'Yes, all modern web browsers (Chrome, Safari, Firefox, Edge, and mobile browsers) offer full native support for WebP images.'
+        },
+        {
+          question: 'Can I convert WebP images back into standard PNG or JPG files?',
+          answer: 'Yes, simply upload your WebP image, select PNG or JPG as the target format, and download your converted file instantly.'
         }
       ]
     }
@@ -1510,7 +2006,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['css-formatter', 'javascript-formatter', 'json-formatter'],
     seo: {
       title: 'HTML Formatter & Minifier — Clean & Beautify HTML Online Free',
-      description: 'Free browser-based HTML formatter and minifier. Indent, beautify, and minify HTML code with whitespace preservation for pre and textarea tags.',
+      description: 'Format, beautify, and minify HTML code online for free. Clean messy markup, configure custom indentations, and preserve pre/code blocks with zero server logs.',
       keywords: ['html formatter', 'html beautifier', 'html minifier online', 'format html code', 'prettify html'],
       h1: 'HTML Formatter & Minifier',
       intro: 'Clean, format, and optimize your HTML markup with configurable indentation (2 spaces, 4 spaces, tabs). Minify code safely without corrupting pre, code, script, or textarea blocks.',
@@ -1520,11 +2016,17 @@ export const TOOLS: Tool[] = [
         'Click "Beautify HTML" to reformat and indent, or "Minify HTML" to remove unnecessary bytes.',
         'Copy your formatted code or download it directly as an HTML file.'
       ],
+      features: [
+        'Beautify messy HTML markup with customizable 2-space, 4-space, or tab indentation',
+        'HTML minification mode stripping unnecessary whitespace and comments to reduce page weight',
+        'Smart tag preservation protecting <pre>, <textarea>, and <code> blocks from altered spacing',
+        'One-click clipboard copy and raw character reduction statistics'
+      ],
       faq: [
         {
           question: 'Does formatting guarantee valid HTML?',
           answer: 'No. The formatter indents and restructures your markup for legibility, but does not validate W3C semantic markup rules.'
-        },
+    },
         {
           question: 'Are spaces inside <pre> and <textarea> tags preserved during minification?',
           answer: 'Yes. Toolsbar uses sensitive token preservation to guarantee that whitespace inside <pre>, <textarea>, <script>, and <style> elements is never collapsed or stripped.'
@@ -1543,7 +2045,7 @@ export const TOOLS: Tool[] = [
     name: 'CSS Formatter & Minifier',
     slug: 'css-formatter',
     category: 'developer',
-    description: 'Beautify, indent, and minify CSS code with support for CSS3, @media queries, keyframes, custom properties, and calc().',
+    description: 'Beautify, indent, and minify CSS code online for free. Full support for modern CSS3, media queries, CSS variables, keyframe animations, and calc() syntax.',
     shortDesc: 'Format, beautify, and minify CSS stylesheets.',
     icon: 'Code2',
     keywords: ['css formatter', 'css beautifier', 'css minifier', 'format css', 'minify css', 'clean css', 'css pretty print', 'css optimizer'],
@@ -1556,7 +2058,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['html-formatter', 'javascript-formatter', 'json-formatter'],
     seo: {
       title: 'CSS Formatter & Minifier — Beautify & Optimize CSS Online Free',
-      description: 'Format, indent, and minify CSS stylesheets in your browser. Handles modern CSS3, media queries, animations, and CSS variables without corrupting URLs or strings.',
+      description: 'Beautify, indent, and minify CSS code online for free. Full support for modern CSS3, media queries, CSS variables, keyframe animations, and calc() syntax.',
       keywords: ['css formatter', 'css beautifier', 'css minifier online', 'format css stylesheet', 'clean css'],
       h1: 'CSS Formatter & Minifier',
       intro: 'Transform messy stylesheets into beautifully organized, readable CSS. Switch seamlessly to minification mode to compress stylesheets for high-performance production delivery.',
@@ -1566,14 +2068,24 @@ export const TOOLS: Tool[] = [
         'Click "Beautify CSS" to organize selectors and rules, or "Minify CSS" to strip non-essential whitespace.',
         'Review byte metrics, copy the result, or download your optimized .css file.'
       ],
+      features: [
+        'Beautify minified CSS with customizable indentation, selector spacing, and property alignment',
+        'High-efficiency CSS minifier removing comments, whitespace, and redundant semicolons',
+        'Full support for modern CSS3, @media queries, @keyframes, CSS custom properties, and grid syntax',
+        'Zero server dependencies with instant browser-based execution'
+      ],
       faq: [
         {
-          question: 'Does minification preserve font names and background URLs?',
-          answer: 'Yes. Toolsbar extracts string literals and url(...) definitions before processing so quoted font names and URLs are never altered or corrupted.'
+          question: 'What is the benefit of formatting vs minifying CSS stylesheets?',
+          answer: 'Formatted CSS is human-readable and easy to debug during development, while minified CSS removes all whitespace to reduce file size and accelerate page load times in production.'
         },
         {
-          question: 'Does this tool support CSS variables and media queries?',
-          answer: 'Yes. Modern CSS custom properties (--variable), @media rules, @supports, and @keyframes animations are fully supported.'
+          question: 'Does the formatter support nested CSS and modern @media queries?',
+          answer: 'Yes, the parser cleanly indents media query blocks, keyframes, pseudo-classes, and CSS variable declarations.'
+        },
+        {
+          question: 'Will minifying CSS alter property values or calculation formulas?',
+          answer: 'No, minification safely strips comments and formatting whitespace without modifying property names, calc() values, or unit declarations.'
         }
       ]
     }
@@ -1585,7 +2097,7 @@ export const TOOLS: Tool[] = [
     name: 'JavaScript Formatter & Minifier',
     slug: 'javascript-formatter',
     category: 'developer',
-    description: 'Format, beautify, and safely minify modern JavaScript with zero code execution and AST-level syntax safety.',
+    description: 'Format, beautify, and safely minify modern JavaScript online. Clean messy JS code with custom indentation, AST syntax safety, and zero server execution.',
     shortDesc: 'Format, beautify, and safely minify modern JavaScript code.',
     icon: 'Sparkles',
     keywords: ['javascript formatter', 'js beautifier', 'js minifier', 'format javascript', 'minify js', 'javascript optimizer', 'js pretty print'],
@@ -1598,7 +2110,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['json-formatter', 'html-formatter', 'css-formatter'],
     seo: {
       title: 'JavaScript Formatter & Minifier — Clean & Minify JS Online',
-      description: 'Format and minify JavaScript source code in your browser with zero execution risk. Supports ES6+, async/await, optional chaining, and arrow functions.',
+      description: 'Format, beautify, and safely minify modern JavaScript online. Clean messy JS code with custom indentation, AST syntax safety, and zero server execution.',
       keywords: ['javascript formatter', 'js beautifier', 'js minifier online', 'minify javascript', 'format js code'],
       h1: 'JavaScript Formatter & Minifier',
       intro: 'Format messy JavaScript code with clean indentation, or minify source code with industrial AST-level safety. Completely safe and runs 100% client-side with zero script execution.',
@@ -1608,14 +2120,24 @@ export const TOOLS: Tool[] = [
         'Click "Beautify JS" to re-indent, or "Minify JS" to produce safe, compressed production code.',
         'Inspect the character savings and download your script directly.'
       ],
+      features: [
+        'Beautify obfuscated or compressed JavaScript into clean, readable, standardized code',
+        'Safe client-side JS minifier stripping whitespace and comments without code execution risks',
+        'Full syntax support for ES6+, async/await, arrow functions, template literals, and optional chaining',
+        'Client-side AST parsing ensuring code confidentiality and zero remote execution'
+      ],
       faq: [
         {
-          question: 'Is my JavaScript code executed during formatting or minification?',
-          answer: 'Never. JavaScript is parsed purely as textual AST structures. Toolsbar enforces a strict zero-execution policy (no eval or Function calls).'
+          question: 'Is it safe to paste proprietary JavaScript code into this formatter?',
+          answer: 'Yes, because the tool executes entirely inside your browser sandbox and never transmits your source code across the internet.'
         },
         {
-          question: 'What happens if my code has a syntax error?',
-          answer: 'The tool detects the parsing error and displays a descriptive notice indicating the issue rather than generating corrupted code.'
+          question: 'Does this tool execute or run the formatted JavaScript?',
+          answer: 'No, the formatter parses and restructures code syntactically without executing any JavaScript statements or scripts.'
+        },
+        {
+          question: 'Which ECMAScript versions and modern syntax are supported?',
+          answer: 'The formatter supports modern ES6 through ES2024 features including arrow functions, class syntax, modules, destructuring, and optional chaining.'
         }
       ]
     }
@@ -1627,7 +2149,7 @@ export const TOOLS: Tool[] = [
     name: 'JWT Decoder',
     slug: 'jwt-decoder',
     category: 'developer',
-    description: 'Decode and inspect JSON Web Tokens (JWT) locally with header, payload, claim breakdowns, and expiration tracking.',
+    description: 'Decode and inspect JSON Web Tokens (JWT) locally in your browser. View header, payload claims, expiration timers, and signature status with zero logging.',
     shortDesc: 'Decode and inspect JSON Web Tokens (JWT) in your browser.',
     icon: 'KeyRound',
     keywords: ['jwt decoder', 'jwt inspector', 'decode jwt', 'jwt token viewer', 'json web token', 'jwt claims', 'jwt expiration'],
@@ -1640,7 +2162,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['base64', 'json-formatter', 'uuid-generator'],
     seo: {
       title: 'JWT Decoder — Free In-Browser JSON Web Token Inspector',
-      description: 'Decode and inspect JSON Web Tokens (JWT) entirely in your browser with 100% privacy. Inspect claims (iss, sub, exp, iat), expiration timers, and header parameters.',
+      description: 'Decode and inspect JSON Web Tokens (JWT) locally in your browser. View header, payload claims, expiration timers, and signature status with zero logging.',
       keywords: ['jwt decoder', 'decode jwt token', 'jwt inspector online', 'jwt payload viewer', 'jwt claims parser'],
       h1: 'JWT Decoder',
       intro: 'Inspect and decode JSON Web Tokens directly in your browser. View header parameters, payload claims, timestamps, and expiration status with guaranteed client-side privacy.',
@@ -1650,14 +2172,24 @@ export const TOOLS: Tool[] = [
         'Check the expiration card to see whether the token is currently valid or expired.',
         'Click the copy icons to copy JSON payloads or individual claim values.'
       ],
+      features: [
+        'Decode header and payload claims instantly into formatted, color-coded JSON objects',
+        'Live expiration status countdown tracking exp, nbf, and iat Unix timestamp claims',
+        'Automatic detection of signing algorithms (HS256, RS256, ES256, EdDSA)',
+        '100% private client-side decoding ensuring sensitive auth tokens are never transmitted'
+      ],
       faq: [
         {
-          question: 'Does this tool verify the JWT signature?',
-          answer: 'No. Decoding a JWT does not verify its cryptographic signature or authenticity. To verify a token, you must validate the signature using your secret key or public certificate.'
+          question: 'Is it safe to decode auth tokens containing sensitive user claims?',
+          answer: 'Yes. Unlike cloud-based decoders, Toolsbar decodes JWTs entirely within your browser memory using Base64URL decoding without making any backend API requests.'
         },
         {
-          question: 'Are my tokens stored or sent across the network?',
-          answer: 'Never. Decoding happens 100% in your browser memory. Tokens are never transmitted to external servers, logged, or saved to localStorage.'
+          question: 'Can this tool verify the cryptographic signature of a JWT?',
+          answer: 'The tool displays the signature algorithm and validates token structure. Cryptographic signature verification requires the corresponding public key or secret.'
+        },
+        {
+          question: 'What do standard JWT claims like exp, iat, and sub mean?',
+          answer: 'Standard claims defined in RFC 7519 include "exp" (expiration time), "iat" (issued at time), "sub" (subject/user ID), and "iss" (token issuer).'
         }
       ]
     }
@@ -1682,7 +2214,7 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['age-calculator', 'uuid-generator', 'regex-tester'],
     seo: {
       title: 'Unix Timestamp Converter — Epoch Time to Human Date Online',
-      description: 'Convert Unix timestamps (seconds & milliseconds) to human dates, UTC, ISO 8601, and local time zones. Convert dates back to epoch timestamps with real-time live clock.',
+      description: 'Convert Unix epoch timestamps to UTC, local dates, ISO 8601, and relative times, or convert human dates into epoch seconds and milliseconds in real time.',
       keywords: ['unix timestamp converter', 'epoch to date', 'date to epoch', 'unix time converter', 'epoch converter online'],
       h1: 'Unix Timestamp Converter',
       intro: 'Convert effortlessly between Unix epoch timestamps and human-readable dates in UTC, ISO 8601, and your local timezone. Features real-time live epoch clock, seconds/milliseconds auto-detection, and two-way conversion.',
@@ -1692,11 +2224,17 @@ export const TOOLS: Tool[] = [
         'View the converted UTC time, local time, ISO 8601 string, relative time, and day-of-year statistics.',
         'Click the copy icons to copy any format with a single click.'
       ],
+      features: [
+        'Two-way conversion: epoch timestamp to human date and human date picker to epoch timestamps',
+        'Live ticking Unix epoch clock displaying current time in seconds and milliseconds',
+        'Comprehensive time zone outputs: UTC, ISO 8601, RFC 2822, Local Time, and relative time elapsed',
+        'Automatic detection and handling of both 10-digit second and 13-digit millisecond epoch timestamps'
+      ],
       faq: [
         {
           question: 'What is a Unix timestamp?',
           answer: 'A Unix timestamp (or epoch time) is the number of seconds that have elapsed since January 1, 1970 at 00:00:00 UTC (the Unix Epoch), excluding leap seconds.'
-        },
+    },
         {
           question: 'How do I tell if a timestamp is in seconds or milliseconds?',
           answer: 'Standard Unix timestamps in seconds are typically 10 digits (e.g. 1771800000), while millisecond timestamps are 13 digits (e.g. 1771800000000). Toolsbar includes smart auto-detection with manual override.'
@@ -1727,11 +2265,17 @@ export const TOOLS: Tool[] = [
     relatedToolSlugs: ['base64', 'json-formatter', 'qr-generator'],
     seo: {
       title: 'Color Palette & Contrast Checker — Design Utilities',
-      description: 'Inspect colors, convert color models, and test accessible contrast ratios.',
+      description: 'Explore, generate, and extract harmonious color palettes and HEX/RGB/HSL codes online. Features contrast ratio checking and CSS/Tailwind export presets.',
       keywords: ['color picker', 'contrast checker', 'palette generator'],
       h1: 'Color Palette & Contrast Checker',
       intro: 'Explore color harmonies, convert between HEX, RGB, HSL, and ensure accessible contrast.',
       howToUse: ['Select base color.', 'Browse harmonious palettes.', 'Check contrast ratios.'],
+      features: [
+        'Interactive color palette generator with monochromatic, complementary, and triadic harmony rules',
+        'Live WCAG AA/AAA color contrast ratio accessibility checker',
+        'Export color schemes directly to CSS variables, Tailwind configuration, and JSON tokens',
+        'High-precision color space conversions: HEX, RGB, HSL, HSV, and CMYK'
+      ],
       faq: [{ question: 'What is WCAG AA standard?', answer: 'WCAG AA requires at least 4.5:1 contrast for normal body text.' }]
     }
   }
