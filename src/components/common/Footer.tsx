@@ -9,11 +9,11 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
-    <footer className="border-t border-slate-200/90 dark:border-white/[0.08] bg-white/70 dark:bg-[#030303]/80 backdrop-blur-2xl mt-24 py-16 text-slate-600 dark:text-neutral-400">
+    <footer className="border-t border-slate-200/90 dark:border-white/[0.08] bg-white/70 dark:bg-[#030303]/80 backdrop-blur-2xl mt-16 sm:mt-24 py-10 sm:py-16 text-slate-600 dark:text-neutral-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-200 dark:border-white/5">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-x-6 sm:gap-x-10 gap-y-8 sm:gap-y-10 pb-8 sm:pb-12 border-b border-slate-200 dark:border-white/5">
           {/* Brand Col */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="col-span-2 md:col-span-2 lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 p-[1px] shadow-lg shadow-indigo-600/20">
                 <div className="w-full h-full bg-white dark:bg-[#030303] rounded-[11px] flex items-center justify-center p-1.5">
@@ -36,49 +36,49 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
 
           {/* Quick Tools */}
-          <div className="space-y-3">
-            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white">Popular Utilities</span>
+          <div className="col-span-1 space-y-3">
+            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white block">Popular Utilities</span>
             <ul className="space-y-2 text-xs">
               <li>
-                <button onClick={() => onNavigate('tools/percentage-calculator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                <button onClick={() => onNavigate('tools/percentage-calculator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
                   Percentage Calculator
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('tools/age-calculator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                <button onClick={() => onNavigate('tools/age-calculator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
                   Age Calculator
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('tools/word-counter')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                <button onClick={() => onNavigate('tools/images-to-pdf')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Images to PDF
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('tools/text-to-pdf')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Text to PDF
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('tools/word-counter')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
                   Word Counter
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('tools/json-formatter')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
-                  JSON Formatter
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onNavigate('tools/qr-generator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                <button onClick={() => onNavigate('tools/qr-generator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
                   QR Code Generator
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onNavigate('tools/password-generator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
-                  Password Generator
                 </button>
               </li>
             </ul>
           </div>
 
           {/* Categories */}
-          <div className="space-y-3">
-            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white">Tool Categories</span>
+          <div className="col-span-1 space-y-3">
+            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white block">Tool Categories</span>
             <ul className="space-y-2 text-xs">
               {CATEGORIES.slice(0, 6).map((cat) => (
                 <li key={cat.id}>
-                  <button onClick={() => onNavigate(`category/${cat.id}`)} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                  <button onClick={() => onNavigate(`category/${cat.id}`)} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
                     {cat.name}
                   </button>
                 </li>
@@ -87,42 +87,33 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
 
           {/* Trust & Legal */}
-          <div className="space-y-3">
-            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white">Legal & Privacy</span>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <button onClick={() => onNavigate('privacy')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
-                  Privacy Policy
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onNavigate('terms')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
-                  Terms of Service
-                </button>
-              </li>
-              <li>
-                <button onClick={() => onNavigate('contact')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
-                  Contact Support
-                </button>
-              </li>
-              <li className="pt-1 text-slate-500 dark:text-neutral-500">Zero data upload on browser tools</li>
-              <li className="text-slate-500 dark:text-neutral-500">Cryptographically secure RNG</li>
-            </ul>
+          <div className="col-span-2 md:col-span-2 lg:col-span-1 space-y-3 text-center sm:text-left pt-2 sm:pt-0 border-t border-slate-200/60 dark:border-white/[0.04] sm:border-0">
+            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white block">Legal & Privacy</span>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start sm:flex-col sm:items-start gap-x-4 gap-y-2 sm:gap-y-2 text-xs">
+              <button onClick={() => onNavigate('privacy')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                Privacy Policy
+              </button>
+              <button onClick={() => onNavigate('terms')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                Terms of Service
+              </button>
+              <button onClick={() => onNavigate('contact')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+                Contact Support
+              </button>
+            </div>
+            <div className="pt-2 sm:pt-1 text-[11px] sm:text-xs text-slate-500 dark:text-neutral-500 flex flex-col items-center sm:items-start gap-1">
+              <span>Zero data upload on browser tools</span>
+              <span>Cryptographically secure RNG</span>
+            </div>
           </div>
         </div>
 
         {/* Bottom copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-neutral-500">
+        <div className="pt-6 sm:pt-8 flex flex-col items-center justify-center gap-1 text-xs text-slate-500 dark:text-neutral-500 text-center">
           <div>
-            &copy; {new Date().getFullYear()} Toolsbar. Everything you need. In one place.
+            &copy; {new Date().getFullYear()} Toolsbar
           </div>
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-x-4 gap-y-2">
-            <button onClick={() => onNavigate('tools')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Directory</button>
-            <button onClick={() => onNavigate('categories')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Categories</button>
-            <span>&bull;</span>
-            <button onClick={() => onNavigate('privacy')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Privacy Policy</button>
-            <button onClick={() => onNavigate('terms')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Terms of Service</button>
-            <button onClick={() => onNavigate('contact')} className="hover:text-slate-900 dark:hover:text-neutral-300 transition-colors cursor-pointer">Contact</button>
+          <div className="text-[11px] sm:text-xs text-slate-400 dark:text-neutral-500">
+            Everything You Need in One Place
           </div>
         </div>
       </div>
