@@ -39,9 +39,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
   ];
 
   return (
-    <div className="space-y-24 pb-20" id="home-view">
+    <div className="space-y-12 sm:space-y-20 pb-20" id="home-view">
       {/* Cinematic Hero Section */}
-      <section className="relative pt-32 pb-6 sm:pb-16 overflow-hidden">
+      <section className="relative pt-32 pb-0 sm:pb-2 overflow-hidden">
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
           {/* Top Pill */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] backdrop-blur-xl text-xs font-medium text-indigo-700 dark:text-indigo-300 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
