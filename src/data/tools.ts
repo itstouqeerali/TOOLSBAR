@@ -32,6 +32,8 @@ import { TemperatureConverter } from '../components/tools/TemperatureConverter';
 import { PdfMerger } from '../components/tools/PdfMerger';
 import { PdfSplitter } from '../components/tools/PdfSplitter';
 import { PdfCompressor } from '../components/tools/PdfCompressor';
+import { ImagesToPdf } from '../components/tools/ImagesToPdf';
+import { TextToPdf } from '../components/tools/TextToPdf';
 import { ImageCompressor } from '../components/tools/ImageCompressor';
 import { ImageResizer } from '../components/tools/ImageResizer';
 import { JpgToPng } from '../components/tools/JpgToPng';
@@ -1727,7 +1729,111 @@ export const TOOLS: Tool[] = [
     }
   },
 
-  // 34. Image Compressor
+  // 34. Images to PDF
+  {
+    id: 'images-to-pdf',
+    name: 'Images to PDF',
+    slug: 'images-to-pdf',
+    category: 'pdf',
+    description: 'Convert JPG, PNG, and WebP images into a single multi-page PDF document online for free. Reorder pages, adjust paper margins, and generate PDFs instantly with zero server uploads.',
+    shortDesc: 'Convert JPG, PNG & WebP images into a multi-page PDF.',
+    icon: 'FileImage',
+    keywords: ['images to pdf', 'jpg to pdf', 'png to pdf', 'convert image to pdf', 'image to pdf converter', 'combine photos to pdf', 'picture to pdf'],
+    popular: true,
+    featured: true,
+    badge: 'New',
+    status: 'ready',
+    isImplemented: true,
+    component: ImagesToPdf,
+    relatedToolSlugs: ['pdf-merger', 'pdf-compressor', 'image-compressor', 'jpg-to-png'],
+    seo: {
+      title: 'Images to PDF Converter — Free Online JPG & PNG to PDF',
+      description: 'Convert JPG, PNG, and WebP images into a single PDF document online for free. Reorder pages, choose page sizes, and export high-quality PDFs with zero server uploads.',
+      keywords: ['images to pdf', 'jpg to pdf converter', 'png to pdf online', 'convert pictures to pdf', 'photo to pdf'],
+      h1: 'Images to PDF Converter',
+      intro: 'Convert and combine multiple JPG, PNG, and WebP images into a single clean PDF document in seconds. Reorder pages, customize paper sizes and margins, with 100% private in-browser generation.',
+      howToUse: [
+        'Upload or drag & drop one or multiple JPG, PNG, or WebP images into the tool.',
+        'Adjust page sequence using the up/down arrows or add more pictures to the queue.',
+        'Customize document options including paper format (A4, US Letter, or Fit to Image), margins, and quality.',
+        'Click "Create PDF" and instantly download your combined PDF document.'
+      ],
+      features: [
+        'Convert unlimited JPG, PNG, WebP, GIF, and BMP images into a single multi-page PDF',
+        'Interactive page sequencing with instant preview thumbnails and reordering controls',
+        'Flexible document layout supporting standard A4, US Letter, custom image-fit sizes, and adjustable margins',
+        '100% client-side WebAssembly and canvas processing ensuring zero server uploads and total privacy'
+      ],
+      faq: [
+        {
+          question: 'Are my uploaded images sent to an external server or stored online?',
+          answer: 'No. All image processing and PDF assembly occur strictly within your web browser using client-side JavaScript. Your photos never leave your device.'
+        },
+        {
+          question: 'Can I combine different image formats (like JPG and PNG) in the same PDF?',
+          answer: 'Yes. You can mix and match JPG, PNG, WebP, and other standard image formats into a single unified PDF file.'
+        },
+        {
+          question: 'How do I ensure my images fit properly on standard A4 or Letter paper?',
+          answer: 'The tool automatically calculates proportional scaling to preserve your image\'s exact aspect ratio without stretching or unwanted cropping, fitting neatly inside the printable page margins.'
+        }
+      ]
+    }
+  },
+
+  // 35. Text to PDF
+  {
+    id: 'text-to-pdf',
+    name: 'Text to PDF',
+    slug: 'text-to-pdf',
+    category: 'pdf',
+    description: 'Convert plain text and notes into a clean, formatted multi-page PDF document online for free. Custom fonts, margins, headers, and 100% private browser generation.',
+    shortDesc: 'Convert plain text and notes into a formatted multi-page PDF.',
+    icon: 'FileText',
+    keywords: ['text to pdf', 'txt to pdf', 'convert text to pdf', 'plain text to pdf', 'text to pdf converter', 'online text to pdf', 'notes to pdf'],
+    popular: true,
+    featured: false,
+    badge: 'Popular',
+    status: 'ready',
+    isImplemented: true,
+    component: TextToPdf,
+    relatedToolSlugs: ['images-to-pdf', 'pdf-merger', 'pdf-splitter', 'pdf-compressor'],
+    seo: {
+      title: 'Text to PDF Converter — Free Online Plain Text to PDF',
+      description: 'Convert plain text and notes into a clean, formatted multi-page PDF document online for free. Custom fonts, margins, headers, and 100% private browser generation.',
+      keywords: ['text to pdf', 'txt to pdf converter', 'convert text to pdf online', 'plain text to pdf', 'make pdf from text'],
+      h1: 'Text to PDF Converter',
+      intro: 'Convert plain text and notes into clean, professionally formatted PDF documents directly in your browser. Customize page sizes, margins, fonts, and headers with zero server uploads.',
+      howToUse: [
+        'Type or paste your text into the multiline editor area.',
+        'Customize document parameters including page size (A4 / US Letter), orientation, margins, and font family.',
+        'Optionally add a running header title, footer text, or enable automated page numbers.',
+        'Click "Download PDF" to instantly generate and save your document.'
+      ],
+      features: [
+        'Smart automatic text wrapping and dynamic multi-page pagination that never crops lines',
+        'Comprehensive typography controls including standard PDF fonts, font size, line spacing, and text alignments',
+        'Optional running headers, custom footers, and automatic page numbers (e.g. Page 1 of 5)',
+        '100% client-side rendering in browser memory ensuring total data confidentiality and zero server uploads'
+      ],
+      faq: [
+        {
+          question: 'Is my text sent to a server or stored in the cloud during conversion?',
+          answer: 'No. All text parsing, layout calculation, and PDF document generation take place entirely inside your web browser using client-side JavaScript. Your text never leaves your device.'
+        },
+        {
+          question: 'How does the converter handle long text spanning multiple pages?',
+          answer: 'The conversion engine automatically calculates printable page bounds and wraps text cleanly across page boundaries, dynamically creating additional pages as needed without clipping or text truncation.'
+        },
+        {
+          question: 'Can I add document titles, running headers, or page numbering?',
+          answer: 'Yes. You can specify a custom header title, add footer notes, and toggle automatic page numbering (such as "Page 1 of 3") directly from the formatting controls panel.'
+        }
+      ]
+    }
+  },
+
+  // 36. Image Compressor
   {
     id: 'image-compressor',
     name: 'Image Compressor',
@@ -2290,8 +2396,60 @@ export const getToolsByCategory = (category: string): Tool[] => {
 };
 
 export const getPopularTools = (): Tool[] => {
-  // Only advertise tools that are actually functional and ready
-  return TOOLS.filter(t => t.popular && t.isImplemented && t.status === 'ready');
+  // Ordered popular tools priority:
+  // Position 1: Percentage Calculator
+  // Position 2: Age Calculator
+  // Position 3: Images to PDF
+  // Position 4: Text to PDF
+  // Position 5: Word Counter
+  // Position 6: QR Code Generator
+  // Position 7: PDF Compressor
+  // Position 8: Password Generator
+  const POPULAR_ORDER_SLUGS = [
+    'percentage-calculator',
+    'age-calculator',
+    'images-to-pdf',
+    'text-to-pdf',
+    'word-counter',
+    'qr-generator',
+    'pdf-compressor',
+    'password-generator',
+    'unit-converter',
+    'json-formatter',
+    'image-compressor',
+    'pdf-merger',
+    'bmi-calculator',
+    'base64',
+    'case-converter',
+    'character-counter',
+    'discount-calculator',
+    'average-calculator',
+    'compound-interest-calculator',
+    'loan-emi-calculator',
+    'pdf-splitter',
+    'image-resizer'
+  ];
+
+  const popularMap = new Map(
+    TOOLS.filter(t => (t.popular || POPULAR_ORDER_SLUGS.includes(t.slug)) && t.isImplemented && t.status === 'ready')
+      .map(t => [t.slug, t])
+  );
+
+  const ordered: Tool[] = [];
+  for (const slug of POPULAR_ORDER_SLUGS) {
+    const tool = popularMap.get(slug);
+    if (tool) {
+      ordered.push(tool);
+      popularMap.delete(slug);
+    }
+  }
+
+  // Append any other popular ready tools
+  for (const tool of popularMap.values()) {
+    ordered.push(tool);
+  }
+
+  return ordered;
 };
 
 export const getFeaturedTools = (): Tool[] => {

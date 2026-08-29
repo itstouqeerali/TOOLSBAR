@@ -6,7 +6,7 @@ import {
   Split, Landmark, TrendingUp, CreditCard, Receipt, ListFilter, 
   AlignLeft, ArrowUpDown, Link2, Minimize2, Globe, Fingerprint, 
   ShieldCheck, HardDrive, Thermometer, FileSpreadsheet, Image, 
-  Maximize2, Palette, Clock, Layers, Scissors, FileCode 
+  Maximize2, Palette, Clock, Layers, Scissors, FileCode, FileImage 
 } from 'lucide-react';
 import { TOOLS } from '../../data/tools';
 import { CATEGORIES } from '../../data/categories';
@@ -56,6 +56,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Layers,
   Scissors,
   FileCode,
+  FileImage,
   Clock,
 };
 

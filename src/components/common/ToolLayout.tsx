@@ -253,12 +253,12 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             {relatedTools.map((t) => (
               <div
                 key={t.id}
                 onClick={() => onNavigate(`tools/${t.slug}`)}
-                className="p-5 rounded-2xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-indigo-400 dark:bg-white/[0.025] dark:hover:bg-white/[0.055] dark:border-white/[0.08] dark:hover:border-indigo-500/40 cursor-pointer transition-all hover:-translate-y-1 flex flex-col justify-between group shadow-sm dark:shadow-none"
+                className="p-3.5 sm:p-5 rounded-2xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-indigo-400 dark:bg-white/[0.025] dark:hover:bg-white/[0.055] dark:border-white/[0.08] dark:hover:border-indigo-500/40 cursor-pointer transition-all hover:-translate-y-1 flex flex-col justify-between group shadow-sm dark:shadow-none"
               >
                 <div>
                   <h4 className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors">

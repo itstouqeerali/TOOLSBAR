@@ -256,6 +256,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://toolsbar.site/tools/images-to-pdf</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://toolsbar.site/tools/text-to-pdf</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://toolsbar.site/tools/image-compressor</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>

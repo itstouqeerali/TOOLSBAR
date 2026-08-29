@@ -70,7 +70,7 @@ export const CATEGORIES: Category[] = [
     slug: 'pdf',
     icon: 'FileSpreadsheet',
     description: 'Compress, merge, split, convert, and protect PDF files securely in browser.',
-    toolCount: 3,
+    toolCount: 5,
     colorAccent: 'from-red-500/20 to-amber-500/20'
   },
   {

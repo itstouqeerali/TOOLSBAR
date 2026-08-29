@@ -556,7 +556,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
               {favoriteTools.map((tool) => (
                 <ToolCard
                   key={tool.id}
@@ -615,7 +615,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {recentToolsWithMeta.map((item) => {
                 const tool = item.tool;
                 if (!tool) return null;
@@ -625,7 +625,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                   <div
                     key={item.slug}
                     onClick={() => onNavigate(`tools/${item.slug}`)}
-                    className="p-5 rounded-2xl bg-white dark:bg-[#0c0e17] border border-slate-200 dark:border-white/[0.08] hover:border-indigo-500/40 hover:shadow-lg transition-all flex flex-col justify-between group cursor-pointer"
+                    className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#0c0e17] border border-slate-200 dark:border-white/[0.08] hover:border-indigo-500/40 hover:shadow-lg transition-all flex flex-col justify-between group cursor-pointer"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px]">

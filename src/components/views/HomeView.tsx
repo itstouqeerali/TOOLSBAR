@@ -30,18 +30,18 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
   const quickPillSuggestions = [
     { label: 'Percentage Calculator', slug: 'percentage-calculator' },
     { label: 'Age Calculator', slug: 'age-calculator' },
+    { label: 'Images to PDF', slug: 'images-to-pdf' },
+    { label: 'Text to PDF', slug: 'text-to-pdf' },
     { label: 'Word Counter', slug: 'word-counter' },
     { label: 'QR Generator', slug: 'qr-generator' },
-    { label: 'JSON Formatter', slug: 'json-formatter' },
-    { label: 'Password Generator', slug: 'password-generator' },
-    { label: 'Unit Converter', slug: 'unit-converter' },
     { label: 'PDF Compressor', slug: 'pdf-compressor' },
+    { label: 'Password Generator', slug: 'password-generator' },
   ];
 
   return (
     <div className="space-y-24 pb-20" id="home-view">
       {/* Cinematic Hero Section */}
-      <section className="relative pt-32 pb-16 overflow-hidden">
+      <section className="relative pt-32 pb-6 sm:pb-16 overflow-hidden">
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
           {/* Top Pill */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] backdrop-blur-xl text-xs font-medium text-indigo-700 dark:text-indigo-300 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
@@ -120,7 +120,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {popularTools.slice(0, 8).map((tool) => (
             <ToolCard
               key={tool.id}
@@ -151,7 +151,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
           {CATEGORIES.map((category) => (
             <CategoryCard
               key={category.id}
@@ -181,7 +181,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {TOOLS.filter(t => t.isImplemented).map((tool) => (
             <ToolCard
               key={tool.id}
