@@ -79,24 +79,37 @@ interface PaginatedDoc {
 
 // Preset Color Palettes for toolbar
 const TEXT_COLORS = [
-  { name: 'Default Dark', value: '#0f172a' },
-  { name: 'Slate Gray', value: '#475569' },
-  { name: 'Indigo', value: '#4f46e5' },
-  { name: 'Blue', value: '#2563eb' },
-  { name: 'Emerald', value: '#059669' },
-  { name: 'Amber', value: '#d97706' },
-  { name: 'Rose', value: '#e11d48' },
-  { name: 'Purple', value: '#9333ea' },
+  { name: 'Black', value: '#000000' },
+  { name: 'Dark Gray', value: '#334155' },
+  { name: 'Gray', value: '#64748b' },
+  { name: 'White', value: '#ffffff' },
+  { name: 'Red', value: '#ef4444' },
+  { name: 'Orange', value: '#f97316' },
+  { name: 'Yellow', value: '#eab308' },
+  { name: 'Green', value: '#22c55e' },
+  { name: 'Teal', value: '#14b8a6' },
+  { name: 'Cyan', value: '#06b6d4' },
+  { name: 'Blue', value: '#3b82f6' },
+  { name: 'Indigo', value: '#6366f1' },
+  { name: 'Purple', value: '#a855f7' },
+  { name: 'Pink', value: '#ec4899' },
 ];
 
 const HIGHLIGHT_COLORS = [
-  { name: 'None', value: 'transparent', label: 'Clear' },
+  { name: 'Clear', value: 'transparent', label: 'Clear' },
   { name: 'Yellow', value: '#fef08a', label: 'Yellow' },
-  { name: 'Green', value: '#bbf7d0', label: 'Green' },
-  { name: 'Cyan', value: '#a5f3fc', label: 'Cyan' },
+  { name: 'Light Yellow', value: '#fef9c3', label: 'Light Yellow' },
   { name: 'Orange', value: '#fed7aa', label: 'Orange' },
+  { name: 'Peach', value: '#ffedd5', label: 'Peach' },
   { name: 'Pink', value: '#fbcfe8', label: 'Pink' },
-  { name: 'Purple', value: '#e9d5ff', label: 'Purple' },
+  { name: 'Red', value: '#fecaca', label: 'Red' },
+  { name: 'Green', value: '#bbf7d0', label: 'Green' },
+  { name: 'Emerald', value: '#a7f3d0', label: 'Emerald' },
+  { name: 'Cyan', value: '#a5f3fc', label: 'Cyan' },
+  { name: 'Blue', value: '#bfdbfe', label: 'Blue' },
+  { name: 'Lavender', value: '#e0e7ff', label: 'Lavender' },
+  { name: 'Purple', value: '#f3e8ff', label: 'Purple' },
+  { name: 'Gray', value: '#e2e8f0', label: 'Gray' },
 ];
 
 const FONT_SIZE_OPTIONS = [9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32];
@@ -157,6 +170,8 @@ export const TextToPdf: React.FC = () => {
   const [openDropdown, setOpenDropdown] = useState<'color' | 'highlight' | 'heading' | 'font' | 'fontSize' | 'link' | null>(null);
   const [linkInputUrl, setLinkInputUrl] = useState<string>('');
   const [savedSelectionRange, setSavedSelectionRange] = useState<Range | null>(null);
+  const savedSelectionRef = useRef<Range | null>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
 
   // Tab state for settings on smaller screens
   const [activeSettingsTab, setActiveSettingsTab] = useState<'page' | 'typography' | 'headerFooter'>('page');
@@ -166,6 +181,31 @@ export const TextToPdf: React.FC = () => {
     if (editorRef.current && !isInternalChange.current) {
       editorRef.current.innerHTML = editorHtml;
     }
+  }, []);
+
+  // Save current browser selection inside editor
+  const saveCurrentSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && editorRef.current) {
+      const range = sel.getRangeAt(0);
+      if (editorRef.current.contains(range.commonAncestorContainer)) {
+        savedSelectionRef.current = range.cloneRange();
+      }
+    }
+  }, []);
+
+  // Restore saved selection
+  const restoreSavedSelection = useCallback((): boolean => {
+    if (editorRef.current && savedSelectionRef.current) {
+      editorRef.current.focus();
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(savedSelectionRef.current.cloneRange());
+        return true;
+      }
+    }
+    return false;
   }, []);
 
   // Update selection style states when user clicks/moves cursor
@@ -200,7 +240,21 @@ export const TextToPdf: React.FC = () => {
         else if (tag === 'ol') currentList = 'ol';
 
         if (el.style.textAlign) {
-          currentAlign = el.style.textAlign as TextAlignOption;
+          let a = el.style.textAlign.toLowerCase();
+          if (a === 'start') a = 'left';
+          if (a === 'end') a = 'right';
+          if (['left', 'center', 'right', 'justify'].includes(a)) {
+            currentAlign = a as TextAlignOption;
+          }
+        } else if (el.getAttribute('align')) {
+          let a = (el.getAttribute('align') || '').toLowerCase();
+          if (a === 'start') a = 'left';
+          if (a === 'end') a = 'right';
+          if (['left', 'center', 'right', 'justify'].includes(a)) {
+            currentAlign = a as TextAlignOption;
+          }
+        } else if (tag === 'center') {
+          currentAlign = 'center';
         }
         if (el.style.fontFamily) {
           if (el.style.fontFamily.toLowerCase().includes('times') || el.style.fontFamily.toLowerCase().includes('serif')) {
@@ -242,6 +296,31 @@ export const TextToPdf: React.FC = () => {
       // benign queryCommand fallback
     }
   }, [defaultTextAlign, defaultFontFamily, defaultFontSize, defaultTextColor]);
+
+  // Listen for selection changes document-wide to keep savedSelection fresh
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      saveCurrentSelection();
+      updateActiveToolbarStates();
+    };
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, [saveCurrentSelection, updateActiveToolbarStates]);
+
+  // Close dropdowns when clicking outside toolbar
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
 
   // Clean up generated blob URL on unmount
   useEffect(() => {
@@ -288,6 +367,27 @@ export const TextToPdf: React.FC = () => {
     return rgb(isNaN(r) ? 0 : r, isNaN(g) ? 0 : g, isNaN(b) ? 0 : b);
   };
 
+  // Convert RGB string or short hex to standard #rrggbb format for HTML color inputs
+  const rgbOrHexToHex = (colorStr: string): string => {
+    if (!colorStr || colorStr === 'transparent') return '#000000';
+    if (colorStr.startsWith('#')) {
+      if (colorStr.length === 4) {
+        return `#${colorStr[1]}${colorStr[1]}${colorStr[2]}${colorStr[2]}${colorStr[3]}${colorStr[3]}`;
+      }
+      return colorStr.substring(0, 7);
+    }
+    if (colorStr.startsWith('rgb')) {
+      const match = colorStr.match(/\d+/g);
+      if (match && match.length >= 3) {
+        const r = Math.min(255, parseInt(match[0])).toString(16).padStart(2, '0');
+        const g = Math.min(255, parseInt(match[1])).toString(16).padStart(2, '0');
+        const b = Math.min(255, parseInt(match[2])).toString(16).padStart(2, '0');
+        return `#${r}${g}${b}`;
+      }
+    }
+    return '#000000';
+  };
+
   // Map font family to CSS font string for preview
   const getCssFontFamily = (family: FontFamilyOption) => {
     if (family === 'TimesRoman') return '"Times New Roman", Times, Georgia, serif';
@@ -295,8 +395,48 @@ export const TextToPdf: React.FC = () => {
     return 'Helvetica, Arial, sans-serif';
   };
 
+  // Extract any inline styles enclosing a node
+  const getInheritedInlineStyles = (node: Node | null): Record<string, string> => {
+    const styles: Record<string, string> = {};
+    let curr: HTMLElement | null = node?.nodeType === Node.TEXT_NODE ? node.parentElement : (node as HTMLElement | null);
+    while (curr && curr !== editorRef.current) {
+      const tag = curr.tagName.toLowerCase();
+      if (['p', 'div', 'h1', 'h2', 'h3', 'li', 'blockquote'].includes(tag)) break;
+
+      if (curr.style.fontFamily && !styles.fontFamily) styles.fontFamily = curr.style.fontFamily;
+      if (curr.style.fontSize && !styles.fontSize) styles.fontSize = curr.style.fontSize;
+      if (curr.style.color && !styles.color) styles.color = curr.style.color;
+      if (curr.style.backgroundColor && !styles.backgroundColor) styles.backgroundColor = curr.style.backgroundColor;
+      if (tag === 'mark' && !styles.backgroundColor) styles.backgroundColor = curr.style.backgroundColor || '#fef08a';
+      if ((tag === 'b' || tag === 'strong' || curr.style.fontWeight === 'bold') && !styles.fontWeight) styles.fontWeight = 'bold';
+      if ((tag === 'i' || tag === 'em' || curr.style.fontStyle === 'italic') && !styles.fontStyle) styles.fontStyle = 'italic';
+      if ((tag === 'u' || curr.style.textDecoration?.includes('underline')) && !styles.underline) styles.underline = 'underline';
+      if ((tag === 's' || tag === 'strike' || curr.style.textDecoration?.includes('line-through')) && !styles.strikethrough) styles.strikethrough = 'line-through';
+
+      curr = curr.parentElement;
+    }
+    return styles;
+  };
+
+  // Find enclosing block element for paragraph/heading alignment
+  const findEnclosingBlock = (node: Node | null): HTMLElement | null => {
+    let curr = node;
+    if (curr && curr.nodeType === Node.TEXT_NODE) {
+      curr = curr.parentElement;
+    }
+    while (curr && curr !== editorRef.current) {
+      const tag = (curr as HTMLElement).tagName.toLowerCase();
+      if (['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'blockquote', 'pre'].includes(tag)) {
+        return curr as HTMLElement;
+      }
+      curr = curr.parentElement;
+    }
+    return null;
+  };
+
   // Execute rich text formatting commands
   const executeCommand = (command: string, value: string | undefined = undefined) => {
+    restoreSavedSelection();
     if (!editorRef.current) return;
     editorRef.current.focus();
     document.execCommand(command, false, value);
@@ -304,40 +444,67 @@ export const TextToPdf: React.FC = () => {
     updateActiveToolbarStates();
   };
 
-  // Handle Selection-Specific Style Wrapping
+  // Handle Selection-Specific Style Wrapping (Font size, Font Family, Colors)
   const applyInlineStyle = (styleProp: string, styleValue: string) => {
+    restoreSavedSelection();
     if (!editorRef.current) return;
     editorRef.current.focus();
+
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      // No selection: update document-level default
-      if (styleProp === 'fontFamily') {
-        setDefaultFontFamily(styleValue as FontFamilyOption);
-      } else if (styleProp === 'fontSize') {
-        setDefaultFontSize(parseInt(styleValue));
-      } else if (styleProp === 'color') {
-        setDefaultTextColor(styleValue);
-      }
+      // No text selected: do not overwrite entire document settings
+      setOpenDropdown(null);
       return;
     }
 
     const range = selection.getRangeAt(0);
-    const span = document.createElement('span');
-    span.style.setProperty(styleProp, styleValue);
-    
-    try {
-      const contents = range.extractContents();
-      span.appendChild(contents);
-      range.insertNode(span);
 
-      // Re-select newly inserted element
-      const newRange = document.createRange();
-      newRange.selectNodeContents(span);
-      selection.removeAllRanges();
-      selection.addRange(newRange);
-    } catch {
+    // If native execCommand foreColor works cleanly, use it with styleWithCSS
+    if (styleProp === 'color') {
       document.execCommand('styleWithCSS', false, 'true');
-      if (styleProp === 'color') document.execCommand('foreColor', false, styleValue);
+      document.execCommand('foreColor', false, styleValue);
+    } else {
+      const span = document.createElement('span');
+
+      // Preserve existing surrounding inline formatting (bold, italic, etc.)
+      const inherited = getInheritedInlineStyles(range.commonAncestorContainer);
+      for (const [key, val] of Object.entries(inherited)) {
+        if (key === 'fontWeight') span.style.fontWeight = val;
+        else if (key === 'fontStyle') span.style.fontStyle = val;
+        else if (key === 'underline' || key === 'strikethrough') {
+          const currentDec = span.style.textDecoration || '';
+          span.style.textDecoration = `${currentDec} ${val}`.trim();
+        } else {
+          span.style.setProperty(key, val);
+        }
+      }
+
+      // Apply requested style
+      if (styleProp === 'fontFamily') {
+        const familyCss = styleValue === 'TimesRoman' 
+          ? '"Times New Roman", Times, Georgia, serif' 
+          : styleValue === 'Courier' 
+          ? '"Courier New", Courier, monospace' 
+          : 'Helvetica, Arial, sans-serif';
+        span.style.fontFamily = familyCss;
+      } else {
+        span.style.setProperty(styleProp, styleValue);
+      }
+
+      try {
+        const contents = range.extractContents();
+        span.appendChild(contents);
+        range.insertNode(span);
+
+        // Re-select newly styled element
+        const newRange = document.createRange();
+        newRange.selectNodeContents(span);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        savedSelectionRef.current = newRange.cloneRange();
+      } catch (err) {
+        console.error('Error applying inline style:', err);
+      }
     }
 
     handleEditorInput();
@@ -347,8 +514,10 @@ export const TextToPdf: React.FC = () => {
 
   // Apply Highlight
   const applyHighlight = (bgColor: string) => {
+    restoreSavedSelection();
     if (!editorRef.current) return;
     editorRef.current.focus();
+
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
       setOpenDropdown(null);
@@ -357,20 +526,54 @@ export const TextToPdf: React.FC = () => {
 
     const range = selection.getRangeAt(0);
     if (bgColor === 'transparent') {
-      document.execCommand('removeFormat', false);
+      document.execCommand('styleWithCSS', false, 'true');
+      document.execCommand('hiliteColor', false, 'transparent');
+      let curr: HTMLElement | null = range.commonAncestorContainer?.nodeType === Node.TEXT_NODE 
+        ? range.commonAncestorContainer.parentElement 
+        : (range.commonAncestorContainer as HTMLElement | null);
+      while (curr && curr !== editorRef.current) {
+        if (curr.tagName.toLowerCase() === 'mark' || curr.style.backgroundColor) {
+          curr.style.backgroundColor = 'transparent';
+        }
+        curr = curr.parentElement;
+      }
     } else {
       const mark = document.createElement('mark');
       mark.style.backgroundColor = bgColor;
       mark.style.padding = '2px 4px';
       mark.style.borderRadius = '3px';
+
+      // Preserve inherited styles
+      const inherited = getInheritedInlineStyles(range.commonAncestorContainer);
+      for (const [key, val] of Object.entries(inherited)) {
+        if (key !== 'backgroundColor') {
+          if (key === 'fontWeight') mark.style.fontWeight = val;
+          else if (key === 'fontStyle') mark.style.fontStyle = val;
+          else if (key === 'underline' || key === 'strikethrough') {
+            const currentDec = mark.style.textDecoration || '';
+            mark.style.textDecoration = `${currentDec} ${val}`.trim();
+          } else {
+            mark.style.setProperty(key, val);
+          }
+        }
+      }
+
       try {
         const contents = range.extractContents();
         mark.appendChild(contents);
         range.insertNode(mark);
+
+        const newRange = document.createRange();
+        newRange.selectNodeContents(mark);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        savedSelectionRef.current = newRange.cloneRange();
       } catch {
+        document.execCommand('styleWithCSS', false, 'true');
         document.execCommand('hiliteColor', false, bgColor);
       }
     }
+
     handleEditorInput();
     updateActiveToolbarStates();
     setOpenDropdown(null);
@@ -378,6 +581,7 @@ export const TextToPdf: React.FC = () => {
 
   // Format Block Heading / Paragraph
   const applyHeading = (headingTag: 'h1' | 'h2' | 'h3' | 'p') => {
+    restoreSavedSelection();
     if (!editorRef.current) return;
     editorRef.current.focus();
     document.execCommand('formatBlock', false, `<${headingTag}>`);
@@ -386,18 +590,42 @@ export const TextToPdf: React.FC = () => {
     setOpenDropdown(null);
   };
 
-  // Format Alignment
+  // Format Alignment - Targets only active block/paragraph, never the whole document
   const applyAlignment = (align: TextAlignOption) => {
+    restoreSavedSelection();
     if (!editorRef.current) return;
     editorRef.current.focus();
+
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      setDefaultTextAlign(align);
-    }
+    if (!selection || selection.rangeCount === 0) return;
+
+    document.execCommand('styleWithCSS', false, 'true');
     if (align === 'left') document.execCommand('justifyLeft', false);
     else if (align === 'center') document.execCommand('justifyCenter', false);
     else if (align === 'right') document.execCommand('justifyRight', false);
     else if (align === 'justify') document.execCommand('justifyFull', false);
+
+    // Ensure the enclosing paragraph/heading block explicitly stores textAlign
+    let enclosingBlock = findEnclosingBlock(selection.anchorNode);
+    if (!enclosingBlock || enclosingBlock === editorRef.current) {
+      document.execCommand('formatBlock', false, '<p>');
+      enclosingBlock = findEnclosingBlock(selection.anchorNode);
+    }
+    if (enclosingBlock && enclosingBlock !== editorRef.current) {
+      enclosingBlock.style.textAlign = align;
+    }
+
+    // For multi-block selections, apply alignment to all selected blocks
+    const activeRange = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+    if (activeRange && editorRef.current) {
+      const allBlocks = editorRef.current.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li, blockquote');
+      allBlocks.forEach((b) => {
+        if (selection.containsNode(b, true)) {
+          (b as HTMLElement).style.textAlign = align;
+        }
+      });
+    }
+
     handleEditorInput();
     updateActiveToolbarStates();
   };
@@ -506,8 +734,9 @@ export const TextToPdf: React.FC = () => {
         let strikethrough = inherited.strikethrough || tag === 's' || tag === 'strike' || tag === 'del' || el.style.textDecoration?.includes('line-through');
 
         let fontFamily = inherited.fontFamily;
-        if (el.style.fontFamily) {
-          const f = el.style.fontFamily.toLowerCase();
+        const fontAttr = el.style.fontFamily || el.getAttribute('face');
+        if (fontAttr) {
+          const f = fontAttr.toLowerCase();
           if (f.includes('times') || f.includes('serif')) fontFamily = 'TimesRoman';
           else if (f.includes('courier') || f.includes('mono')) fontFamily = 'Courier';
           else fontFamily = 'Helvetica';
@@ -517,10 +746,17 @@ export const TextToPdf: React.FC = () => {
         if (el.style.fontSize) {
           const pt = parseInt(el.style.fontSize);
           if (!isNaN(pt) && pt > 0) fontSizePt = pt;
+        } else if (el.getAttribute('size')) {
+          const sz = parseInt(el.getAttribute('size') || '');
+          if (!isNaN(sz)) {
+            const fontSizesMap: Record<number, number> = { 1: 9, 2: 10, 3: 12, 4: 14, 5: 18, 6: 24, 7: 32 };
+            if (fontSizesMap[sz]) fontSizePt = fontSizesMap[sz];
+          }
         }
 
-        let colorHex = el.style.color ? el.style.color : inherited.colorHex;
+        let colorHex = el.style.color || el.getAttribute('color') || inherited.colorHex;
         let bgColorHex = (tag === 'mark' || el.style.backgroundColor) ? (el.style.backgroundColor || '#fef08a') : inherited.bgColorHex;
+        if (bgColorHex === 'transparent') bgColorHex = null;
         let linkUrl = tag === 'a' ? (el.getAttribute('href') || null) : inherited.linkUrl;
 
         if (tag === 'br') {
@@ -551,7 +787,62 @@ export const TextToPdf: React.FC = () => {
 
     const processElementBlock = (el: HTMLElement, inheritedAlign: TextAlignOption = defaultTextAlign) => {
       const tag = el.tagName.toLowerCase();
-      let align = (el.style.textAlign as TextAlignOption) || inheritedAlign;
+      let rawAlign = (tag === 'center' 
+        ? 'center' 
+        : (el.style.textAlign as TextAlignOption) || (el.getAttribute('align') as TextAlignOption) || inheritedAlign) as string;
+      if (rawAlign === 'start') rawAlign = 'left';
+      if (rawAlign === 'end') rawAlign = 'right';
+      const align: TextAlignOption = (['left', 'center', 'right', 'justify'].includes(rawAlign) 
+        ? rawAlign 
+        : defaultTextAlign) as TextAlignOption;
+
+      // Calculate any indentation from blockquote or margin/padding styles
+      let indentLevel = 0;
+      let checkEl: HTMLElement | null = el;
+      while (checkEl && checkEl !== container) {
+        if (checkEl.tagName.toLowerCase() === 'blockquote') indentLevel++;
+        const ml = parseInt(checkEl.style.marginLeft || checkEl.style.paddingLeft || '0');
+        if (!isNaN(ml) && ml >= 20) {
+          indentLevel += Math.min(5, Math.floor(ml / 30));
+        }
+        checkEl = checkEl.parentElement;
+      }
+
+      // If el contains block-level child elements (and is not ul/ol), recurse on block children
+      const hasBlockChildren = Array.from(el.children).some(child => 
+        ['p', 'div', 'h1', 'h2', 'h3', 'ul', 'ol', 'hr', 'blockquote'].includes(child.tagName.toLowerCase())
+      );
+      if (hasBlockChildren && tag !== 'ul' && tag !== 'ol') {
+        for (const child of Array.from(el.childNodes)) {
+          if (child.nodeType === Node.ELEMENT_NODE) {
+            processElementBlock(child as HTMLElement, align);
+          } else if (child.nodeType === Node.TEXT_NODE) {
+            const text = child.textContent?.trim();
+            if (text) {
+              const spans = parseInlineNodes(child, {
+                fontFamily: defaultFontFamily,
+                fontSizePt: defaultFontSize,
+                bold: false,
+                italic: false,
+                underline: false,
+                strikethrough: false,
+                colorHex: defaultTextColor,
+                bgColorHex: null,
+                linkUrl: null
+              });
+              if (spans.length > 0) {
+                blocks.push({
+                  type: 'p',
+                  align,
+                  indent: indentLevel,
+                  spans
+                });
+              }
+            }
+          }
+        }
+        return;
+      }
 
       if (tag === 'h1' || tag === 'h2' || tag === 'h3') {
         const baseHSize = tag === 'h1' ? 22 : tag === 'h2' ? 16 : 14;
@@ -570,7 +861,7 @@ export const TextToPdf: React.FC = () => {
           blocks.push({
             type: tag,
             align,
-            indent: 0,
+            indent: indentLevel,
             spans
           });
         }
@@ -600,7 +891,7 @@ export const TextToPdf: React.FC = () => {
             blocks.push({
               type: isOrdered ? 'li-number' : 'li-bullet',
               align,
-              indent: 1,
+              indent: Math.max(1, indentLevel + 1),
               listIndex: isOrdered ? listIndex++ : undefined,
               spans
             });
@@ -623,7 +914,7 @@ export const TextToPdf: React.FC = () => {
           blocks.push({
             type: 'p',
             align,
-            indent: 0,
+            indent: indentLevel,
             spans
           });
         }
@@ -1042,11 +1333,24 @@ export const TextToPdf: React.FC = () => {
         for (const line of lines) {
           currentY -= line.lineHeightPt;
 
+          // Calculate exact line width based on embedded PDF font metrics
+          let trueLineWidth = 0;
+          for (const span of line.spans) {
+            if (!span.text) continue;
+            const safeText = span.text.replace(/[^\x00-\x7F\xA0-\xFF]/g, '?');
+            const spanFont = getPdfFont(span.fontFamily, span.bold, span.italic);
+            try {
+              trueLineWidth += spanFont.widthOfTextAtSize(safeText, span.fontSizePt);
+            } catch {
+              trueLineWidth += span.widthPt;
+            }
+          }
+
           let startX = marginPt + indentOffset;
           if (block.align === 'center') {
-            startX = marginPt + indentOffset + Math.max(0, (effectiveWidth - line.lineWidthPt) / 2);
+            startX = marginPt + indentOffset + Math.max(0, (effectiveWidth - trueLineWidth) / 2);
           } else if (block.align === 'right') {
-            startX = marginPt + indentOffset + Math.max(0, effectiveWidth - line.lineWidthPt);
+            startX = marginPt + indentOffset + Math.max(0, effectiveWidth - trueLineWidth);
           }
 
           // Draw list marker if applicable
@@ -1292,18 +1596,19 @@ export const TextToPdf: React.FC = () => {
                     textAlign: block.align,
                     paddingLeft: block.indent > 0 ? `${block.indent * 14}px` : undefined,
                   }}
-                  className="flex flex-col"
+                  className="w-full"
                 >
                   {lines.map((line, lIdx) => (
                     <div 
                       key={lIdx}
                       style={{
                         minHeight: `${line.lineHeightPt * 0.75}px`,
+                        textAlign: block.align,
                       }}
-                      className="flex items-baseline flex-wrap leading-normal"
+                      className="leading-normal w-full"
                     >
                       {line.listMarker && (
-                        <span className="font-bold text-[11px] mr-1.5 text-slate-700 select-none">
+                        <span className="font-bold text-[11px] mr-1.5 text-slate-700 select-none inline-block">
                           {line.listMarker}
                         </span>
                       )}
@@ -1318,6 +1623,7 @@ export const TextToPdf: React.FC = () => {
                           backgroundColor: span.bgColorHex || 'transparent',
                           padding: span.bgColorHex && span.bgColorHex !== 'transparent' ? '1px 3px' : undefined,
                           borderRadius: span.bgColorHex && span.bgColorHex !== 'transparent' ? '2px' : undefined,
+                          whiteSpace: 'pre-wrap',
                         };
 
                         return (
@@ -1421,12 +1727,15 @@ export const TextToPdf: React.FC = () => {
             </div>
 
             {/* Professional Rich-Text Formatting Toolbar */}
-            <div className="p-2 rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 flex flex-wrap items-center gap-1 sm:gap-1.5 select-none relative z-20">
-              
+            <div 
+              ref={toolbarRef}
+              className="p-2 rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 flex items-center gap-1 sm:gap-1.5 select-none relative z-20 overflow-x-auto scrollbar-thin"
+            >
               {/* Undo / Redo Group */}
-              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10">
+              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10 flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('undo')}
                   title="Undo (Ctrl+Z)"
                   aria-label="Undo"
@@ -1436,6 +1745,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('redo')}
                   title="Redo (Ctrl+Y)"
                   aria-label="Redo"
@@ -1446,9 +1756,10 @@ export const TextToPdf: React.FC = () => {
               </div>
 
               {/* Headings Dropdown */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setOpenDropdown(openDropdown === 'heading' ? null : 'heading')}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
@@ -1462,6 +1773,7 @@ export const TextToPdf: React.FC = () => {
                   <div className="absolute left-0 top-full mt-1 w-36 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-1.5 space-y-1 z-30 animate-in fade-in zoom-in-95">
                     <button
                       type="button"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyHeading('p')}
                       className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${activeStyles.heading === 'p' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'}`}
                     >
@@ -1469,6 +1781,7 @@ export const TextToPdf: React.FC = () => {
                     </button>
                     <button
                       type="button"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyHeading('h1')}
                       className={`w-full text-left px-3 py-1.5 rounded-xl text-sm font-bold transition-colors ${activeStyles.heading === 'h1' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
                     >
@@ -1476,6 +1789,7 @@ export const TextToPdf: React.FC = () => {
                     </button>
                     <button
                       type="button"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyHeading('h2')}
                       className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${activeStyles.heading === 'h2' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
                     >
@@ -1483,6 +1797,7 @@ export const TextToPdf: React.FC = () => {
                     </button>
                     <button
                       type="button"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyHeading('h3')}
                       className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${activeStyles.heading === 'h3' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
                     >
@@ -1493,9 +1808,10 @@ export const TextToPdf: React.FC = () => {
               </div>
 
               {/* Font Family Dropdown */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setOpenDropdown(openDropdown === 'font' ? null : 'font')}
                   className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
@@ -1509,6 +1825,7 @@ export const TextToPdf: React.FC = () => {
                   <div className="absolute left-0 top-full mt-1 w-44 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-1.5 space-y-1 z-30 animate-in fade-in zoom-in-95">
                     <button
                       type="button"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyInlineStyle('fontFamily', 'Helvetica')}
                       className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-sans text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
                     >
@@ -1516,6 +1833,7 @@ export const TextToPdf: React.FC = () => {
                     </button>
                     <button
                       type="button"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyInlineStyle('fontFamily', 'TimesRoman')}
                       className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-serif text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
                     >
@@ -1523,6 +1841,7 @@ export const TextToPdf: React.FC = () => {
                     </button>
                     <button
                       type="button"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyInlineStyle('fontFamily', 'Courier')}
                       className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-mono text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
                     >
@@ -1533,9 +1852,10 @@ export const TextToPdf: React.FC = () => {
               </div>
 
               {/* Font Size Dropdown */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setOpenDropdown(openDropdown === 'fontSize' ? null : 'fontSize')}
                   className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-mono font-semibold text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
@@ -1549,6 +1869,7 @@ export const TextToPdf: React.FC = () => {
                       <button
                         key={size}
                         type="button"
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => applyInlineStyle('fontSize', `${size}pt`)}
                         className={`w-full text-left px-2.5 py-1 rounded-xl text-xs font-mono transition-colors ${activeStyles.fontSize === size ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'}`}
                       >
@@ -1560,9 +1881,10 @@ export const TextToPdf: React.FC = () => {
               </div>
 
               {/* Bold, Italic, Underline, Strike Buttons Group */}
-              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10">
+              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10 flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('bold')}
                   title="Bold (Ctrl+B)"
                   aria-label="Bold"
@@ -1572,6 +1894,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('italic')}
                   title="Italic (Ctrl+I)"
                   aria-label="Italic"
@@ -1581,6 +1904,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('underline')}
                   title="Underline (Ctrl+U)"
                   aria-label="Underline"
@@ -1590,6 +1914,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('strikeThrough')}
                   title="Strikethrough"
                   aria-label="Strikethrough"
@@ -1600,9 +1925,10 @@ export const TextToPdf: React.FC = () => {
               </div>
 
               {/* Text Color Picker Dropdown */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setOpenDropdown(openDropdown === 'color' ? null : 'color')}
                   title="Text Color"
                   className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
@@ -1615,28 +1941,40 @@ export const TextToPdf: React.FC = () => {
                 </button>
 
                 {openDropdown === 'color' && (
-                  <div className="absolute left-0 top-full mt-1 w-44 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-2.5 space-y-2 z-30 animate-in fade-in zoom-in-95">
+                  <div className="absolute left-0 top-full mt-1 w-52 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-3 space-y-2.5 z-30 animate-in fade-in zoom-in-95">
                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Text Color</span>
-                    <div className="grid grid-cols-4 gap-1.5">
+                    <div className="grid grid-cols-5 gap-1.5">
                       {TEXT_COLORS.map((c) => (
                         <button
                           key={c.value}
                           type="button"
                           title={c.name}
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={() => applyInlineStyle('color', c.value)}
                           style={{ backgroundColor: c.value }}
                           className="w-7 h-7 rounded-lg border border-black/10 shadow-xs hover:scale-110 transition-transform cursor-pointer"
                         />
                       ))}
                     </div>
+                    <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-500">Custom Color</span>
+                      <input
+                        type="color"
+                        value={rgbOrHexToHex(activeStyles.color)}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onChange={(e) => applyInlineStyle('color', e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Highlighter Dropdown */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setOpenDropdown(openDropdown === 'highlight' ? null : 'highlight')}
                   title="Highlight Color"
                   className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
@@ -1649,14 +1987,15 @@ export const TextToPdf: React.FC = () => {
                 </button>
 
                 {openDropdown === 'highlight' && (
-                  <div className="absolute left-0 top-full mt-1 w-44 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-2.5 space-y-2 z-30 animate-in fade-in zoom-in-95">
+                  <div className="absolute left-0 top-full mt-1 w-52 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-3 space-y-2.5 z-30 animate-in fade-in zoom-in-95">
                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Text Highlight</span>
-                    <div className="grid grid-cols-4 gap-1.5">
+                    <div className="grid grid-cols-5 gap-1.5">
                       {HIGHLIGHT_COLORS.map((h) => (
                         <button
                           key={h.name}
                           type="button"
                           title={h.name}
+                          onMouseDown={(e) => e.preventDefault()}
                           onClick={() => applyHighlight(h.value)}
                           style={{ backgroundColor: h.value }}
                           className={`w-7 h-7 rounded-lg border border-slate-300 dark:border-white/20 shadow-xs hover:scale-110 transition-transform flex items-center justify-center text-[10px] font-bold cursor-pointer ${h.value === 'transparent' ? 'bg-slate-100 text-slate-500' : ''}`}
@@ -1665,14 +2004,25 @@ export const TextToPdf: React.FC = () => {
                         </button>
                       ))}
                     </div>
+                    <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+                      <span className="text-[11px] text-slate-500">Custom Highlight</span>
+                      <input
+                        type="color"
+                        value={activeStyles.highlight !== 'transparent' ? rgbOrHexToHex(activeStyles.highlight) : '#fef08a'}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onChange={(e) => applyHighlight(e.target.value)}
+                        className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Text Alignment Group */}
-              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10">
+              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10 flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => applyAlignment('left')}
                   title="Align Left"
                   aria-label="Align Left"
@@ -1682,6 +2032,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => applyAlignment('center')}
                   title="Align Center"
                   aria-label="Align Center"
@@ -1691,6 +2042,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => applyAlignment('right')}
                   title="Align Right"
                   aria-label="Align Right"
@@ -1700,6 +2052,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => applyAlignment('justify')}
                   title="Justify"
                   aria-label="Justify"
@@ -1710,9 +2063,10 @@ export const TextToPdf: React.FC = () => {
               </div>
 
               {/* Lists & Indentation Group */}
-              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10">
+              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10 flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('insertUnorderedList')}
                   title="Bulleted List"
                   aria-label="Bulleted List"
@@ -1722,6 +2076,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('insertOrderedList')}
                   title="Numbered List"
                   aria-label="Numbered List"
@@ -1731,6 +2086,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('outdent')}
                   title="Decrease Indent"
                   aria-label="Decrease Indent"
@@ -1740,6 +2096,7 @@ export const TextToPdf: React.FC = () => {
                 </button>
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={() => executeCommand('indent')}
                   title="Increase Indent"
                   aria-label="Increase Indent"
@@ -1750,9 +2107,10 @@ export const TextToPdf: React.FC = () => {
               </div>
 
               {/* Link Modal Dropdown */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   type="button"
+                  onMouseDown={(e) => e.preventDefault()}
                   onClick={handleOpenLinkModal}
                   title="Insert Hyperlink"
                   className="p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-300 transition-colors cursor-pointer"
@@ -1774,6 +2132,7 @@ export const TextToPdf: React.FC = () => {
                     <div className="flex items-center justify-end gap-2 pt-1">
                       <button
                         type="button"
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => setOpenDropdown(null)}
                         className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
                       >
@@ -1781,6 +2140,7 @@ export const TextToPdf: React.FC = () => {
                       </button>
                       <button
                         type="button"
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={handleApplyLink}
                         className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs cursor-pointer"
                       >
@@ -1794,10 +2154,11 @@ export const TextToPdf: React.FC = () => {
               {/* Clear Formatting */}
               <button
                 type="button"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => executeCommand('removeFormat')}
                 title="Clear Formatting"
                 aria-label="Clear Formatting"
-                className="p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-300 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-300 transition-colors cursor-pointer flex-shrink-0"
               >
                 <RemoveFormatting className="w-3.5 h-3.5" />
               </button>
@@ -1810,9 +2171,18 @@ export const TextToPdf: React.FC = () => {
                 contentEditable
                 suppressContentEditableWarning
                 onInput={handleEditorInput}
-                onKeyUp={updateActiveToolbarStates}
-                onMouseUp={updateActiveToolbarStates}
-                onFocus={updateActiveToolbarStates}
+                onKeyUp={() => {
+                  saveCurrentSelection();
+                  updateActiveToolbarStates();
+                }}
+                onMouseUp={() => {
+                  saveCurrentSelection();
+                  updateActiveToolbarStates();
+                }}
+                onFocus={() => {
+                  saveCurrentSelection();
+                  updateActiveToolbarStates();
+                }}
                 className="w-full min-h-[300px] max-h-[480px] overflow-y-auto p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 text-sm leading-relaxed transition-all prose dark:prose-invert max-w-none"
                 style={{
                   fontFamily: getCssFontFamily(defaultFontFamily),
