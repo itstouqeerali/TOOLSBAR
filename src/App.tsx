@@ -33,7 +33,7 @@ import {
   getCategorySEOMetadata, 
   getStaticRouteSEOMetadata 
 } from './utils/seo';
-import { isScreenEligibleForAds } from './utils/adSensePolicy';
+import { applyAdSenseRoutePolicy } from './utils/adSensePolicy';
 
 // Route Wrappers with Dynamic Per-Page SEO & JSON-LD Injection
 
@@ -318,15 +318,23 @@ function AppContent() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
-  // AdSense Route Policy: tracks active route and flags non-eligible screens (account, admin, etc.)
+  // Load AdSense only on real publisher-content routes. Unknown, private and unfinished
+  // routes are treated as non-eligible so Auto Ads cannot appear on empty screens.
   useEffect(() => {
-    const eligible = isScreenEligibleForAds(location.pathname);
-    if (eligible) {
-      document.body.removeAttribute('data-no-ads');
-    } else {
-      document.body.setAttribute('data-no-ads', 'true');
-    }
+    const path = location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+    const staticContentRoutes = ['/', '/tools', '/categories', '/popular', '/privacy', '/terms', '/contact'];
+    const toolMatch = path.match(/^\/tools\/([^/]+)$/);
+    const categoryMatch = path.match(/^\/category\/([^/]+)$/);
+    const hasSubstantialContent =
+      staticContentRoutes.includes(path) ||
+      (!!toolMatch && toolMatch[1] !== 'color-palette-picker' && !!getToolBySlug(toolMatch[1])) ||
+      (!!categoryMatch && CATEGORIES.some((category) =>
+        category.id === categoryMatch[1] || category.slug === categoryMatch[1]
+      ));
+
+    applyAdSenseRoutePolicy(path, { hasSubstantialContent });
   }, [location.pathname]);
+
 
   // Programmatic navigation handler with smooth scroll
   const handleNavigate = useCallback(

@@ -1,55 +1,122 @@
 /**
- * AdSense Content-Quality & Screen Eligibility Policy for Toolsbar
- * 
- * In accordance with Google AdSense Publisher Policies:
- * Google-served ads must NOT be shown on screens that have little/no publisher content
- * or are primarily behavioral, navigation, transactional, or administrative screens.
+ * Central AdSense eligibility policy for Toolsbar.
+ * Ads load only on publisher-content routes and are removed on private,
+ * administrative, error, empty-state, and unfinished screens.
  */
 
-export const NON_AD_ELIGIBLE_SCREENS = [
-  'auth',            // Sign In, Register, Password Reset modals or screens
-  'admin',           // Administration dashboard and metrics screens
-  'account',         // User profile, preferences, and security settings
-  'profile',         // Account management
-  'favorites',       // Personal saved tools list
-  'recent',          // Personal recently used tools list
-  '404',             // Not Found / missing route screens
-  'search-empty',    // Empty search results states
-  'loading',         // Blank loading skeletons and transition states
-  'privacy',         // Legal policy documentation
-  'terms',           // Terms of service documentation
-  'contact'          // Contact and feedback forms
+export const ADSENSE_PUBLISHER_ID = 'ca-pub-3775855691685423';
+
+const NON_AD_ROUTE_PREFIXES = [
+  '/account',
+  '/profile',
+  '/favorites',
+  '/recent',
+  '/admin',
+  '/auth',
+  '/login',
+  '/signup',
+  '/register',
 ] as const;
 
-export type NonAdEligibleScreen = typeof NON_AD_ELIGIBLE_SCREENS[number];
+const NON_AD_EXACT_ROUTES = [
+  '/404',
+  '/tools/color-palette-picker',
+] as const;
 
-/**
- * Checks whether a given view path or screen state qualifies for Google-served ad units.
- * AdSense policy requires substantial original publisher content.
- */
+function normalizePath(path: string): string {
+  const withoutQuery = path.toLowerCase().split('?')[0].split('#')[0];
+  const withLeadingSlash = withoutQuery.startsWith('/') ? withoutQuery : '/' + withoutQuery;
+  return withLeadingSlash.length > 1 && withLeadingSlash.endsWith('/')
+    ? withLeadingSlash.slice(0, -1)
+    : withLeadingSlash;
+}
+
 export function isScreenEligibleForAds(
   path: string,
   options?: {
     hasSubstantialContent?: boolean;
     isEmptyState?: boolean;
     isAdminOrAuth?: boolean;
+    isNotFound?: boolean;
+    isUnderConstruction?: boolean;
   }
 ): boolean {
-  if (options?.isAdminOrAuth || options?.isEmptyState) {
+  if (
+    options?.isAdminOrAuth ||
+    options?.isEmptyState ||
+    options?.isNotFound ||
+    options?.isUnderConstruction ||
+    options?.hasSubstantialContent === false
+  ) {
     return false;
   }
 
-  const cleanPath = path.toLowerCase().replace(/^\/+/, '').split('/')[0];
-
-  // Disqualify explicitly forbidden screen types
-  const isDisqualified = NON_AD_ELIGIBLE_SCREENS.some((screen) => cleanPath === screen);
-  if (isDisqualified) {
+  const normalized = normalizePath(path);
+  if (NON_AD_EXACT_ROUTES.includes(normalized as (typeof NON_AD_EXACT_ROUTES)[number])) {
     return false;
   }
 
-  // Only content-rich publisher surfaces qualify:
-  // - Valid tool pages with dedicated publisher guides
-  // - Category detail pages with comprehensive editorial overviews
-  // - Directory pages with full tool listings
-  return options?.hasSubstantialContent ?? true;
+  return !NON_AD_ROUTE_PREFIXES.some(
+    (prefix) => normalized === prefix || normalized.startsWith(prefix + '/')
+  );
+}
+
+function setRobotsNoIndex(enabled: boolean): void {
+  let robots = document.head.querySelector<HTMLMetaElement>('meta[data-toolsbar-route-robots="true"]');
+
+  if (enabled) {
+    if (!robots) {
+      robots = document.createElement('meta');
+      robots.name = 'robots';
+      robots.dataset.toolsbarRouteRobots = 'true';
+      document.head.appendChild(robots);
+    }
+    robots.content = 'noindex, nofollow';
+  } else {
+    robots?.remove();
+  }
+}
+
+function removeAdSense(): void {
+  document
+    .querySelectorAll<HTMLScriptElement>(
+      'script[data-toolsbar-adsense="true"], script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'
+    )
+    .forEach((node) => node.remove());
+
+  document
+    .querySelectorAll<HTMLElement>('ins.adsbygoogle, [data-ad-status], [id^="google_ads_"]')
+    .forEach((node) => node.remove());
+}
+
+function loadAdSense(): void {
+  const existing = document.head.querySelector<HTMLScriptElement>(
+    'script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'
+  );
+  if (existing) return;
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.crossOrigin = 'anonymous';
+  script.src =
+    'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' +
+    ADSENSE_PUBLISHER_ID;
+  document.head.appendChild(script);
+}
+
+export function applyAdSenseRoutePolicy(
+  path: string,
+  options?: Parameters<typeof isScreenEligibleForAds>[1]
+): void {
+  const eligible = isScreenEligibleForAds(path, options);
+
+  if (eligible) {
+    document.body.removeAttribute('data-no-ads');
+    setRobotsNoIndex(false);
+    loadAdSense();
+  } else {
+    document.body.setAttribute('data-no-ads', 'true');
+    setRobotsNoIndex(true);
+    removeAdSense();
+  }
 }
