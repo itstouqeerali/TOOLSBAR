@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, ArrowRight } from 'lucide-react';
+import { Layers, ArrowRight, Sparkles } from 'lucide-react';
 import { CATEGORIES } from '../../data/categories';
 import { TOOLS } from '../../data/tools';
 import { CategoryCard } from '../common/CategoryCard';
@@ -68,6 +68,28 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({ onNavigate }) =>
           );
         })}
       </div>
+
+      {/* Categories Hub Editorial Overview */}
+      <section className="mt-12 pt-10 border-t border-slate-200/80 dark:border-white/[0.08]" aria-labelledby="categories-hub-heading">
+        <div className="rounded-3xl p-6 sm:p-10 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-4 max-w-5xl">
+          <div className="space-y-1">
+            <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5" /> Functional Index
+            </span>
+            <h2 id="categories-hub-heading" className="text-xl sm:text-2xl font-bold font-display text-slate-900 dark:text-white">
+              Why Toolsbar Organizes Utilities by Discipline
+            </h2>
+          </div>
+          <div className="space-y-3 text-sm sm:text-base text-slate-700 dark:text-neutral-300 leading-relaxed">
+            <p>
+              Toolsbar organizes utilities into dedicated functional domains so you can quickly discover complementary tools for your current task. Grouping by discipline helps professionals and students work continuously without switching between disparate sites.
+            </p>
+            <p>
+              Our primary divisions address specific everyday workflows: computational engines for loans, interest, and percentages in Calculators & Math; text measurement, line deduplication, and typography converters in Text & Content; syntax formatters, token decoders, and regex analyzers in Developer Utilities; physical and digital unit conversions in Unit Converters; and client-side PDF merging, compression, and image optimization in Document and Media suites. Click any category card to explore its detailed capabilities, read practical use cases, and access every included utility directly.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

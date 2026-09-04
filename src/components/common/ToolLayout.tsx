@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ChevronRight, Sparkles, ShieldCheck, Lock, 
-  HelpCircle, Info, Share2, Check, ArrowRight,
-  BookOpen, Layers, Star 
+  Share2, Check, ArrowRight, Star, Layers 
 } from 'lucide-react';
 import { Tool } from '../../types';
 import { CATEGORIES } from '../../data/categories';
 import { TOOLS } from '../../data/tools';
 import { ToolPlaceholder } from '../tools/ToolPlaceholder';
+import { ToolPublisherContent } from './ToolPublisherContent';
 import { getCanonicalUrl } from '../../utils/seo';
 import { useAuth } from '../../context/AuthContext';
 
@@ -21,7 +21,6 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
   const { user, isFavorite, toggleFavorite, recordRecentTool } = useAuth();
   const category = CATEGORIES.find(c => c.id === tool.category);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   const favorited = isFavorite(tool.slug);
   const isReady = tool.isImplemented && tool.status !== 'coming-soon';
@@ -134,109 +133,8 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
         </div>
       </div>
 
-      {/* Educational & How-to Guides */}
-      {tool.seo.howToUse && tool.seo.howToUse.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-8 border-t border-slate-200 dark:border-white/[0.08]">
-          {/* How to use */}
-          <div className="lg:col-span-6 rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl space-y-5">
-            <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-              <BookOpen className="w-4 h-4" /> How to use {tool.name}
-            </span>
-
-            <ol className="space-y-4">
-              {tool.seo.howToUse.map((step, idx) => (
-                <li key={idx} className="flex items-start gap-3.5 text-sm text-slate-700 dark:text-neutral-300 leading-relaxed">
-                  <span className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center font-mono font-bold text-xs shrink-0 mt-0.5">
-                    {idx + 1}
-                  </span>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          {/* Key Features & Privacy Architecture */}
-          <div className="lg:col-span-6 rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl space-y-4 flex flex-col justify-between">
-            <div className="space-y-3">
-              <span className="text-xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4" /> Key Features & Capabilities
-              </span>
-              {tool.seo.features && tool.seo.features.length > 0 ? (
-                <ul className="space-y-2 text-sm text-slate-700 dark:text-neutral-300">
-                  {tool.seo.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
-                      <span className="text-indigo-600 dark:text-indigo-400 font-bold select-none shrink-0">•</span>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-slate-700 dark:text-neutral-300 leading-relaxed">
-                  All data, calculations, and conversions performed in {tool.name} happen exclusively in your local device's memory. We do not store, monitor, or transmit your inputs to external servers.
-                </p>
-              )}
-            </div>
-
-            <div className="pt-4 border-t border-slate-200 dark:border-white/[0.06] grid grid-cols-2 gap-2.5 text-xs text-slate-500 dark:text-neutral-400">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Client-side execution</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Works offline</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Zero server logs</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Free & unthrottled</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Frequently Asked Questions */}
-      {tool.seo.faq && tool.seo.faq.length > 0 && (
-        <div className="rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl space-y-6">
-          <div className="space-y-1">
-            <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-              <HelpCircle className="w-4 h-4" /> Frequently Asked Questions
-            </span>
-            <h2 className="text-xl font-bold font-display text-slate-900 dark:text-white">Everything you need to know</h2>
-          </div>
-
-          <div className="space-y-3">
-            {tool.seo.faq.map((item, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-slate-50/70 dark:bg-white/[0.02] overflow-hidden transition-colors"
-                >
-                  <button
-                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full p-4 text-left flex items-center justify-between text-sm font-semibold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer"
-                  >
-                    <span>{item.question}</span>
-                    <span className="text-indigo-600 dark:text-indigo-400 text-base font-bold ml-2">
-                      {isOpen ? '−' : '+'}
-                    </span>
-                  </button>
-                  {isOpen && (
-                    <div className="px-4 pb-4 text-xs sm:text-sm text-slate-600 dark:text-neutral-300 leading-relaxed border-t border-slate-200 dark:border-white/[0.06] pt-3">
-                      {item.answer}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {/* Structured Semantic Publisher Content (About, How to use, Examples, Features, Notes, FAQ) */}
+      <ToolPublisherContent tool={tool} />
 
       {/* Related Tools */}
       {relatedTools.length > 0 && (

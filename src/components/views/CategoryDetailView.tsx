@@ -80,6 +80,67 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category
           ))}
         </div>
       </div>
+
+      {/* Semantic Publisher Editorial Guide for this Category */}
+      {category.editorial && (
+        <article
+          className="rounded-3xl p-6 sm:p-10 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm dark:shadow-xl space-y-8 mt-12"
+          aria-labelledby="category-guide-title"
+        >
+          <div className="space-y-3">
+            <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5" /> Category Guide & Reference
+            </span>
+            <h2 id="category-guide-title" className="text-2xl sm:text-3xl font-bold font-display text-slate-900 dark:text-white">
+              About {category.name} on Toolsbar
+            </h2>
+            <p className="text-sm sm:text-base text-slate-700 dark:text-neutral-300 leading-relaxed max-w-4xl">
+              {category.editorial.overview}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            {/* Key Capabilities */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.06] space-y-4">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                Key Capabilities & Features
+              </h3>
+              <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-neutral-300">
+                {category.editorial.keyCapabilities.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold select-none shrink-0">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Practical Use Cases & Tasks */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.06] space-y-4">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Practical Everyday Use Cases
+              </h3>
+              <ul className="space-y-2.5 text-xs sm:text-sm text-slate-600 dark:text-neutral-300">
+                {category.editorial.practicalUseCases.map((useCase, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold select-none shrink-0">•</span>
+                    <span>{useCase}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {category.editorial.helpfulNote && (
+            <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/20 border border-indigo-200/80 dark:border-indigo-800/30 text-xs sm:text-sm text-slate-700 dark:text-indigo-200/90 leading-relaxed flex items-start gap-3">
+              <span className="font-semibold text-indigo-700 dark:text-indigo-300 shrink-0">Note:</span>
+              <p>{category.editorial.helpfulNote}</p>
+            </div>
+          )}
+        </article>
+      )}
     </div>
   );
 };

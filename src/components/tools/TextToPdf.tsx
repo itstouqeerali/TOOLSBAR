@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   FileText, Download, RefreshCw, AlertCircle, CheckCircle2, 
-  ShieldCheck, Trash2, Settings, Eye, Sliders, Sparkles, 
+  ShieldCheck, Trash2, Settings, Sliders, Sparkles, 
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Copy, Check,
-  ZoomIn, ZoomOut, ChevronLeft, ChevronRight,
   Bold, Italic, Underline, Strikethrough, Highlighter, Type, Palette,
   List, ListOrdered, Indent, Outdent, Link2, RemoveFormatting,
   Undo2, Redo2, Heading1, Heading2, Heading3, ChevronDown, Plus, Minus
 } from 'lucide-react';
 import { PDFDocument, StandardFonts, rgb, RGB } from 'pdf-lib';
 
-export type PageSizeOption = 'a4' | 'letter';
+export type PageSizeOption = 'a4' | 'letter' | 'legal';
 export type PageOrientationOption = 'portrait' | 'landscape';
 export type MarginOption = 'compact' | 'standard' | 'wide';
 export type FontFamilyOption = 'Helvetica' | 'TimesRoman' | 'Courier';
@@ -81,18 +81,24 @@ interface PaginatedDoc {
 const TEXT_COLORS = [
   { name: 'Black', value: '#000000' },
   { name: 'Dark Gray', value: '#334155' },
+  { name: 'Slate', value: '#475569' },
   { name: 'Gray', value: '#64748b' },
+  { name: 'Light Gray', value: '#94a3b8' },
   { name: 'White', value: '#ffffff' },
   { name: 'Red', value: '#ef4444' },
+  { name: 'Crimson', value: '#b91c1c' },
   { name: 'Orange', value: '#f97316' },
+  { name: 'Amber', value: '#d97706' },
   { name: 'Yellow', value: '#eab308' },
   { name: 'Green', value: '#22c55e' },
+  { name: 'Emerald', value: '#059669' },
   { name: 'Teal', value: '#14b8a6' },
   { name: 'Cyan', value: '#06b6d4' },
   { name: 'Blue', value: '#3b82f6' },
   { name: 'Indigo', value: '#6366f1' },
   { name: 'Purple', value: '#a855f7' },
   { name: 'Pink', value: '#ec4899' },
+  { name: 'Rose', value: '#f43f5e' },
 ];
 
 const HIGHLIGHT_COLORS = [
@@ -102,17 +108,17 @@ const HIGHLIGHT_COLORS = [
   { name: 'Orange', value: '#fed7aa', label: 'Orange' },
   { name: 'Peach', value: '#ffedd5', label: 'Peach' },
   { name: 'Pink', value: '#fbcfe8', label: 'Pink' },
-  { name: 'Red', value: '#fecaca', label: 'Red' },
-  { name: 'Green', value: '#bbf7d0', label: 'Green' },
+  { name: 'Rose', value: '#fecdd3', label: 'Rose' },
+  { name: 'Light Green', value: '#bbf7d0', label: 'Light Green' },
   { name: 'Emerald', value: '#a7f3d0', label: 'Emerald' },
   { name: 'Cyan', value: '#a5f3fc', label: 'Cyan' },
-  { name: 'Blue', value: '#bfdbfe', label: 'Blue' },
+  { name: 'Light Blue', value: '#bfdbfe', label: 'Light Blue' },
   { name: 'Lavender', value: '#e0e7ff', label: 'Lavender' },
   { name: 'Purple', value: '#f3e8ff', label: 'Purple' },
   { name: 'Gray', value: '#e2e8f0', label: 'Gray' },
 ];
 
-const FONT_SIZE_OPTIONS = [9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32];
+const FONT_SIZE_OPTIONS = [9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 36];
 
 export const TextToPdf: React.FC = () => {
   // Rich HTML content
@@ -135,11 +141,7 @@ export const TextToPdf: React.FC = () => {
   const [footerText, setFooterText] = useState<string>('');
   const [includePageNumbers, setIncludePageNumbers] = useState<boolean>(true);
   const [pdfFileName, setPdfFileName] = useState<string>('toolsbar-document.pdf');
-
-  // Preview Controls
-  const [previewZoom, setPreviewZoom] = useState<number>(100);
-  const [currentPageIndex, setCurrentPageIndex] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<'single' | 'all'>('single');
+  const [showSettingsDrawer, setShowSettingsDrawer] = useState<boolean>(false);
 
   // Operation States
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -166,14 +168,15 @@ export const TextToPdf: React.FC = () => {
     highlight: 'transparent',
   });
 
-  // Dropdown Popovers state
+  // Dropdown Popovers state & Trigger bounds for Portal rendering
   const [openDropdown, setOpenDropdown] = useState<'color' | 'highlight' | 'heading' | 'font' | 'fontSize' | 'link' | null>(null);
+  const [dropdownTriggerRect, setDropdownTriggerRect] = useState<DOMRect | null>(null);
   const [linkInputUrl, setLinkInputUrl] = useState<string>('');
   const [savedSelectionRange, setSavedSelectionRange] = useState<Range | null>(null);
   const savedSelectionRef = useRef<Range | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
-  // Tab state for settings on smaller screens
+  // Tab state for settings
   const [activeSettingsTab, setActiveSettingsTab] = useState<'page' | 'typography' | 'headerFooter'>('page');
 
   // Sync editor HTML when loaded initially
@@ -182,6 +185,33 @@ export const TextToPdf: React.FC = () => {
       editorRef.current.innerHTML = editorHtml;
     }
   }, []);
+
+  // Global click & escape listener to close portal dropdowns cleanly
+  useEffect(() => {
+    if (!openDropdown) return;
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('[data-popover-portal]') || target?.closest('[data-popover-trigger]')) {
+        return;
+      }
+      setOpenDropdown(null);
+      setDropdownTriggerRect(null);
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpenDropdown(null);
+        setDropdownTriggerRect(null);
+      }
+    };
+    window.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('touchstart', handlePointerDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('mousedown', handlePointerDown);
+      window.removeEventListener('touchstart', handlePointerDown);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [openDropdown]);
 
   // Save current browser selection inside editor
   const saveCurrentSelection = useCallback(() => {
@@ -678,6 +708,44 @@ export const TextToPdf: React.FC = () => {
     }
   };
 
+  // Safe normalized multiline paste handler to preserve sensible paragraphs
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    if (!text) return;
+
+    const paragraphs = text.split(/\r\n|\r|\n/);
+    if (paragraphs.length <= 1) {
+      document.execCommand('insertText', false, text);
+    } else {
+      const fragment = document.createDocumentFragment();
+      paragraphs.forEach((pText) => {
+        const p = document.createElement('p');
+        if (pText.trim().length === 0) {
+          p.appendChild(document.createElement('br'));
+        } else {
+          p.textContent = pText;
+        }
+        fragment.appendChild(p);
+      });
+
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(fragment);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } else {
+        document.execCommand('insertText', false, text);
+      }
+    }
+
+    handleEditorInput();
+    updateActiveToolbarStates();
+  };
+
   // Character & Word counts from rendered text
   const stats = useMemo(() => {
     const div = document.createElement('div');
@@ -974,8 +1042,8 @@ export const TextToPdf: React.FC = () => {
   // Pagination & Layout Engine
   const paginatedDoc = useMemo<PaginatedDoc>(() => {
     // 1. Base page dimensions in points (72 pt per inch)
-    const baseW = pageSize === 'letter' ? 612 : 595.28;
-    const baseH = pageSize === 'letter' ? 792 : 841.89;
+    const baseW = pageSize === 'letter' ? 612 : pageSize === 'legal' ? 612 : 595.28;
+    const baseH = pageSize === 'letter' ? 792 : pageSize === 'legal' ? 1008 : 841.89;
 
     const pageWidthPt = orientation === 'landscape' ? Math.max(baseW, baseH) : Math.min(baseW, baseH);
     const pageHeightPt = orientation === 'landscape' ? Math.min(baseW, baseH) : Math.max(baseW, baseH);
@@ -1221,13 +1289,6 @@ export const TextToPdf: React.FC = () => {
     defaultLineSpacing, defaultTextColor, defaultTextAlign, headerTitle, footerText, 
     includePageNumbers, parseHtmlToFormattedBlocks
   ]);
-
-  // Adjust current page index when total pages change
-  useEffect(() => {
-    if (currentPageIndex >= paginatedDoc.pages.length) {
-      setCurrentPageIndex(Math.max(0, paginatedDoc.pages.length - 1));
-    }
-  }, [paginatedDoc.pages.length, currentPageIndex]);
 
   // Generate binary PDF document via pdf-lib with full vector text, formatting & highlights
   const generatePdfBlob = async (): Promise<{ blob: Blob; totalPages: number }> => {
@@ -1539,123 +1600,234 @@ export const TextToPdf: React.FC = () => {
     }
   };
 
-  // Render a live PDF sheet preview with exact multi-page rich content representation
-  const renderPreviewSheet = (pageData: PaginatedPage) => {
-    const pageNum = pageData.pageIndex + 1;
-    const totalPages = paginatedDoc.pages.length;
+  // Open/Close dropdown popovers using trigger bounding rect for portal placement
+  const toggleDropdown = (type: 'color' | 'highlight' | 'heading' | 'font' | 'fontSize' | 'link', e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    saveCurrentSelection();
+    if (openDropdown === type) {
+      setOpenDropdown(null);
+      setDropdownTriggerRect(null);
+    } else {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setDropdownTriggerRect(rect);
+      setOpenDropdown(type);
+    }
+  };
 
-    const marginPercentX = (paginatedDoc.marginPt / paginatedDoc.pageWidthPt) * 100;
-    const marginPercentY = (paginatedDoc.marginPt / paginatedDoc.pageHeightPt) * 100;
+  // Render floating popovers in document.body via Portal to prevent any container clipping
+  const renderPortalPopover = () => {
+    if (!openDropdown || !dropdownTriggerRect) return null;
 
-    return (
+    const spacing = 6;
+    const top = dropdownTriggerRect.bottom + spacing;
+    let width = 230;
+    if (openDropdown === 'fontSize') width = 110;
+    if (openDropdown === 'heading') width = 175;
+    if (openDropdown === 'font') width = 210;
+    if (openDropdown === 'link') width = 270;
+    if (openDropdown === 'color' || openDropdown === 'highlight') width = 252;
+
+    let left = dropdownTriggerRect.left;
+    if (typeof window !== 'undefined') {
+      if (left + width > window.innerWidth - 12) {
+        left = Math.max(12, window.innerWidth - width - 12);
+      }
+      if (left < 12) left = 12;
+    }
+
+    return createPortal(
       <div
-        key={`preview-page-${pageData.pageIndex}`}
+        data-popover-portal="true"
         style={{
-          aspectRatio: `${paginatedDoc.aspectRatio}`,
-          transform: `scale(${previewZoom / 100})`,
-          transformOrigin: 'top center',
+          position: 'fixed',
+          top: `${top}px`,
+          left: `${left}px`,
+          width: `${width}px`,
+          zIndex: 9999,
         }}
-        className="w-full bg-white text-slate-900 shadow-2xl rounded-sm border border-slate-200/90 relative flex flex-col justify-between select-none overflow-hidden mx-auto transition-transform duration-150"
+        className="rounded-2xl bg-white dark:bg-[#151824] border border-slate-200/90 dark:border-white/10 shadow-2xl p-2 space-y-2 text-slate-800 dark:text-neutral-100 animate-in fade-in zoom-in-95 duration-150"
       >
-        {/* Printable Area with Exact Margins */}
-        <div 
-          style={{
-            paddingLeft: `${marginPercentX}%`,
-            paddingRight: `${marginPercentX}%`,
-            paddingTop: `${marginPercentY}%`,
-            paddingBottom: `${marginPercentY}%`,
-          }}
-          className="w-full h-full flex flex-col justify-between"
-        >
-          {/* Document Header */}
-          <div>
-            {headerTitle.trim() ? (
-              <div className="pb-1.5 mb-2.5 border-b border-slate-200 flex items-center justify-between">
-                <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate max-w-[80%] font-sans">
-                  {headerTitle}
-                </span>
-                <span className="text-[9px] text-slate-400 font-sans">
-                  {pageSize.toUpperCase()}
-                </span>
-              </div>
-            ) : null}
+        {/* Headings Popover */}
+        {openDropdown === 'heading' && (
+          <div className="space-y-1">
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { applyHeading('p'); setOpenDropdown(null); }}
+              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors ${activeStyles.heading === 'p' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-200'}`}
+            >
+              Normal Text
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { applyHeading('h1'); setOpenDropdown(null); }}
+              className={`w-full text-left px-3 py-1.5 rounded-xl text-base font-bold cursor-pointer transition-colors ${activeStyles.heading === 'h1' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
+            >
+              Heading 1
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { applyHeading('h2'); setOpenDropdown(null); }}
+              className={`w-full text-left px-3 py-1.5 rounded-xl text-sm font-semibold cursor-pointer transition-colors ${activeStyles.heading === 'h2' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
+            >
+              Heading 2
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { applyHeading('h3'); setOpenDropdown(null); }}
+              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors ${activeStyles.heading === 'h3' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
+            >
+              Heading 3
+            </button>
           </div>
+        )}
 
-          {/* Document Body Blocks */}
-          <div className="flex-1 w-full overflow-hidden flex flex-col space-y-1">
-            {pageData.blocks.map((blockItem, bIdx) => {
-              const { block, lines } = blockItem;
-              if (block.type === 'hr') {
-                return <hr key={bIdx} className="border-t border-slate-300 my-1" />;
-              }
+        {/* Font Family Popover */}
+        {openDropdown === 'font' && (
+          <div className="space-y-1">
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { applyInlineStyle('fontFamily', 'Helvetica'); setOpenDropdown(null); }}
+              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-sans cursor-pointer transition-colors ${activeStyles.fontFamily === 'Helvetica' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-200'}`}
+            >
+              Helvetica (Clean Sans)
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { applyInlineStyle('fontFamily', 'TimesRoman'); setOpenDropdown(null); }}
+              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-serif cursor-pointer transition-colors ${activeStyles.fontFamily === 'TimesRoman' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-200'}`}
+            >
+              Times New Roman (Editorial Serif)
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => { applyInlineStyle('fontFamily', 'Courier'); setOpenDropdown(null); }}
+              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-mono cursor-pointer transition-colors ${activeStyles.fontFamily === 'Courier' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-200'}`}
+            >
+              Courier (Monospace Code)
+            </button>
+          </div>
+        )}
 
-              return (
-                <div 
-                  key={bIdx}
-                  style={{
-                    textAlign: block.align,
-                    paddingLeft: block.indent > 0 ? `${block.indent * 14}px` : undefined,
-                  }}
-                  className="w-full"
+        {/* Font Size Popover */}
+        {openDropdown === 'fontSize' && (
+          <div className="max-h-52 overflow-y-auto space-y-0.5 pr-1">
+            {FONT_SIZE_OPTIONS.map((size) => (
+              <button
+                key={size}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { applyInlineStyle('fontSize', `${size}pt`); setOpenDropdown(null); }}
+                className={`w-full text-left px-2.5 py-1 rounded-xl text-xs font-mono transition-colors cursor-pointer ${activeStyles.fontSize === size ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'}`}
+              >
+                {size} pt
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Text Color Popover */}
+        {openDropdown === 'color' && (
+          <div className="p-1 space-y-2.5">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Text Color</span>
+            <div className="grid grid-cols-5 gap-1.5">
+              {TEXT_COLORS.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  title={c.name}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { applyInlineStyle('color', c.value); setOpenDropdown(null); }}
+                  style={{ backgroundColor: c.value }}
+                  className="w-7 h-7 rounded-lg border border-black/10 shadow-xs hover:scale-110 transition-transform cursor-pointer"
+                />
+              ))}
+            </div>
+            <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">Custom Color</span>
+              <input
+                type="color"
+                value={rgbOrHexToHex(activeStyles.color)}
+                onMouseDown={(e) => e.stopPropagation()}
+                onChange={(e) => applyInlineStyle('color', e.target.value)}
+                className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Highlighter Popover */}
+        {openDropdown === 'highlight' && (
+          <div className="p-1 space-y-2.5">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Text Highlight</span>
+            <div className="grid grid-cols-5 gap-1.5">
+              {HIGHLIGHT_COLORS.map((h) => (
+                <button
+                  key={h.name}
+                  type="button"
+                  title={h.name}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { applyHighlight(h.value); setOpenDropdown(null); }}
+                  style={{ backgroundColor: h.value }}
+                  className={`w-7 h-7 rounded-lg border border-slate-300 dark:border-white/20 shadow-xs hover:scale-110 transition-transform flex items-center justify-center text-[10px] font-bold cursor-pointer ${h.value === 'transparent' ? 'bg-slate-100 text-slate-500' : ''}`}
                 >
-                  {lines.map((line, lIdx) => (
-                    <div 
-                      key={lIdx}
-                      style={{
-                        minHeight: `${line.lineHeightPt * 0.75}px`,
-                        textAlign: block.align,
-                      }}
-                      className="leading-normal w-full"
-                    >
-                      {line.listMarker && (
-                        <span className="font-bold text-[11px] mr-1.5 text-slate-700 select-none inline-block">
-                          {line.listMarker}
-                        </span>
-                      )}
-                      {line.spans.map((span, sIdx) => {
-                        const style: React.CSSProperties = {
-                          fontFamily: getCssFontFamily(span.fontFamily),
-                          fontSize: `${Math.max(7, span.fontSizePt * (previewZoom / 100) * 0.78)}px`,
-                          fontWeight: span.bold ? 'bold' : 'normal',
-                          fontStyle: span.italic ? 'italic' : 'normal',
-                          textDecoration: `${span.underline ? 'underline ' : ''}${span.strikethrough ? 'line-through' : ''}`.trim() || 'none',
-                          color: span.colorHex || defaultTextColor,
-                          backgroundColor: span.bgColorHex || 'transparent',
-                          padding: span.bgColorHex && span.bgColorHex !== 'transparent' ? '1px 3px' : undefined,
-                          borderRadius: span.bgColorHex && span.bgColorHex !== 'transparent' ? '2px' : undefined,
-                          whiteSpace: 'pre-wrap',
-                        };
-
-                        return (
-                          <span key={sIdx} style={style}>
-                            {span.text || '\u00A0'}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
+                  {h.value === 'transparent' ? '✕' : ''}
+                </button>
+              ))}
+            </div>
+            <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">Custom Highlight</span>
+              <input
+                type="color"
+                value={activeStyles.highlight !== 'transparent' ? rgbOrHexToHex(activeStyles.highlight) : '#fef08a'}
+                onMouseDown={(e) => e.stopPropagation()}
+                onChange={(e) => applyHighlight(e.target.value)}
+                className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+              />
+            </div>
           </div>
+        )}
 
-          {/* Document Footer & Page Number */}
-          <div>
-            {(footerText.trim() || includePageNumbers) ? (
-              <div className="pt-1.5 mt-2.5 border-t border-slate-200 flex items-center justify-between text-[9px] sm:text-[10px] text-slate-400 font-sans">
-                <span className="truncate max-w-[65%]">
-                  {footerText || ''}
-                </span>
-                {includePageNumbers && (
-                  <span className="font-mono font-medium flex-shrink-0">
-                    Page {pageNum} of {totalPages}
-                  </span>
-                )}
-              </div>
-            ) : null}
+        {/* Hyperlink Popover */}
+        {openDropdown === 'link' && (
+          <div className="p-1 space-y-2">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Insert Hyperlink</span>
+            <input
+              type="url"
+              placeholder="https://example.com"
+              value={linkInputUrl}
+              onChange={(e) => setLinkInputUrl(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleApplyLink()}
+              className="w-full px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+            />
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setOpenDropdown(null)}
+                className="px-2.5 py-1 rounded-lg text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={handleApplyLink}
+                className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs cursor-pointer"
+              >
+                Apply Link
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+        )}
+      </div>,
+      document.body
     );
   };
 
@@ -1688,21 +1860,23 @@ export const TextToPdf: React.FC = () => {
         </div>
       )}
 
-      {/* Workspace: Left (Rich Text Editor & Settings) | Right (Interactive PDF Preview) */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+      {/* Workspace: Single WYSIWYG Document Editor */}
+      <div className="max-w-5xl mx-auto space-y-6">
         
-        {/* Left Column: Rich Text Document Studio */}
-        <div className="xl:col-span-6 space-y-6">
-          <div className="rounded-3xl p-4 sm:p-6 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xl space-y-3 sm:space-y-4">
-            
-            {/* Header with Title and Action buttons */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/[0.06]">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-indigo-500" />
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-700 dark:text-neutral-300">
-                  Rich Text Document Editor
-                </span>
-              </div>
+        {/* Main Document Workspace Card */}
+        <div className="rounded-3xl p-4 sm:p-6 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xl space-y-3 sm:space-y-4">
+          
+          {/* Header with Title and Action buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-white/[0.06]">
+            <div className="flex items-center gap-2.5">
+              <FileText className="w-4 h-4 text-indigo-500" />
+              <span className="text-xs uppercase font-bold tracking-wider text-slate-700 dark:text-neutral-300">
+                WYSIWYG Document Editor
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold font-mono">
+                {paginatedDoc.pages.length} {paginatedDoc.pages.length === 1 ? 'Page' : 'Pages'}
+              </span>
+            </div>
 
               <div className="flex items-center gap-2">
                 <button
@@ -1760,7 +1934,7 @@ export const TextToPdf: React.FC = () => {
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setOpenDropdown(openDropdown === 'heading' ? null : 'heading')}
+                  onClick={(e) => toggleDropdown('heading', e)}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <span>
@@ -1768,43 +1942,6 @@ export const TextToPdf: React.FC = () => {
                   </span>
                   <ChevronDown className="w-3 h-3 text-slate-400" />
                 </button>
-
-                {openDropdown === 'heading' && (
-                  <div className="absolute left-0 top-full mt-1 w-36 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-1.5 space-y-1 z-30 animate-in fade-in zoom-in-95">
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => applyHeading('p')}
-                      className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${activeStyles.heading === 'p' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'}`}
-                    >
-                      Normal text
-                    </button>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => applyHeading('h1')}
-                      className={`w-full text-left px-3 py-1.5 rounded-xl text-sm font-bold transition-colors ${activeStyles.heading === 'h1' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
-                    >
-                      Heading 1
-                    </button>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => applyHeading('h2')}
-                      className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${activeStyles.heading === 'h2' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
-                    >
-                      Heading 2
-                    </button>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => applyHeading('h3')}
-                      className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${activeStyles.heading === 'h3' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
-                    >
-                      Heading 3
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Font Family Dropdown */}
@@ -1812,7 +1949,7 @@ export const TextToPdf: React.FC = () => {
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setOpenDropdown(openDropdown === 'font' ? null : 'font')}
+                  onClick={(e) => toggleDropdown('font', e)}
                   className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <span className="truncate max-w-[80px]">
@@ -1820,35 +1957,6 @@ export const TextToPdf: React.FC = () => {
                   </span>
                   <ChevronDown className="w-3 h-3 text-slate-400" />
                 </button>
-
-                {openDropdown === 'font' && (
-                  <div className="absolute left-0 top-full mt-1 w-44 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-1.5 space-y-1 z-30 animate-in fade-in zoom-in-95">
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => applyInlineStyle('fontFamily', 'Helvetica')}
-                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-sans text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-                    >
-                      Helvetica (Sans)
-                    </button>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => applyInlineStyle('fontFamily', 'TimesRoman')}
-                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-serif text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-                    >
-                      Times New Roman (Serif)
-                    </button>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => applyInlineStyle('fontFamily', 'Courier')}
-                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-mono text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-                    >
-                      Courier (Monospace)
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Font Size Dropdown */}
@@ -1856,28 +1964,12 @@ export const TextToPdf: React.FC = () => {
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setOpenDropdown(openDropdown === 'fontSize' ? null : 'fontSize')}
+                  onClick={(e) => toggleDropdown('fontSize', e)}
                   className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-mono font-semibold text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <span>{activeStyles.fontSize}pt</span>
                   <ChevronDown className="w-3 h-3 text-slate-400" />
                 </button>
-
-                {openDropdown === 'fontSize' && (
-                  <div className="absolute left-0 top-full mt-1 w-24 max-h-48 overflow-y-auto rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-1 z-30 animate-in fade-in zoom-in-95">
-                    {FONT_SIZE_OPTIONS.map((size) => (
-                      <button
-                        key={size}
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => applyInlineStyle('fontSize', `${size}pt`)}
-                        className={`w-full text-left px-2.5 py-1 rounded-xl text-xs font-mono transition-colors ${activeStyles.fontSize === size ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'}`}
-                      >
-                        {size} pt
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* Bold, Italic, Underline, Strike Buttons Group */}
@@ -1929,7 +2021,7 @@ export const TextToPdf: React.FC = () => {
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setOpenDropdown(openDropdown === 'color' ? null : 'color')}
+                  onClick={(e) => toggleDropdown('color', e)}
                   title="Text Color"
                   className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
@@ -1939,35 +2031,6 @@ export const TextToPdf: React.FC = () => {
                     style={{ backgroundColor: activeStyles.color }}
                   />
                 </button>
-
-                {openDropdown === 'color' && (
-                  <div className="absolute left-0 top-full mt-1 w-52 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-3 space-y-2.5 z-30 animate-in fade-in zoom-in-95">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Text Color</span>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {TEXT_COLORS.map((c) => (
-                        <button
-                          key={c.value}
-                          type="button"
-                          title={c.name}
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => applyInlineStyle('color', c.value)}
-                          style={{ backgroundColor: c.value }}
-                          className="w-7 h-7 rounded-lg border border-black/10 shadow-xs hover:scale-110 transition-transform cursor-pointer"
-                        />
-                      ))}
-                    </div>
-                    <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500">Custom Color</span>
-                      <input
-                        type="color"
-                        value={rgbOrHexToHex(activeStyles.color)}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onChange={(e) => applyInlineStyle('color', e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Highlighter Dropdown */}
@@ -1975,7 +2038,7 @@ export const TextToPdf: React.FC = () => {
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setOpenDropdown(openDropdown === 'highlight' ? null : 'highlight')}
+                  onClick={(e) => toggleDropdown('highlight', e)}
                   title="Highlight Color"
                   className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
@@ -1985,37 +2048,6 @@ export const TextToPdf: React.FC = () => {
                     style={{ backgroundColor: activeStyles.highlight === 'transparent' ? '#fef08a' : activeStyles.highlight }}
                   />
                 </button>
-
-                {openDropdown === 'highlight' && (
-                  <div className="absolute left-0 top-full mt-1 w-52 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-3 space-y-2.5 z-30 animate-in fade-in zoom-in-95">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Text Highlight</span>
-                    <div className="grid grid-cols-5 gap-1.5">
-                      {HIGHLIGHT_COLORS.map((h) => (
-                        <button
-                          key={h.name}
-                          type="button"
-                          title={h.name}
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => applyHighlight(h.value)}
-                          style={{ backgroundColor: h.value }}
-                          className={`w-7 h-7 rounded-lg border border-slate-300 dark:border-white/20 shadow-xs hover:scale-110 transition-transform flex items-center justify-center text-[10px] font-bold cursor-pointer ${h.value === 'transparent' ? 'bg-slate-100 text-slate-500' : ''}`}
-                        >
-                          {h.value === 'transparent' ? '✕' : ''}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
-                      <span className="text-[11px] text-slate-500">Custom Highlight</span>
-                      <input
-                        type="color"
-                        value={activeStyles.highlight !== 'transparent' ? rgbOrHexToHex(activeStyles.highlight) : '#fef08a'}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onChange={(e) => applyHighlight(e.target.value)}
-                        className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Text Alignment Group */}
@@ -2111,44 +2143,12 @@ export const TextToPdf: React.FC = () => {
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={handleOpenLinkModal}
+                  onClick={(e) => toggleDropdown('link', e)}
                   title="Insert Hyperlink"
                   className="p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-300 transition-colors cursor-pointer"
                 >
                   <Link2 className="w-3.5 h-3.5" />
                 </button>
-
-                {openDropdown === 'link' && (
-                  <div className="absolute left-0 top-full mt-1 w-64 rounded-2xl bg-white dark:bg-[#12141f] border border-slate-200 dark:border-white/10 shadow-2xl p-3 space-y-2 z-30 animate-in fade-in zoom-in-95">
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Add Link</span>
-                    <input
-                      type="url"
-                      placeholder="https://example.com"
-                      value={linkInputUrl}
-                      onChange={(e) => setLinkInputUrl(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleApplyLink()}
-                      className="w-full px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
-                    />
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => setOpenDropdown(null)}
-                        className="px-2 py-1 rounded-lg text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={handleApplyLink}
-                        className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs cursor-pointer"
-                      >
-                        Insert
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Clear Formatting */}
@@ -2164,48 +2164,81 @@ export const TextToPdf: React.FC = () => {
               </button>
             </div>
 
-            {/* Editable Rich-Text Canvas Area */}
-            <div className="relative">
-              <div
-                ref={editorRef}
-                contentEditable
-                suppressContentEditableWarning
-                onInput={handleEditorInput}
-                onKeyUp={() => {
-                  saveCurrentSelection();
-                  updateActiveToolbarStates();
-                }}
-                onMouseUp={() => {
-                  saveCurrentSelection();
-                  updateActiveToolbarStates();
-                }}
-                onFocus={() => {
-                  saveCurrentSelection();
-                  updateActiveToolbarStates();
-                }}
-                className="w-full min-h-[300px] max-h-[480px] overflow-y-auto p-4 sm:p-5 rounded-2xl bg-slate-50/90 dark:bg-white/[0.02] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 text-sm leading-relaxed transition-all prose dark:prose-invert max-w-none"
+            {/* WYSIWYG Document Canvas / Desk Area */}
+            <div className="rounded-2xl bg-slate-200/80 dark:bg-[#0c0e17] p-3 sm:p-8 border border-slate-300/80 dark:border-white/10 flex flex-col items-center justify-start min-h-[620px] shadow-inner overflow-x-auto">
+              {/* The Authentic Document Sheet */}
+              <div 
+                className={`w-full max-w-[760px] bg-white text-slate-900 rounded-sm shadow-2xl border border-slate-200/80 transition-all flex flex-col justify-between ${
+                  margin === 'compact' 
+                    ? 'p-6 sm:p-8' 
+                    : margin === 'wide' 
+                    ? 'p-10 sm:p-14' 
+                    : 'p-8 sm:p-10'
+                }`}
                 style={{
-                  fontFamily: getCssFontFamily(defaultFontFamily),
+                  minHeight: orientation === 'landscape' ? '540px' : '760px',
                 }}
-              />
-            </div>
+              >
+                {/* Top Document Header Line (if configured) */}
+                {headerTitle.trim() && (
+                  <div className="pb-3 mb-4 border-b border-slate-300 flex items-center justify-between text-xs text-slate-500 font-serif">
+                    <span className="font-semibold uppercase tracking-wider">{headerTitle}</span>
+                    <span className="font-mono text-[10px]">{pageSize.toUpperCase()} • {orientation}</span>
+                  </div>
+                )}
 
-            {/* Character, Word & Line Metric Badges */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs text-slate-500 dark:text-neutral-400 border-t border-slate-200 dark:border-white/[0.06]">
-              <div className="flex items-center gap-3 sm:gap-4">
+                {/* Editable Rich-Text Canvas Area - THE SAME SURFACE AS FINAL DOCUMENT */}
+                <div
+                  ref={editorRef}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onPaste={handlePaste}
+                  onInput={handleEditorInput}
+                  onKeyUp={() => {
+                    saveCurrentSelection();
+                    updateActiveToolbarStates();
+                  }}
+                  onMouseUp={() => {
+                    saveCurrentSelection();
+                    updateActiveToolbarStates();
+                  }}
+                  onFocus={() => {
+                    saveCurrentSelection();
+                    updateActiveToolbarStates();
+                  }}
+                  className="w-full flex-1 min-h-[500px] focus:outline-none text-slate-900 leading-relaxed transition-all prose prose-slate max-w-none"
+                  style={{
+                    fontFamily: getCssFontFamily(defaultFontFamily),
+                    fontSize: `${defaultFontSize}pt`,
+                    lineHeight: defaultLineSpacing,
+                    color: defaultTextColor,
+                    textAlign: defaultTextAlign,
+                  }}
+                />
+
+                {/* Bottom Document Footer Line (if configured) */}
+                {(footerText.trim() || includePageNumbers) && (
+                  <div className="pt-4 mt-6 border-t border-slate-300 flex items-center justify-between text-xs text-slate-500 font-serif">
+                    <span>{footerText.trim() || ''}</span>
+                    {includePageNumbers && (
+                      <span className="font-mono text-[11px] font-semibold">
+                        Page 1 of {paginatedDoc.pages.length}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Document Metrics Bar under canvas */}
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-600 dark:text-neutral-400 bg-white/70 dark:bg-white/5 px-4 py-1.5 rounded-full border border-slate-200/80 dark:border-white/10 backdrop-blur-sm shadow-xs font-mono">
                 <span><strong>{stats.words.toLocaleString()}</strong> words</span>
                 <span>•</span>
-                <span><strong>{stats.characters.toLocaleString()}</strong> chars</span>
+                <span><strong>{stats.characters.toLocaleString()}</strong> characters</span>
                 <span>•</span>
-                <span><strong>{paginatedDoc.pages.length}</strong> {paginatedDoc.pages.length === 1 ? 'page' : 'pages'}</span>
+                <span><strong>{paginatedDoc.pages.length}</strong> {paginatedDoc.pages.length === 1 ? 'PDF page' : 'PDF pages'}</span>
+                <span>•</span>
+                <span>{pageSize.toUpperCase()} ({orientation})</span>
               </div>
-              <button
-                type="button"
-                onClick={handleLoadSample}
-                className="text-indigo-600 dark:text-indigo-400 hover:underline text-xs cursor-pointer font-medium"
-              >
-                Load Sample Document
-              </button>
             </div>
           </div>
 
@@ -2491,186 +2524,64 @@ export const TextToPdf: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
 
-        {/* Right Column: Interactive Real-Time PDF Preview & Action Bar */}
-        <div className="xl:col-span-6 space-y-4">
-          <div className="rounded-3xl p-4 sm:p-6 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xl space-y-4">
-            
-            {/* Preview Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-white/[0.06]">
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-indigo-500" />
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-700 dark:text-neutral-300">
-                  Live PDF Document Preview
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold font-mono">
-                  {paginatedDoc.pages.length} {paginatedDoc.pages.length === 1 ? 'Page' : 'Pages'}
-                </span>
-              </div>
-
-              {/* View Mode & Page Navigation */}
-              <div className="flex items-center gap-2">
-                {/* Single / All Pages Toggle */}
-                <div className="flex rounded-xl bg-slate-100 dark:bg-white/5 p-0.5 border border-slate-200 dark:border-white/10 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('single')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                      viewMode === 'single'
-                        ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm'
-                        : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                    }`}
-                  >
-                    Page by Page
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('all')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                      viewMode === 'all'
-                        ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm'
-                        : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                    }`}
-                  >
-                    All Pages
-                  </button>
-                </div>
-
-                {/* Zoom Controls */}
-                <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-0.5 rounded-xl border border-slate-200 dark:border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewZoom(prev => Math.max(60, prev - 15))}
-                    title="Zoom Out"
-                    aria-label="Zoom Out"
-                    className="p-1 text-slate-600 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white rounded hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer"
-                  >
-                    <ZoomOut className="w-3.5 h-3.5" />
-                  </button>
-                  <span className="text-[10px] font-mono font-semibold px-1 text-slate-600 dark:text-neutral-300 min-w-[34px] text-center">
-                    {previewZoom}%
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewZoom(prev => Math.min(140, prev + 15))}
-                    title="Zoom In"
-                    aria-label="Zoom In"
-                    className="p-1 text-slate-600 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white rounded hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer"
-                  >
-                    <ZoomIn className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Interactive Document Sheet Canvas Area */}
-            <div className="rounded-2xl bg-slate-200/70 dark:bg-neutral-950/80 p-4 sm:p-6 border border-slate-300/80 dark:border-white/10 min-h-[480px] max-h-[640px] overflow-y-auto overflow-x-hidden flex flex-col items-center justify-start space-y-6">
-              {viewMode === 'single' ? (
-                // Single Page Mode with Navigation
-                <div className="w-full max-w-[480px] space-y-4">
-                  {paginatedDoc.pages[currentPageIndex] && renderPreviewSheet(paginatedDoc.pages[currentPageIndex])}
-                  
-                  {/* Page Navigation Controls */}
-                  {paginatedDoc.pages.length > 1 && (
-                    <div className="flex items-center justify-center gap-3 pt-2">
-                      <button
-                        type="button"
-                        disabled={currentPageIndex === 0}
-                        onClick={() => setCurrentPageIndex(prev => Math.max(0, prev - 1))}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-800 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm transition-all"
-                      >
-                        <ChevronLeft className="w-3.5 h-3.5" />
-                        Previous
-                      </button>
-
-                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-neutral-300 bg-white/80 dark:bg-neutral-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/10">
-                        {currentPageIndex + 1} / {paginatedDoc.pages.length}
-                      </span>
-
-                      <button
-                        type="button"
-                        disabled={currentPageIndex === paginatedDoc.pages.length - 1}
-                        onClick={() => setCurrentPageIndex(prev => Math.min(paginatedDoc.pages.length - 1, prev + 1))}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-800 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm transition-all"
-                      >
-                        Next
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
-                </div>
+          {/* Primary Download Action Section */}
+          <div className="pt-2 space-y-4">
+            <button
+              type="button"
+              disabled={!stats.plainText.trim() || isProcessing}
+              onClick={handleDownload}
+              className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-white/10 text-white font-semibold text-sm shadow-xl shadow-indigo-600/25 disabled:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+            >
+              {isProcessing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Compiling PDF Document...</span>
+                </>
               ) : (
-                // All Pages Continuous Vertical Flow
-                <div className="w-full max-w-[480px] space-y-6">
-                  {paginatedDoc.pages.map((pageData) => (
-                    <div key={`all-page-${pageData.pageIndex}`} className="space-y-1.5">
-                      <div className="text-center text-[11px] font-mono font-semibold text-slate-500 dark:text-neutral-400">
-                        Page {pageData.pageIndex + 1} of {paginatedDoc.pages.length}
-                      </div>
-                      {renderPreviewSheet(pageData)}
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Download PDF ({paginatedDoc.pages.length} {paginatedDoc.pages.length === 1 ? 'Page' : 'Pages'})</span>
+                </>
               )}
-            </div>
+            </button>
 
-            {/* Prominent Download Button */}
-            <div className="pt-2">
-              <button
-                type="button"
-                disabled={!stats.plainText.trim() || isProcessing}
-                onClick={handleDownload}
-                className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-white/10 text-white font-semibold text-sm shadow-xl shadow-indigo-600/25 disabled:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
-              >
-                {isProcessing ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Compiling PDF Document...</span>
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    <span>Download PDF ({paginatedDoc.pages.length} {paginatedDoc.pages.length === 1 ? 'Page' : 'Pages'})</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Success Status Card */}
-          {pdfStats && pdfBlobUrl && (
-            <div className="rounded-3xl p-5 bg-gradient-to-br from-emerald-500/10 via-indigo-500/5 to-transparent border border-emerald-500/30 backdrop-blur-xl shadow-xl space-y-3 animate-in fade-in zoom-in-95 duration-200">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                  <span>PDF Download Ready ({pdfStats.pages} {pdfStats.pages === 1 ? 'Page' : 'Pages'}, {formatFileSize(pdfStats.size)})</span>
+            {/* Success Status Card */}
+            {pdfStats && pdfBlobUrl && (
+              <div className="rounded-3xl p-5 bg-gradient-to-br from-emerald-500/10 via-indigo-500/5 to-transparent border border-emerald-500/30 backdrop-blur-xl shadow-xl space-y-3 animate-in fade-in zoom-in-95 duration-200">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span>PDF Download Ready ({pdfStats.pages} {pdfStats.pages === 1 ? 'Page' : 'Pages'}, {formatFileSize(pdfStats.size)})</span>
+                  </div>
+                  <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+                    {pdfFileName}
+                  </span>
                 </div>
-                <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
-                  {pdfFileName}
-                </span>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={pdfBlobUrl}
+                    download={pdfFileName || 'toolsbar-document.pdf'}
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold text-center shadow-md transition-colors cursor-pointer"
+                  >
+                    Download Again
+                  </a>
+                  <a
+                    href={pdfBlobUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 text-slate-800 dark:text-white text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    Open PDF
+                  </a>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={pdfBlobUrl}
-                  download={pdfFileName || 'toolsbar-document.pdf'}
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold text-center shadow-md transition-colors cursor-pointer"
-                >
-                  Download Again
-                </a>
-                <a
-                  href={pdfBlobUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 text-slate-800 dark:text-white text-xs font-semibold transition-colors cursor-pointer"
-                >
-                  Open PDF
-                </a>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* Portal-Rendered Dropdowns */}
+        {renderPortalPopover()}
       </div>
-    </div>
-  );
-};
+    );
+  };

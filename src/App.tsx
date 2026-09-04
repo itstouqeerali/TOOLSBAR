@@ -33,6 +33,7 @@ import {
   getCategorySEOMetadata, 
   getStaticRouteSEOMetadata 
 } from './utils/seo';
+import { isScreenEligibleForAds } from './utils/adSensePolicy';
 
 // Route Wrappers with Dynamic Per-Page SEO & JSON-LD Injection
 
@@ -316,6 +317,16 @@ function AppContent() {
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
+
+  // AdSense Route Policy: tracks active route and flags non-eligible screens (account, admin, etc.)
+  useEffect(() => {
+    const eligible = isScreenEligibleForAds(location.pathname);
+    if (eligible) {
+      document.body.removeAttribute('data-no-ads');
+    } else {
+      document.body.setAttribute('data-no-ads', 'true');
+    }
+  }, [location.pathname]);
 
   // Programmatic navigation handler with smooth scroll
   const handleNavigate = useCallback(

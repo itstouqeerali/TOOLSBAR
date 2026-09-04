@@ -4,9 +4,9 @@ import {
   BarChart3, Clock, Type, AlignLeft, Volume2 
 } from 'lucide-react';
 
-const SAMPLE_TEXT = `Toolsbar is a next-generation all-in-one digital utility platform crafted for the modern web. Instead of navigating across dozens of ad-filled converter websites, users can access fast, private, and beautifully designed browser-first utilities right here.
+const SAMPLE_TEXT = `Toolsbar is a comprehensive digital utility platform crafted for the modern web. Users can access fast, responsive, and thoughtfully designed browser-first utilities for everyday tasks.
 
-Every tool processes information locally within your device, ensuring maximum privacy, immediate responsiveness, and zero server latency. From mathematical calculations to JSON formatting and cryptographic generators, Toolsbar provides the cleanest tool experience possible.`;
+Every tool processes information locally within your device, ensuring privacy, immediate responsiveness, and zero server latency. From mathematical calculations to JSON formatting and cryptographic generators, Toolsbar provides a clean and reliable tool experience.`;
 
 export const WordCounter: React.FC = () => {
   const [text, setText] = useState<string>(SAMPLE_TEXT);

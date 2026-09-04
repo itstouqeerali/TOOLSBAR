@@ -206,7 +206,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
               Why utility software shouldn't look like 2004
             </h2>
             <p className="text-slate-600 dark:text-neutral-300 text-sm sm:text-base leading-relaxed">
-              Traditional tool websites are cluttered with dozens of flashing advertisements, deceptive download buttons, and sluggish server roundtrips. Toolsbar changes that completely.
+              Traditional utility websites often suffer from confusing navigation, deceptive download prompts, and sluggish server roundtrips. Toolsbar focuses on responsive, direct browser-first workflows.
             </p>
           </div>
 
@@ -215,8 +215,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
               {
                 icon: ShieldCheck,
                 color: 'text-emerald-500 dark:text-emerald-400',
-                title: '100% Client-Side Privacy',
-                desc: 'Your files, passwords, numbers, and text never leave your computer. Processing happens locally in your browser memory.'
+                title: 'Client-Side Privacy Focus',
+                desc: 'For browser-based utilities, your files, passwords, numbers, and text stay in your local browser memory with zero remote uploads.'
               },
               {
                 icon: Zap,
@@ -227,8 +227,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
               {
                 icon: Sparkles,
                 color: 'text-indigo-600 dark:text-indigo-400',
-                title: 'Pure Craft & Design',
-                desc: 'Cinematic Apple-inspired glass aesthetics, high contrast, clean typography, and zero spam popups.'
+                title: 'Focused User Interface',
+                desc: 'Carefully designed layouts, high visual contrast, clear typography, and consistent controls across every utility.'
               },
               {
                 icon: Layers,
@@ -252,7 +252,39 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
         </div>
       </section>
 
-      {/* Section 5: Quick Call to Action */}
+      {/* Section 5: Informational Section — About Toolsbar */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" aria-labelledby="about-toolsbar-heading">
+        <article className="rounded-3xl p-8 sm:p-12 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm dark:shadow-xl space-y-6">
+          <div className="space-y-2">
+            <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5" /> Platform Overview
+            </span>
+            <h2 id="about-toolsbar-heading" className="text-2xl sm:text-3xl font-bold font-display text-slate-900 dark:text-white">
+              About Toolsbar
+            </h2>
+            <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-neutral-400">
+              Purpose-built digital utilities for everyday work and productivity
+            </p>
+          </div>
+
+          <div className="space-y-4 text-sm sm:text-base text-slate-700 dark:text-neutral-300 leading-relaxed max-w-5xl">
+            <p>
+              Toolsbar is an independent digital utility platform created to help people complete everyday digital tasks quickly and without friction. Instead of installing single-purpose desktop applications or navigating complex multi-step interfaces, Toolsbar gives you direct access to a curated catalog of responsive utilities through your web browser.
+            </p>
+            <p>
+              Our directory spans multiple practical disciplines. You will find financial and mathematical calculators for estimating loan EMIs, interest rates, and percentage discounts; text and content tools for counting words, adjusting letter casing, and deduplicating lists; developer utilities for formatting JSON, decoding JWT tokens, and generating UUIDs; unit converters for temperature, metric-imperial dimensions, and digital storage; and document and media tools for merging PDFs, creating QR codes, and compressing images.
+            </p>
+            <p>
+              Whenever applicable, our utilities are engineered to process data locally within your browser using modern client-side Web APIs. This browser-first execution model means calculations, text transformations, and file manipulations happen instantly with zero network delay, while keeping your inputs, confidential notes, and documents confined to your own device.
+            </p>
+            <p>
+              You can browse utilities by topic using our structured categories directory, view our most popular daily tools, or launch any tool in seconds using our global keyboard shortcut.
+            </p>
+          </div>
+        </article>
+      </section>
+
+      {/* Section 6: Quick Call to Action */}
       <section className="max-w-5xl mx-auto px-4 text-center space-y-6 pt-6">
         <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 dark:text-white">
           Ready to get things done?

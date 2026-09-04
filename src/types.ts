@@ -12,6 +12,13 @@ export type CategoryId =
   | 'pdf'
   | 'colors';
 
+export interface CategoryEditorial {
+  overview: string;
+  keyCapabilities: string[];
+  practicalUseCases: string[];
+  helpfulNote?: string;
+}
+
 export interface Category {
   id: CategoryId;
   name: string;
@@ -20,6 +27,7 @@ export interface Category {
   description: string;
   toolCount: number;
   colorAccent: string;
+  editorial?: CategoryEditorial;
 }
 
 export interface ToolFaq {
@@ -33,6 +41,8 @@ export interface ToolSEO {
   keywords: string[];
   h1: string;
   intro: string;
+  about?: string;
+  useCases?: string[];
   howToUse: string[];
   features?: string[];
   faq: ToolFaq[];

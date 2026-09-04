@@ -151,6 +151,28 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
           </button>
         </div>
       )}
+
+      {/* Directory Editorial Overview */}
+      <section className="mt-12 pt-10 border-t border-slate-200/80 dark:border-white/[0.08]" aria-labelledby="directory-overview-heading">
+        <div className="rounded-3xl p-6 sm:p-10 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-4 max-w-5xl">
+          <div className="space-y-1">
+            <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5" /> Directory Guide
+            </span>
+            <h2 id="directory-overview-heading" className="text-xl sm:text-2xl font-bold font-display text-slate-900 dark:text-white">
+              Navigating the Toolsbar Utility Directory
+            </h2>
+          </div>
+          <div className="space-y-3 text-sm sm:text-base text-slate-700 dark:text-neutral-300 leading-relaxed">
+            <p>
+              The Toolsbar directory provides a centralized index of all available browser-based utilities across mathematics, text processing, developer workflows, file conversion, and document management. You can filter the catalog by functional category, search directly by tool name or related keyword, or view tools according to readiness status.
+            </p>
+            <p>
+              Each utility card identifies the tool name, core capability, and functional category. Most utilities in this catalog are fully implemented and ready for immediate in-browser use, while upcoming utilities undergoing active engineering are clearly identified as in development. When selecting a utility, consider the specific task required—whether calculating financial figures, transforming raw text lists, debugging encoded strings, or resizing media files—and launch the tool directly to begin working without installation.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
