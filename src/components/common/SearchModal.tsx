@@ -141,11 +141,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
     >
       <div 
         id="search-modal-container"
-        className="w-full max-w-2xl rounded-3xl bg-white/95 dark:bg-[#090b12]/95 border border-slate-200 dark:border-white/[0.12] backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] my-auto sm:my-0 cursor-default animate-in zoom-in-95 duration-150"
+        className="w-full max-w-2xl rounded-3xl glass-popover border border-slate-200/90 dark:border-white/[0.12] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] my-auto sm:my-0 cursor-default animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="p-3.5 sm:p-5 border-b border-slate-200 dark:border-white/[0.08] flex items-center gap-3 bg-slate-50/60 dark:bg-white/[0.02]">
+        <div className="p-3.5 sm:p-5 border-b border-slate-200/80 dark:border-white/[0.08] flex items-center gap-3 bg-white/40 dark:bg-white/[0.02]">
           <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/25 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
             <Search className="w-4 h-4" />
           </div>
@@ -177,7 +177,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
           <button
             onClick={onClose}
             id="search-close-btn"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.05] dark:hover:bg-white/[0.12] border border-slate-200 dark:border-white/10 text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-all cursor-pointer shrink-0 text-xs font-semibold"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl glass-button text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-all cursor-pointer shrink-0 text-xs font-semibold"
             aria-label="Close search overlay"
             title="Close search (Esc)"
           >

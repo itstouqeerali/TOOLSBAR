@@ -33,7 +33,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category, onClick })
     <div
       onClick={onClick}
       id={`category-card-${category.id}`}
-      className="group relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 bg-white/80 hover:bg-white border border-slate-200/90 hover:border-indigo-400 dark:bg-white/[0.025] dark:hover:bg-white/[0.055] dark:border-white/[0.08] dark:hover:border-indigo-500/40 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-xl dark:shadow-none dark:hover:shadow-2xl dark:hover:shadow-indigo-500/10 cursor-pointer flex flex-col justify-between"
+      className="group relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 glass-card cursor-pointer flex flex-col justify-between"
     >
       <div>
         <div className="flex items-center justify-between mb-2.5 sm:mb-4">

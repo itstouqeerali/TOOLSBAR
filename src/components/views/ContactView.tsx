@@ -99,7 +99,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Contact Form */}
-        <div className="lg:col-span-7 rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm dark:shadow-xl space-y-6">
+        <div className="lg:col-span-7 rounded-3xl p-6 sm:p-8 glass-panel space-y-6">
           <div>
             <h2 className="text-xl font-bold font-display text-slate-900 dark:text-white">
               Send a Message
@@ -240,7 +240,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate }) => {
 
         {/* Right Column: Support Channels & Helpful Information */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="rounded-3xl p-6 sm:p-7 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm dark:shadow-xl space-y-5">
+          <div className="rounded-3xl p-6 sm:p-7 glass-panel space-y-5">
             <h3 className="text-lg font-bold font-display text-slate-900 dark:text-white flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-indigo-500" />
               Support Topics

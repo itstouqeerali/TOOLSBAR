@@ -39,7 +39,7 @@ export const PopularView: React.FC<PopularViewProps> = ({ onNavigate, onOpenAuth
 
       {/* Editorial Overview Section */}
       <section className="mt-12 pt-10 border-t border-slate-200/80 dark:border-white/[0.08]" aria-labelledby="popular-overview-heading">
-        <div className="rounded-3xl p-6 sm:p-10 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-4 max-w-5xl">
+        <div className="rounded-3xl p-6 sm:p-10 glass-panel space-y-4 max-w-5xl">
           <div className="space-y-1">
             <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5" /> Quick-Access Guide

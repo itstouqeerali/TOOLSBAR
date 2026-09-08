@@ -29,13 +29,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         root.classList.remove('light');
         root.setAttribute('data-theme', 'dark');
         root.style.colorScheme = 'dark';
-        document.body.className = 'bg-[#030303] text-[#f4f4f5] antialiased selection:bg-indigo-500/30 selection:text-white transition-colors duration-300';
+        document.body.className = 'bg-[#070913] text-[#f4f4f5] antialiased selection:bg-indigo-500/30 selection:text-white transition-colors duration-300';
       } else {
         root.classList.remove('dark');
         root.classList.add('light');
         root.setAttribute('data-theme', 'light');
         root.style.colorScheme = 'light';
-        document.body.className = 'bg-[#f8fafc] text-[#0f172a] antialiased selection:bg-indigo-500/20 selection:text-indigo-900 transition-colors duration-300';
+        document.body.className = 'bg-[#f4f5fa] text-[#0f172a] antialiased selection:bg-indigo-500/20 selection:text-indigo-900 transition-colors duration-300';
       }
     } catch (e) {
       console.warn('Theme update error:', e);

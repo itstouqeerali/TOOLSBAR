@@ -116,10 +116,8 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onClick, onOpenAuth })
     <div
       onClick={onClick}
       id={`tool-card-${tool.slug}`}
-      className={`group relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 border backdrop-blur-xl transition-all duration-300 flex flex-col justify-between cursor-pointer ${
-        isReady
-          ? 'bg-white/80 hover:bg-white border-slate-200/90 hover:border-indigo-400 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.055] dark:border-white/[0.08] dark:hover:border-indigo-500/40 dark:hover:shadow-2xl dark:hover:shadow-indigo-500/10'
-          : 'bg-slate-100/50 hover:bg-slate-100/80 border-slate-200/60 dark:bg-white/[0.01] dark:hover:bg-white/[0.025] dark:border-white/[0.04] dark:hover:border-white/10 opacity-75'
+      className={`group relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 glass-card flex flex-col justify-between cursor-pointer ${
+        !isReady ? 'opacity-65' : ''
       }`}
     >
       <div>

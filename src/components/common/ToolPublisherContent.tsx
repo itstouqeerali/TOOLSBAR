@@ -39,7 +39,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
       id="tool-publisher-content"
     >
       {/* 1. About This Tool */}
-      <section className="rounded-3xl p-6 sm:p-10 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm dark:shadow-xl space-y-6">
+      <section className="rounded-3xl p-6 sm:p-10 glass-panel space-y-6">
         <div className="space-y-2">
           <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5" /> Comprehensive Reference
@@ -52,7 +52,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
         <div className="space-y-4 text-sm sm:text-base text-slate-700 dark:text-neutral-300 leading-relaxed max-w-5xl">
           <p>{editorial.about}</p>
           {editorial.formulaOrPrinciple && (
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/[0.06] space-y-1.5">
+            <div className="p-4 rounded-2xl glass-card space-y-1.5">
               <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 block">
                 Underlying Formula & Mechanics
               </span>
@@ -68,7 +68,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Step-by-Step Instructions */}
         {tool.seo.howToUse && tool.seo.howToUse.length > 0 && (
-          <section className="lg:col-span-6 rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-6 flex flex-col justify-between">
+          <section className="lg:col-span-6 rounded-3xl p-6 sm:p-8 glass-panel space-y-6 flex flex-col justify-between">
             <div className="space-y-5">
               <div className="space-y-1">
                 <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
@@ -99,7 +99,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
         )}
 
         {/* Practical Everyday Use Cases */}
-        <section className={`rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-6 flex flex-col justify-between ${tool.seo.howToUse && tool.seo.howToUse.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'}`}>
+        <section className={`rounded-3xl p-6 sm:p-8 glass-panel space-y-6 flex flex-col justify-between ${tool.seo.howToUse && tool.seo.howToUse.length > 0 ? 'lg:col-span-6' : 'lg:col-span-12'}`}>
           <div className="space-y-5">
             <div className="space-y-1">
               <span className="text-xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
@@ -129,7 +129,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
 
       {/* 4. Key Capabilities & Technical Features */}
       {tool.seo.features && tool.seo.features.length > 0 && (
-        <section className="rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-6">
+        <section className="rounded-3xl p-6 sm:p-8 glass-panel space-y-6">
           <div className="space-y-1">
             <span className="text-xs uppercase font-bold tracking-wider text-purple-600 dark:text-purple-400 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4" /> Capabilities & Standards
@@ -143,7 +143,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
             {tool.seo.features.map((feature, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-2xl bg-slate-50/70 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.06] flex items-start gap-3 text-xs sm:text-sm text-slate-700 dark:text-neutral-300 leading-relaxed"
+                className="p-4 rounded-2xl glass-card flex items-start gap-3 text-xs sm:text-sm text-slate-700 dark:text-neutral-300 leading-relaxed"
               >
                 <span className="w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
                   ✓
@@ -172,7 +172,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
 
       {/* 5. Frequently Asked Questions (Fully indexable, semantic HTML) */}
       {tool.seo.faq && tool.seo.faq.length > 0 && (
-        <section className="rounded-3xl p-6 sm:p-8 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-6" aria-labelledby="faq-heading">
+        <section className="rounded-3xl p-6 sm:p-8 glass-panel space-y-6" aria-labelledby="faq-heading">
           <div className="space-y-1">
             <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
               <HelpCircle className="w-4 h-4" /> Frequently Asked Questions
@@ -187,7 +187,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
               <details
                 key={idx}
                 open={idx === 0}
-                className="group rounded-2xl border border-slate-200 dark:border-white/[0.06] bg-slate-50/70 dark:bg-white/[0.02] overflow-hidden transition-colors"
+                className="group rounded-2xl glass-card overflow-hidden transition-colors"
               >
                 <summary className="w-full p-4 text-left flex items-center justify-between text-sm font-semibold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer list-none select-none">
                   <span>{item.question}</span>

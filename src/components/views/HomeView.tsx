@@ -66,7 +66,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
           <div className="max-w-2xl mx-auto pt-2">
             <div 
               onClick={onOpenSearch}
-              className="relative group p-2 rounded-3xl bg-white/90 hover:bg-white dark:bg-white/[0.03] dark:hover:bg-white/[0.05] border border-slate-200 hover:border-indigo-400 dark:border-white/[0.1] dark:hover:border-indigo-500/50 backdrop-blur-2xl transition-all duration-300 cursor-pointer"
+              className="relative group p-2 rounded-3xl glass-card transition-all duration-300 cursor-pointer"
             >
               <div className="flex items-center px-4 py-3 gap-3">
                 <Search className="w-5 h-5 text-slate-400 dark:text-neutral-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors shrink-0" />
@@ -77,7 +77,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
                   <kbd className="hidden sm:inline-flex items-center gap-1 text-xs font-mono bg-slate-200/90 dark:bg-black/50 text-slate-600 dark:text-neutral-400 px-2 py-1 rounded-lg border border-slate-300 dark:border-white/10">
                     <Command className="w-3 h-3" /> K
                   </kbd>
-                  <span className="px-3.5 py-1.5 rounded-xl bg-indigo-600 group-hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition-colors">
+                  <span className="px-3.5 py-1.5 rounded-xl bg-indigo-600 group-hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all">
                     Search
                   </span>
                 </div>
@@ -91,7 +91,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
                 <button
                   key={pill.slug}
                   onClick={() => onNavigate(`tools/${pill.slug}`)}
-                  className="text-xs px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.03] dark:hover:bg-white/[0.08] text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white border border-slate-200 dark:border-white/[0.08] transition-colors cursor-pointer"
+                  className="text-xs px-3 py-1 rounded-full glass-pill text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-100"
                 >
                   {pill.label}
                 </button>
@@ -195,7 +195,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
 
       {/* Section 4: Why Toolsbar / Design Philosophy */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="rounded-3xl p-8 sm:p-14 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-2xl shadow-xl dark:shadow-2xl relative overflow-hidden">
+        <div className="rounded-3xl p-8 sm:p-14 glass-panel relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 max-w-3xl space-y-4 mb-12">
@@ -239,7 +239,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
             ].map((pillar, idx) => {
               const Icon = pillar.icon;
               return (
-                <div key={idx} className="p-6 rounded-2xl bg-slate-50/90 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] space-y-3">
+                <div key={idx} className="p-6 rounded-2xl glass-card space-y-3">
                   <div className="w-10 h-10 rounded-xl bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] flex items-center justify-center shadow-sm dark:shadow-none">
                     <Icon className={`w-5 h-5 ${pillar.color}`} />
                   </div>
@@ -254,7 +254,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
 
       {/* Section 5: Informational Section — About Toolsbar */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" aria-labelledby="about-toolsbar-heading">
-        <article className="rounded-3xl p-8 sm:p-12 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm dark:shadow-xl space-y-6">
+        <article className="rounded-3xl p-8 sm:p-12 glass-panel space-y-6">
           <div className="space-y-2">
             <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5" /> Platform Overview
@@ -301,7 +301,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
           </button>
           <button
             onClick={onOpenSearch}
-            className="px-6 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-neutral-200 text-sm font-semibold transition-colors cursor-pointer"
+            className="px-6 py-3 rounded-2xl glass-button text-slate-800 dark:text-neutral-200 text-sm font-semibold transition-all cursor-pointer"
           >
             Open Command Search (⌘K)
           </button>

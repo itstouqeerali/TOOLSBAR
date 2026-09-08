@@ -37,7 +37,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onNavigate }) => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         id="header-user-menu-btn"
-        className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-full bg-slate-100/90 hover:bg-slate-200/80 dark:bg-white/[0.05] dark:hover:bg-white/[0.08] border border-slate-200/80 dark:border-white/[0.08] text-slate-800 dark:text-neutral-200 transition-all cursor-pointer shadow-sm text-xs"
+        className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-full glass-button text-slate-800 dark:text-neutral-200 transition-all cursor-pointer shadow-sm text-xs"
         aria-label="User account menu"
       >
         {userProfile?.photoURL || user.photoURL ? (
@@ -69,7 +69,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onNavigate }) => {
       {isOpen && (
         <div
           id="header-user-dropdown"
-          className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#0c0e17] border border-slate-200 dark:border-white/[0.12] p-2 backdrop-blur-2xl shadow-2xl space-y-1 z-50 animate-in fade-in slide-from-top-2 duration-150 text-left"
+          className="absolute right-0 mt-2 w-64 rounded-2xl glass-popover border border-slate-200/90 dark:border-white/[0.12] p-2 shadow-2xl space-y-1 z-50 animate-in fade-in slide-from-top-2 duration-150 text-left"
         >
           {/* User Details Box */}
           <div 

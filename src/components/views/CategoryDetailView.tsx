@@ -84,7 +84,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category
       {/* Semantic Publisher Editorial Guide for this Category */}
       {category.editorial && (
         <article
-          className="rounded-3xl p-6 sm:p-10 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm dark:shadow-xl space-y-8 mt-12"
+          className="rounded-3xl p-6 sm:p-10 glass-panel space-y-8 mt-12"
           aria-labelledby="category-guide-title"
         >
           <div className="space-y-3">
@@ -101,7 +101,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             {/* Key Capabilities */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.06] space-y-4">
+            <div className="p-5 sm:p-6 rounded-2xl glass-card space-y-4">
               <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                 Key Capabilities & Features
@@ -117,7 +117,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category
             </div>
 
             {/* Practical Use Cases & Tasks */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-slate-50/80 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.06] space-y-4">
+            <div className="p-5 sm:p-6 rounded-2xl glass-card space-y-4">
               <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 Practical Everyday Use Cases

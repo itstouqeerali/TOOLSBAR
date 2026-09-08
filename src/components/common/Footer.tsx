@@ -9,14 +9,14 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
-    <footer className="border-t border-slate-200/90 dark:border-white/[0.08] bg-white/70 dark:bg-[#030303]/80 backdrop-blur-2xl mt-16 sm:mt-24 py-10 sm:py-16 text-slate-600 dark:text-neutral-400">
+    <footer className="glass-panel border-x-0 border-b-0 mt-16 sm:mt-24 py-10 sm:py-16 text-slate-600 dark:text-neutral-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-x-6 sm:gap-x-10 gap-y-8 sm:gap-y-10 pb-8 sm:pb-12 border-b border-slate-200 dark:border-white/5">
           {/* Brand Col */}
           <div className="col-span-2 md:col-span-2 lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 p-[1px] shadow-lg shadow-indigo-600/20">
-                <div className="w-full h-full bg-white dark:bg-[#030303] rounded-[11px] flex items-center justify-center p-1.5">
+                <div className="w-full h-full bg-white dark:bg-[#0c0e18] rounded-[11px] flex items-center justify-center p-1.5">
                   <ToolsbarLogo className="w-full h-full text-indigo-600 dark:text-white" />
                 </div>
               </div>

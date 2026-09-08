@@ -367,13 +367,9 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-main)] text-[var(--text-main)] font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300 relative overflow-x-hidden">
-      {/* Immersive ambient glow background layers */}
-      <div className="fixed top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] glow-orb-primary rounded-full blur-[120px] pointer-events-none z-0" />
-      <div className="fixed top-[40%] -left-[10%] w-[600px] h-[600px] glow-orb-cyan rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="fixed bottom-[10%] -right-[10%] w-[600px] h-[600px] glow-orb-purple rounded-full blur-[140px] pointer-events-none z-0" />
-
-      {/* Subtle dot matrix grid */}
-      <div className="fixed inset-0 bg-[radial-gradient(var(--dot-color)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none z-0" />
+      {/* Restrained Layered Ambient Background for Frosted Glass Depth */}
+      <div className="page-ambient-bg pointer-events-none" aria-hidden="true" />
+      <div className="page-dot-matrix pointer-events-none" aria-hidden="true" />
 
       {/* Header */}
       <Header

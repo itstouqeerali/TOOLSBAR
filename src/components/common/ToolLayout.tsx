@@ -78,10 +78,10 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
           <button
             onClick={handleFavoriteClick}
             id="tool-layout-favorite-btn"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-colors cursor-pointer text-xs font-medium ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all cursor-pointer text-xs font-medium ${
               favorited
-                ? 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-300'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white border-slate-200 dark:border-white/10'
+                ? 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 shadow-sm'
+                : 'glass-button text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white'
             }`}
           >
             <Star className={`w-3.5 h-3.5 ${favorited ? 'fill-amber-500 text-amber-500' : ''}`} />
@@ -92,7 +92,7 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
           <button
             onClick={handleShare}
             id="tool-layout-share-btn"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white border border-slate-200 dark:border-white/10 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-button text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-all cursor-pointer"
           >
             {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
             <span>{copiedLink ? 'Link Copied!' : 'Share Tool'}</span>
@@ -156,7 +156,7 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
               <div
                 key={t.id}
                 onClick={() => onNavigate(`tools/${t.slug}`)}
-                className="p-3.5 sm:p-5 rounded-2xl bg-white/80 hover:bg-white border border-slate-200/90 hover:border-indigo-400 dark:bg-white/[0.025] dark:hover:bg-white/[0.055] dark:border-white/[0.08] dark:hover:border-indigo-500/40 cursor-pointer transition-all hover:-translate-y-1 flex flex-col justify-between group shadow-sm dark:shadow-none"
+                className="p-3.5 sm:p-5 rounded-2xl glass-card cursor-pointer flex flex-col justify-between group"
               >
                 <div>
                   <h4 className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors">

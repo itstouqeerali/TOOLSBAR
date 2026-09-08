@@ -31,7 +31,7 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({ onNavigate }) =>
           return (
             <div
               key={category.id}
-              className="rounded-3xl p-6 sm:p-7 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm dark:shadow-xl flex flex-col justify-between space-y-6"
+              className="rounded-3xl p-6 sm:p-7 glass-panel flex flex-col justify-between space-y-6"
             >
               <div>
                 <CategoryCard
