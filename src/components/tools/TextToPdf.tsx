@@ -1,2587 +1,907 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { 
-  FileText, Download, RefreshCw, AlertCircle, CheckCircle2, 
-  ShieldCheck, Trash2, Settings, Sliders, Sparkles, 
-  AlignLeft, AlignCenter, AlignRight, AlignJustify, Copy, Check,
-  Bold, Italic, Underline, Strikethrough, Highlighter, Type, Palette,
-  List, ListOrdered, Indent, Outdent, Link2, RemoveFormatting,
-  Undo2, Redo2, Heading1, Heading2, Heading3, ChevronDown, Plus, Minus
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import {
+  Download,
+  ShieldCheck,
+  Trash2,
+  Sparkles,
+  Sliders,
+  CheckCircle2,
+  FileText,
+  X,
+  RotateCcw,
 } from 'lucide-react';
-import { PDFDocument, StandardFonts, rgb, RGB } from 'pdf-lib';
 
-export type PageSizeOption = 'a4' | 'letter' | 'legal';
-export type PageOrientationOption = 'portrait' | 'landscape';
-export type MarginOption = 'compact' | 'standard' | 'wide';
-export type FontFamilyOption = 'Helvetica' | 'TimesRoman' | 'Courier';
-export type TextAlignOption = 'left' | 'center' | 'right' | 'justify';
-
-const SAMPLE_RICH_HTML = `<h1 style="font-family: Helvetica; color: #0f172a; margin-bottom: 8px;">Toolsbar Professional Document</h1>
-<p style="font-family: Helvetica; color: #64748b; font-size: 13px; margin-bottom: 14px;">Client-Side Rich Text to PDF Generator & Document Studio</p>
-<hr style="border: none; border-top: 1px solid #cbd5e1; margin-bottom: 16px;" />
-<p style="margin-bottom: 12px; line-height: 1.5;">Welcome to the <b>professional rich-text editor</b>. You can now select individual words, sentences, or paragraphs and apply distinct formatting, fonts, highlights, and headings.</p>
-<h2 style="font-family: Helvetica; color: #1e293b; margin-top: 14px; margin-bottom: 8px;">Key Capabilities</h2>
-<ul>
-  <li style="margin-bottom: 6px;"><b>Selection-Level Formatting:</b> Highlight specific words to make them <i>italic</i>, <u>underlined</u>, or <span style="color: #4f46e5; font-weight: bold;">custom colored</span>.</li>
-  <li style="margin-bottom: 6px;"><mark style="background-color: #fef08a; padding: 2px 4px; border-radius: 3px;">Smart Highlighting:</mark> Highlight key phrases in <mark style="background-color: #a5f3fc; padding: 2px 4px; border-radius: 3px;">cyan</mark>, <mark style="background-color: #bbf7d0; padding: 2px 4px; border-radius: 3px;">emerald</mark>, or <mark style="background-color: #fed7aa; padding: 2px 4px; border-radius: 3px;">orange</mark>.</li>
-  <li style="margin-bottom: 6px;"><b>Document Hierarchy:</b> Organize sections using Heading 1, Heading 2, and Heading 3.</li>
-  <li style="margin-bottom: 6px;"><b>100% Client-Side Privacy:</b> All compilation runs entirely within your browser sandbox.</li>
-</ul>
-<h3 style="font-family: Helvetica; color: #334155; margin-top: 14px; margin-bottom: 6px;">Getting Started</h3>
-<p style="margin-bottom: 12px; line-height: 1.5;">Select any text in this editor to use the formatting toolbar, or clear the editor to write your custom proposal, agreement, or notes.</p>`;
-
-interface InlineSpan {
-  text: string;
-  fontFamily: FontFamilyOption;
-  fontSizePt: number;
-  bold: boolean;
-  italic: boolean;
-  underline: boolean;
-  strikethrough: boolean;
-  colorHex: string;
-  bgColorHex: string | null;
-  linkUrl: string | null;
-}
-
-interface FormattedBlock {
-  type: 'h1' | 'h2' | 'h3' | 'p' | 'li-bullet' | 'li-number' | 'hr';
-  align: TextAlignOption;
-  indent: number;
-  listIndex?: number;
-  spans: InlineSpan[];
-}
-
-interface PaginatedPage {
-  pageIndex: number;
-  blocks: {
-    block: FormattedBlock;
-    lines: {
-      spans: (InlineSpan & { widthPt: number })[];
-      lineWidthPt: number;
-      lineHeightPt: number;
-      isFirstLineOfBlock: boolean;
-      listMarker?: string;
-    }[];
-  }[];
-}
-
-interface PaginatedDoc {
-  pages: PaginatedPage[];
-  pageWidthPt: number;
-  pageHeightPt: number;
-  marginPt: number;
-  topMarginPt: number;
-  bottomMarginPt: number;
-  contentWidthPt: number;
-  contentHeightPt: number;
-  aspectRatio: number;
-}
-
-// Preset Color Palettes for toolbar
-const TEXT_COLORS = [
-  { name: 'Black', value: '#000000' },
-  { name: 'Dark Gray', value: '#334155' },
-  { name: 'Slate', value: '#475569' },
-  { name: 'Gray', value: '#64748b' },
-  { name: 'Light Gray', value: '#94a3b8' },
-  { name: 'White', value: '#ffffff' },
-  { name: 'Red', value: '#ef4444' },
-  { name: 'Crimson', value: '#b91c1c' },
-  { name: 'Orange', value: '#f97316' },
-  { name: 'Amber', value: '#d97706' },
-  { name: 'Yellow', value: '#eab308' },
-  { name: 'Green', value: '#22c55e' },
-  { name: 'Emerald', value: '#059669' },
-  { name: 'Teal', value: '#14b8a6' },
-  { name: 'Cyan', value: '#06b6d4' },
-  { name: 'Blue', value: '#3b82f6' },
-  { name: 'Indigo', value: '#6366f1' },
-  { name: 'Purple', value: '#a855f7' },
-  { name: 'Pink', value: '#ec4899' },
-  { name: 'Rose', value: '#f43f5e' },
-];
-
-const HIGHLIGHT_COLORS = [
-  { name: 'Clear', value: 'transparent', label: 'Clear' },
-  { name: 'Yellow', value: '#fef08a', label: 'Yellow' },
-  { name: 'Light Yellow', value: '#fef9c3', label: 'Light Yellow' },
-  { name: 'Orange', value: '#fed7aa', label: 'Orange' },
-  { name: 'Peach', value: '#ffedd5', label: 'Peach' },
-  { name: 'Pink', value: '#fbcfe8', label: 'Pink' },
-  { name: 'Rose', value: '#fecdd3', label: 'Rose' },
-  { name: 'Light Green', value: '#bbf7d0', label: 'Light Green' },
-  { name: 'Emerald', value: '#a7f3d0', label: 'Emerald' },
-  { name: 'Cyan', value: '#a5f3fc', label: 'Cyan' },
-  { name: 'Light Blue', value: '#bfdbfe', label: 'Light Blue' },
-  { name: 'Lavender', value: '#e0e7ff', label: 'Lavender' },
-  { name: 'Purple', value: '#f3e8ff', label: 'Purple' },
-  { name: 'Gray', value: '#e2e8f0', label: 'Gray' },
-];
-
-const FONT_SIZE_OPTIONS = [9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 36];
+import {
+  BlockType,
+  CanonicalDocument,
+  FontFamilyOption,
+  MarginOption,
+  PageOrientationOption,
+  PageSizeOption,
+  TextAlignOption,
+} from './textToPdf/types';
+import { calculateDimensions, paginateDocument } from './textToPdf/paginator';
+import { generatePdfBlob } from './textToPdf/pdfGenerator';
+import { Toolbar } from './textToPdf/Toolbar';
+import {
+  applyAlignToCanonicalDoc,
+  applyBlockTypeToCanonicalDoc,
+  applyStyleToCanonicalDoc,
+  CanonicalSelection,
+  clearFormattingFromCanonicalDoc,
+  countCanonicalStats,
+  insertHrToCanonicalDoc,
+  insertPageBreakToCanonicalDoc,
+  parsePlainTextToCanonical,
+  updateBlockTextInCanonicalDoc,
+} from './textToPdf/canonicalOperations';
+import { STANDARD_SAMPLE_TEXT, generateSeventeenPageDoc } from './textToPdf/sampleData';
 
 export const TextToPdf: React.FC = () => {
-  // Rich HTML content
-  const [editorHtml, setEditorHtml] = useState<string>(SAMPLE_RICH_HTML);
-  const editorRef = useRef<HTMLDivElement>(null);
-  const isInternalChange = useRef<boolean>(false);
-
-  // PDF Configuration Settings
+  // Page Configuration State
   const [pageSize, setPageSize] = useState<PageSizeOption>('a4');
   const [orientation, setOrientation] = useState<PageOrientationOption>('portrait');
   const [margin, setMargin] = useState<MarginOption>('standard');
-  const [defaultFontFamily, setDefaultFontFamily] = useState<FontFamilyOption>('Helvetica');
+  const [lineSpacing, setLineSpacing] = useState<number>(1.4);
   const [defaultFontSize, setDefaultFontSize] = useState<number>(12);
-  const [defaultLineSpacing, setDefaultLineSpacing] = useState<number>(1.4);
-  const [defaultTextAlign, setDefaultTextAlign] = useState<TextAlignOption>('left');
-  const [defaultTextColor, setDefaultTextColor] = useState<string>('#0f172a');
-  
-  // Headers & Footers
-  const [headerTitle, setHeaderTitle] = useState<string>('');
-  const [footerText, setFooterText] = useState<string>('');
+  const [defaultFontFamily, setDefaultFontFamily] = useState<FontFamilyOption>('Helvetica');
+  const [headerTitle, setHeaderTitle] = useState<string>('Toolsbar Professional Document');
+  const [footerText, setFooterText] = useState<string>('Confidential & Proprietary');
   const [includePageNumbers, setIncludePageNumbers] = useState<boolean>(true);
-  const [pdfFileName, setPdfFileName] = useState<string>('toolsbar-document.pdf');
-  const [showSettingsDrawer, setShowSettingsDrawer] = useState<boolean>(false);
 
-  // Operation States
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [copied, setCopied] = useState<boolean>(false);
-  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
-  const [pdfStats, setPdfStats] = useState<{
-    size: number;
-    pages: number;
-  } | null>(null);
+  // Settings Panel Toggle
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
 
-  // Toolbar Active State Detection
-  const [activeStyles, setActiveStyles] = useState({
-    bold: false,
-    italic: false,
-    underline: false,
-    strikethrough: false,
-    align: 'left' as TextAlignOption,
-    heading: 'p' as 'p' | 'h1' | 'h2' | 'h3',
-    list: null as 'ul' | 'ol' | null,
-    fontFamily: 'Helvetica' as FontFamilyOption,
-    fontSize: 12,
-    color: '#0f172a',
-    highlight: 'transparent',
-  });
+  // Source Text Editor Modal (for bulk paste / 17-page test / raw text input)
+  const [isTextModalOpen, setIsTextModalOpen] = useState<boolean>(false);
+  const [modalRawText, setModalRawText] = useState<string>('');
 
-  // Dropdown Popovers state & Trigger bounds for Portal rendering
-  const [openDropdown, setOpenDropdown] = useState<'color' | 'highlight' | 'heading' | 'font' | 'fontSize' | 'link' | null>(null);
-  const [dropdownTriggerRect, setDropdownTriggerRect] = useState<DOMRect | null>(null);
-  const [linkInputUrl, setLinkInputUrl] = useState<string>('');
-  const [savedSelectionRange, setSavedSelectionRange] = useState<Range | null>(null);
-  const savedSelectionRef = useRef<Range | null>(null);
-  const toolbarRef = useRef<HTMLDivElement>(null);
+  // Status State
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
 
-  // Tab state for settings
-  const [activeSettingsTab, setActiveSettingsTab] = useState<'page' | 'typography' | 'headerFooter'>('page');
+  // Canonical Document State (Pure single-source-of-truth)
+  const [canonicalDoc, setCanonicalDoc] = useState<CanonicalDocument>(() =>
+    parsePlainTextToCanonical(STANDARD_SAMPLE_TEXT, 'Helvetica', 12)
+  );
 
-  // Sync editor HTML when loaded initially
+  // Undo & Redo History Stacks
+  const [undoStack, setUndoStack] = useState<CanonicalDocument[]>([]);
+  const [redoStack, setRedoStack] = useState<CanonicalDocument[]>([]);
+
+  // Active toolbar selection state
+  const [currentBlockType, setCurrentBlockType] = useState<BlockType>('p');
+  const [currentAlign, setCurrentAlign] = useState<TextAlignOption>('left');
+  const [currentFontFamily, setCurrentFontFamily] = useState<FontFamilyOption>('Helvetica');
+  const [currentFontSize, setCurrentFontSize] = useState<number>(12);
+
+  // Stored selections for toolbar operations
+  const lastSelectionRef = useRef<CanonicalSelection | null>(null);
+  const lastActiveBlockIdRef = useRef<string | null>(null);
+  const deskContainerRef = useRef<HTMLDivElement>(null);
+  const [deskWidth, setDeskWidth] = useState<number>(800);
+
+  // Track desk width for responsive scaling on mobile
   useEffect(() => {
-    if (editorRef.current && !isInternalChange.current) {
-      editorRef.current.innerHTML = editorHtml;
-    }
+    const updateDeskWidth = () => {
+      if (deskContainerRef.current) {
+        setDeskWidth(deskContainerRef.current.clientWidth);
+      }
+    };
+    updateDeskWidth();
+    window.addEventListener('resize', updateDeskWidth);
+    return () => window.removeEventListener('resize', updateDeskWidth);
   }, []);
 
-  // Global click & escape listener to close portal dropdowns cleanly
-  useEffect(() => {
-    if (!openDropdown) return;
-    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target?.closest('[data-popover-portal]') || target?.closest('[data-popover-trigger]')) {
-        return;
-      }
-      setOpenDropdown(null);
-      setDropdownTriggerRect(null);
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpenDropdown(null);
-        setDropdownTriggerRect(null);
-      }
-    };
-    window.addEventListener('mousedown', handlePointerDown);
-    window.addEventListener('touchstart', handlePointerDown);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('mousedown', handlePointerDown);
-      window.removeEventListener('touchstart', handlePointerDown);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [openDropdown]);
-
-  // Save current browser selection inside editor
-  const saveCurrentSelection = useCallback(() => {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0 && editorRef.current) {
-      const range = sel.getRangeAt(0);
-      if (editorRef.current.contains(range.commonAncestorContainer)) {
-        savedSelectionRef.current = range.cloneRange();
-      }
-    }
-  }, []);
-
-  // Restore saved selection
-  const restoreSavedSelection = useCallback((): boolean => {
-    if (editorRef.current && savedSelectionRef.current) {
-      editorRef.current.focus();
-      const sel = window.getSelection();
-      if (sel) {
-        sel.removeAllRanges();
-        sel.addRange(savedSelectionRef.current.cloneRange());
-        return true;
-      }
-    }
-    return false;
-  }, []);
-
-  // Update selection style states when user clicks/moves cursor
-  const updateActiveToolbarStates = useCallback(() => {
-    if (!editorRef.current) return;
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    // Check query commands
-    try {
-      const isBold = document.queryCommandState('bold');
-      const isItalic = document.queryCommandState('italic');
-      const isUnderline = document.queryCommandState('underline');
-      const isStrike = document.queryCommandState('strikeThrough');
-
-      let currentBlock = 'p';
-      const anchor = selection.anchorNode;
-      let el: HTMLElement | null = anchor?.nodeType === Node.ELEMENT_NODE ? (anchor as HTMLElement) : anchor?.parentElement || null;
-      let currentAlign: TextAlignOption = defaultTextAlign;
-      let currentList: 'ul' | 'ol' | null = null;
-      let currentFont: FontFamilyOption = defaultFontFamily;
-      let currentSize = defaultFontSize;
-      let currentColor = defaultTextColor;
-      let currentHighlight = 'transparent';
-
-      while (el && el !== editorRef.current) {
-        const tag = el.tagName.toLowerCase();
-        if (tag === 'h1') currentBlock = 'h1';
-        else if (tag === 'h2') currentBlock = 'h2';
-        else if (tag === 'h3') currentBlock = 'h3';
-        else if (tag === 'ul') currentList = 'ul';
-        else if (tag === 'ol') currentList = 'ol';
-
-        if (el.style.textAlign) {
-          let a = el.style.textAlign.toLowerCase();
-          if (a === 'start') a = 'left';
-          if (a === 'end') a = 'right';
-          if (['left', 'center', 'right', 'justify'].includes(a)) {
-            currentAlign = a as TextAlignOption;
-          }
-        } else if (el.getAttribute('align')) {
-          let a = (el.getAttribute('align') || '').toLowerCase();
-          if (a === 'start') a = 'left';
-          if (a === 'end') a = 'right';
-          if (['left', 'center', 'right', 'justify'].includes(a)) {
-            currentAlign = a as TextAlignOption;
-          }
-        } else if (tag === 'center') {
-          currentAlign = 'center';
-        }
-        if (el.style.fontFamily) {
-          if (el.style.fontFamily.toLowerCase().includes('times') || el.style.fontFamily.toLowerCase().includes('serif')) {
-            currentFont = 'TimesRoman';
-          } else if (el.style.fontFamily.toLowerCase().includes('courier') || el.style.fontFamily.toLowerCase().includes('mono')) {
-            currentFont = 'Courier';
-          } else {
-            currentFont = 'Helvetica';
-          }
-        }
-        if (el.style.fontSize) {
-          const pt = parseInt(el.style.fontSize);
-          if (!isNaN(pt)) currentSize = pt;
-        }
-        if (el.style.color) {
-          currentColor = el.style.color;
-        }
-        if (el.style.backgroundColor || tag === 'mark') {
-          currentHighlight = el.style.backgroundColor || '#fef08a';
-        }
-
-        el = el.parentElement;
-      }
-
-      setActiveStyles({
-        bold: isBold,
-        italic: isItalic,
-        underline: isUnderline,
-        strikethrough: isStrike,
-        align: currentAlign,
-        heading: currentBlock as any,
-        list: currentList,
-        fontFamily: currentFont,
-        fontSize: currentSize,
-        color: currentColor,
-        highlight: currentHighlight,
-      });
-    } catch {
-      // benign queryCommand fallback
-    }
-  }, [defaultTextAlign, defaultFontFamily, defaultFontSize, defaultTextColor]);
-
-  // Listen for selection changes document-wide to keep savedSelection fresh
-  useEffect(() => {
-    const handleSelectionChange = () => {
-      saveCurrentSelection();
-      updateActiveToolbarStates();
-    };
-    document.addEventListener('selectionchange', handleSelectionChange);
-    return () => {
-      document.removeEventListener('selectionchange', handleSelectionChange);
-    };
-  }, [saveCurrentSelection, updateActiveToolbarStates]);
-
-  // Close dropdowns when clicking outside toolbar
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
-        setOpenDropdown(null);
-      }
-    };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, []);
-
-  // Clean up generated blob URL on unmount
-  useEffect(() => {
-    return () => {
-      if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
-    };
-  }, []);
-
-  // Format file size
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  // Convert Hex / RGB string to RGB object for PDF document
-  const parseColorToRgb = (colorStr: string): RGB => {
-    if (!colorStr || colorStr === 'transparent') return rgb(0.1, 0.1, 0.1);
-
-    if (colorStr.startsWith('rgb')) {
-      const match = colorStr.match(/\d+/g);
-      if (match && match.length >= 3) {
-        return rgb(
-          parseInt(match[0]) / 255,
-          parseInt(match[1]) / 255,
-          parseInt(match[2]) / 255
-        );
-      }
-    }
-
-    const cleanHex = colorStr.replace('#', '');
-    let r = 0, g = 0, b = 0;
-    if (cleanHex.length === 3) {
-      r = parseInt(cleanHex[0] + cleanHex[0], 16) / 255;
-      g = parseInt(cleanHex[1] + cleanHex[1], 16) / 255;
-      b = parseInt(cleanHex[2] + cleanHex[2], 16) / 255;
-    } else if (cleanHex.length === 6) {
-      r = parseInt(cleanHex.substring(0, 2), 16) / 255;
-      g = parseInt(cleanHex.substring(2, 4), 16) / 255;
-      b = parseInt(cleanHex.substring(4, 6), 16) / 255;
-    }
-    return rgb(isNaN(r) ? 0 : r, isNaN(g) ? 0 : g, isNaN(b) ? 0 : b);
-  };
-
-  // Convert RGB string or short hex to standard #rrggbb format for HTML color inputs
-  const rgbOrHexToHex = (colorStr: string): string => {
-    if (!colorStr || colorStr === 'transparent') return '#000000';
-    if (colorStr.startsWith('#')) {
-      if (colorStr.length === 4) {
-        return `#${colorStr[1]}${colorStr[1]}${colorStr[2]}${colorStr[2]}${colorStr[3]}${colorStr[3]}`;
-      }
-      return colorStr.substring(0, 7);
-    }
-    if (colorStr.startsWith('rgb')) {
-      const match = colorStr.match(/\d+/g);
-      if (match && match.length >= 3) {
-        const r = Math.min(255, parseInt(match[0])).toString(16).padStart(2, '0');
-        const g = Math.min(255, parseInt(match[1])).toString(16).padStart(2, '0');
-        const b = Math.min(255, parseInt(match[2])).toString(16).padStart(2, '0');
-        return `#${r}${g}${b}`;
-      }
-    }
-    return '#000000';
-  };
-
-  // Map font family to CSS font string for preview
-  const getCssFontFamily = (family: FontFamilyOption) => {
-    if (family === 'TimesRoman') return '"Times New Roman", Times, Georgia, serif';
-    if (family === 'Courier') return '"Courier New", Courier, monospace';
-    return 'Helvetica, Arial, sans-serif';
-  };
-
-  // Extract any inline styles enclosing a node
-  const getInheritedInlineStyles = (node: Node | null): Record<string, string> => {
-    const styles: Record<string, string> = {};
-    let curr: HTMLElement | null = node?.nodeType === Node.TEXT_NODE ? node.parentElement : (node as HTMLElement | null);
-    while (curr && curr !== editorRef.current) {
-      const tag = curr.tagName.toLowerCase();
-      if (['p', 'div', 'h1', 'h2', 'h3', 'li', 'blockquote'].includes(tag)) break;
-
-      if (curr.style.fontFamily && !styles.fontFamily) styles.fontFamily = curr.style.fontFamily;
-      if (curr.style.fontSize && !styles.fontSize) styles.fontSize = curr.style.fontSize;
-      if (curr.style.color && !styles.color) styles.color = curr.style.color;
-      if (curr.style.backgroundColor && !styles.backgroundColor) styles.backgroundColor = curr.style.backgroundColor;
-      if (tag === 'mark' && !styles.backgroundColor) styles.backgroundColor = curr.style.backgroundColor || '#fef08a';
-      if ((tag === 'b' || tag === 'strong' || curr.style.fontWeight === 'bold') && !styles.fontWeight) styles.fontWeight = 'bold';
-      if ((tag === 'i' || tag === 'em' || curr.style.fontStyle === 'italic') && !styles.fontStyle) styles.fontStyle = 'italic';
-      if ((tag === 'u' || curr.style.textDecoration?.includes('underline')) && !styles.underline) styles.underline = 'underline';
-      if ((tag === 's' || tag === 'strike' || curr.style.textDecoration?.includes('line-through')) && !styles.strikethrough) styles.strikethrough = 'line-through';
-
-      curr = curr.parentElement;
-    }
-    return styles;
-  };
-
-  // Find enclosing block element for paragraph/heading alignment
-  const findEnclosingBlock = (node: Node | null): HTMLElement | null => {
-    let curr = node;
-    if (curr && curr.nodeType === Node.TEXT_NODE) {
-      curr = curr.parentElement;
-    }
-    while (curr && curr !== editorRef.current) {
-      const tag = (curr as HTMLElement).tagName.toLowerCase();
-      if (['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'blockquote', 'pre'].includes(tag)) {
-        return curr as HTMLElement;
-      }
-      curr = curr.parentElement;
-    }
-    return null;
-  };
-
-  // Execute rich text formatting commands
-  const executeCommand = (command: string, value: string | undefined = undefined) => {
-    restoreSavedSelection();
-    if (!editorRef.current) return;
-    editorRef.current.focus();
-    document.execCommand(command, false, value);
-    handleEditorInput();
-    updateActiveToolbarStates();
-  };
-
-  // Handle Selection-Specific Style Wrapping (Font size, Font Family, Colors)
-  const applyInlineStyle = (styleProp: string, styleValue: string) => {
-    restoreSavedSelection();
-    if (!editorRef.current) return;
-    editorRef.current.focus();
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      // No text selected: do not overwrite entire document settings
-      setOpenDropdown(null);
-      return;
-    }
-
-    const range = selection.getRangeAt(0);
-
-    // If native execCommand foreColor works cleanly, use it with styleWithCSS
-    if (styleProp === 'color') {
-      document.execCommand('styleWithCSS', false, 'true');
-      document.execCommand('foreColor', false, styleValue);
-    } else {
-      const span = document.createElement('span');
-
-      // Preserve existing surrounding inline formatting (bold, italic, etc.)
-      const inherited = getInheritedInlineStyles(range.commonAncestorContainer);
-      for (const [key, val] of Object.entries(inherited)) {
-        if (key === 'fontWeight') span.style.fontWeight = val;
-        else if (key === 'fontStyle') span.style.fontStyle = val;
-        else if (key === 'underline' || key === 'strikethrough') {
-          const currentDec = span.style.textDecoration || '';
-          span.style.textDecoration = `${currentDec} ${val}`.trim();
-        } else {
-          span.style.setProperty(key, val);
-        }
-      }
-
-      // Apply requested style
-      if (styleProp === 'fontFamily') {
-        const familyCss = styleValue === 'TimesRoman' 
-          ? '"Times New Roman", Times, Georgia, serif' 
-          : styleValue === 'Courier' 
-          ? '"Courier New", Courier, monospace' 
-          : 'Helvetica, Arial, sans-serif';
-        span.style.fontFamily = familyCss;
-      } else {
-        span.style.setProperty(styleProp, styleValue);
-      }
-
-      try {
-        const contents = range.extractContents();
-        span.appendChild(contents);
-        range.insertNode(span);
-
-        // Re-select newly styled element
-        const newRange = document.createRange();
-        newRange.selectNodeContents(span);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-        savedSelectionRef.current = newRange.cloneRange();
-      } catch (err) {
-        console.error('Error applying inline style:', err);
-      }
-    }
-
-    handleEditorInput();
-    updateActiveToolbarStates();
-    setOpenDropdown(null);
-  };
-
-  // Apply Highlight
-  const applyHighlight = (bgColor: string) => {
-    restoreSavedSelection();
-    if (!editorRef.current) return;
-    editorRef.current.focus();
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      setOpenDropdown(null);
-      return;
-    }
-
-    const range = selection.getRangeAt(0);
-    if (bgColor === 'transparent') {
-      document.execCommand('styleWithCSS', false, 'true');
-      document.execCommand('hiliteColor', false, 'transparent');
-      let curr: HTMLElement | null = range.commonAncestorContainer?.nodeType === Node.TEXT_NODE 
-        ? range.commonAncestorContainer.parentElement 
-        : (range.commonAncestorContainer as HTMLElement | null);
-      while (curr && curr !== editorRef.current) {
-        if (curr.tagName.toLowerCase() === 'mark' || curr.style.backgroundColor) {
-          curr.style.backgroundColor = 'transparent';
-        }
-        curr = curr.parentElement;
-      }
-    } else {
-      const mark = document.createElement('mark');
-      mark.style.backgroundColor = bgColor;
-      mark.style.padding = '2px 4px';
-      mark.style.borderRadius = '3px';
-
-      // Preserve inherited styles
-      const inherited = getInheritedInlineStyles(range.commonAncestorContainer);
-      for (const [key, val] of Object.entries(inherited)) {
-        if (key !== 'backgroundColor') {
-          if (key === 'fontWeight') mark.style.fontWeight = val;
-          else if (key === 'fontStyle') mark.style.fontStyle = val;
-          else if (key === 'underline' || key === 'strikethrough') {
-            const currentDec = mark.style.textDecoration || '';
-            mark.style.textDecoration = `${currentDec} ${val}`.trim();
-          } else {
-            mark.style.setProperty(key, val);
-          }
-        }
-      }
-
-      try {
-        const contents = range.extractContents();
-        mark.appendChild(contents);
-        range.insertNode(mark);
-
-        const newRange = document.createRange();
-        newRange.selectNodeContents(mark);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-        savedSelectionRef.current = newRange.cloneRange();
-      } catch {
-        document.execCommand('styleWithCSS', false, 'true');
-        document.execCommand('hiliteColor', false, bgColor);
-      }
-    }
-
-    handleEditorInput();
-    updateActiveToolbarStates();
-    setOpenDropdown(null);
-  };
-
-  // Format Block Heading / Paragraph
-  const applyHeading = (headingTag: 'h1' | 'h2' | 'h3' | 'p') => {
-    restoreSavedSelection();
-    if (!editorRef.current) return;
-    editorRef.current.focus();
-    document.execCommand('formatBlock', false, `<${headingTag}>`);
-    handleEditorInput();
-    updateActiveToolbarStates();
-    setOpenDropdown(null);
-  };
-
-  // Format Alignment - Targets only active block/paragraph, never the whole document
-  const applyAlignment = (align: TextAlignOption) => {
-    restoreSavedSelection();
-    if (!editorRef.current) return;
-    editorRef.current.focus();
-
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    document.execCommand('styleWithCSS', false, 'true');
-    if (align === 'left') document.execCommand('justifyLeft', false);
-    else if (align === 'center') document.execCommand('justifyCenter', false);
-    else if (align === 'right') document.execCommand('justifyRight', false);
-    else if (align === 'justify') document.execCommand('justifyFull', false);
-
-    // Ensure the enclosing paragraph/heading block explicitly stores textAlign
-    let enclosingBlock = findEnclosingBlock(selection.anchorNode);
-    if (!enclosingBlock || enclosingBlock === editorRef.current) {
-      document.execCommand('formatBlock', false, '<p>');
-      enclosingBlock = findEnclosingBlock(selection.anchorNode);
-    }
-    if (enclosingBlock && enclosingBlock !== editorRef.current) {
-      enclosingBlock.style.textAlign = align;
-    }
-
-    // For multi-block selections, apply alignment to all selected blocks
-    const activeRange = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-    if (activeRange && editorRef.current) {
-      const allBlocks = editorRef.current.querySelectorAll('p, div, h1, h2, h3, h4, h5, h6, li, blockquote');
-      allBlocks.forEach((b) => {
-        if (selection.containsNode(b, true)) {
-          (b as HTMLElement).style.textAlign = align;
-        }
-      });
-    }
-
-    handleEditorInput();
-    updateActiveToolbarStates();
-  };
-
-  // Insert Link Action
-  const handleOpenLinkModal = () => {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      setSavedSelectionRange(selection.getRangeAt(0).cloneRange());
-    }
-    setOpenDropdown(openDropdown === 'link' ? null : 'link');
-  };
-
-  const handleApplyLink = () => {
-    if (!linkInputUrl.trim() || !editorRef.current) {
-      setOpenDropdown(null);
-      return;
-    }
-    editorRef.current.focus();
-    if (savedSelectionRange) {
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(savedSelectionRange);
-    }
-    let url = linkInputUrl.trim();
-    if (!/^https?:\/\//i.test(url)) {
-      url = 'https://' + url;
-    }
-    document.execCommand('createLink', false, url);
-    setLinkInputUrl('');
-    setSavedSelectionRange(null);
-    setOpenDropdown(null);
-    handleEditorInput();
-  };
-
-  // Input event handler from contenteditable
-  const handleEditorInput = () => {
-    if (editorRef.current) {
-      isInternalChange.current = true;
-      const html = editorRef.current.innerHTML;
-      setEditorHtml(html);
-      if (pdfBlobUrl) {
-        URL.revokeObjectURL(pdfBlobUrl);
-        setPdfBlobUrl(null);
-        setPdfStats(null);
-      }
-      setTimeout(() => {
-        isInternalChange.current = false;
-      }, 0);
-    }
-  };
-
-  // Safe normalized multiline paste handler to preserve sensible paragraphs
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    if (!text) return;
-
-    const paragraphs = text.split(/\r\n|\r|\n/);
-    if (paragraphs.length <= 1) {
-      document.execCommand('insertText', false, text);
-    } else {
-      const fragment = document.createDocumentFragment();
-      paragraphs.forEach((pText) => {
-        const p = document.createElement('p');
-        if (pText.trim().length === 0) {
-          p.appendChild(document.createElement('br'));
-        } else {
-          p.textContent = pText;
-        }
-        fragment.appendChild(p);
-      });
-
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(fragment);
-        range.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      } else {
-        document.execCommand('insertText', false, text);
-      }
-    }
-
-    handleEditorInput();
-    updateActiveToolbarStates();
-  };
-
-  // Character & Word counts from rendered text
-  const stats = useMemo(() => {
-    const div = document.createElement('div');
-    div.innerHTML = editorHtml;
-    const plainText = div.innerText || div.textContent || '';
-    const trimmed = plainText.trim();
-    const characters = plainText.length;
-    const words = trimmed ? trimmed.split(/\s+/).filter(Boolean).length : 0;
-    const lines = plainText ? plainText.split('\n').filter(Boolean).length : 0;
-    return { characters, words, lines, plainText };
-  }, [editorHtml]);
-
-  // Robust HTML to Structured Block Parser for Pagination & PDF Vector Rendering
-  const parseHtmlToFormattedBlocks = useCallback((html: string): FormattedBlock[] => {
-    const container = document.createElement('div');
-    container.innerHTML = html;
-
-    const blocks: FormattedBlock[] = [];
-
-    const parseInlineNodes = (
-      node: Node, 
-      inherited: {
-        fontFamily: FontFamilyOption;
-        fontSizePt: number;
-        bold: boolean;
-        italic: boolean;
-        underline: boolean;
-        strikethrough: boolean;
-        colorHex: string;
-        bgColorHex: string | null;
-        linkUrl: string | null;
-      }
-    ): InlineSpan[] => {
-      const spans: InlineSpan[] = [];
-
-      if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent || '';
-        if (text) {
-          spans.push({
-            text,
-            ...inherited,
-          });
-        }
-        return spans;
-      }
-
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as HTMLElement;
-        const tag = el.tagName.toLowerCase();
-
-        let bold = inherited.bold || tag === 'b' || tag === 'strong' || el.style.fontWeight === 'bold' || parseInt(el.style.fontWeight) >= 600;
-        let italic = inherited.italic || tag === 'i' || tag === 'em' || el.style.fontStyle === 'italic';
-        let underline = inherited.underline || tag === 'u' || el.style.textDecoration?.includes('underline');
-        let strikethrough = inherited.strikethrough || tag === 's' || tag === 'strike' || tag === 'del' || el.style.textDecoration?.includes('line-through');
-
-        let fontFamily = inherited.fontFamily;
-        const fontAttr = el.style.fontFamily || el.getAttribute('face');
-        if (fontAttr) {
-          const f = fontAttr.toLowerCase();
-          if (f.includes('times') || f.includes('serif')) fontFamily = 'TimesRoman';
-          else if (f.includes('courier') || f.includes('mono')) fontFamily = 'Courier';
-          else fontFamily = 'Helvetica';
-        }
-
-        let fontSizePt = inherited.fontSizePt;
-        if (el.style.fontSize) {
-          const pt = parseInt(el.style.fontSize);
-          if (!isNaN(pt) && pt > 0) fontSizePt = pt;
-        } else if (el.getAttribute('size')) {
-          const sz = parseInt(el.getAttribute('size') || '');
-          if (!isNaN(sz)) {
-            const fontSizesMap: Record<number, number> = { 1: 9, 2: 10, 3: 12, 4: 14, 5: 18, 6: 24, 7: 32 };
-            if (fontSizesMap[sz]) fontSizePt = fontSizesMap[sz];
-          }
-        }
-
-        let colorHex = el.style.color || el.getAttribute('color') || inherited.colorHex;
-        let bgColorHex = (tag === 'mark' || el.style.backgroundColor) ? (el.style.backgroundColor || '#fef08a') : inherited.bgColorHex;
-        if (bgColorHex === 'transparent') bgColorHex = null;
-        let linkUrl = tag === 'a' ? (el.getAttribute('href') || null) : inherited.linkUrl;
-
-        if (tag === 'br') {
-          spans.push({
-            text: '\n',
-            ...inherited,
-          });
-          return spans;
-        }
-
-        for (const child of Array.from(el.childNodes)) {
-          spans.push(...parseInlineNodes(child, {
-            fontFamily,
-            fontSizePt,
-            bold,
-            italic,
-            underline,
-            strikethrough,
-            colorHex,
-            bgColorHex,
-            linkUrl
-          }));
-        }
-      }
-
-      return spans;
-    };
-
-    const processElementBlock = (el: HTMLElement, inheritedAlign: TextAlignOption = defaultTextAlign) => {
-      const tag = el.tagName.toLowerCase();
-      let rawAlign = (tag === 'center' 
-        ? 'center' 
-        : (el.style.textAlign as TextAlignOption) || (el.getAttribute('align') as TextAlignOption) || inheritedAlign) as string;
-      if (rawAlign === 'start') rawAlign = 'left';
-      if (rawAlign === 'end') rawAlign = 'right';
-      const align: TextAlignOption = (['left', 'center', 'right', 'justify'].includes(rawAlign) 
-        ? rawAlign 
-        : defaultTextAlign) as TextAlignOption;
-
-      // Calculate any indentation from blockquote or margin/padding styles
-      let indentLevel = 0;
-      let checkEl: HTMLElement | null = el;
-      while (checkEl && checkEl !== container) {
-        if (checkEl.tagName.toLowerCase() === 'blockquote') indentLevel++;
-        const ml = parseInt(checkEl.style.marginLeft || checkEl.style.paddingLeft || '0');
-        if (!isNaN(ml) && ml >= 20) {
-          indentLevel += Math.min(5, Math.floor(ml / 30));
-        }
-        checkEl = checkEl.parentElement;
-      }
-
-      // If el contains block-level child elements (and is not ul/ol), recurse on block children
-      const hasBlockChildren = Array.from(el.children).some(child => 
-        ['p', 'div', 'h1', 'h2', 'h3', 'ul', 'ol', 'hr', 'blockquote'].includes(child.tagName.toLowerCase())
-      );
-      if (hasBlockChildren && tag !== 'ul' && tag !== 'ol') {
-        for (const child of Array.from(el.childNodes)) {
-          if (child.nodeType === Node.ELEMENT_NODE) {
-            processElementBlock(child as HTMLElement, align);
-          } else if (child.nodeType === Node.TEXT_NODE) {
-            const text = child.textContent?.trim();
-            if (text) {
-              const spans = parseInlineNodes(child, {
-                fontFamily: defaultFontFamily,
-                fontSizePt: defaultFontSize,
-                bold: false,
-                italic: false,
-                underline: false,
-                strikethrough: false,
-                colorHex: defaultTextColor,
-                bgColorHex: null,
-                linkUrl: null
-              });
-              if (spans.length > 0) {
-                blocks.push({
-                  type: 'p',
-                  align,
-                  indent: indentLevel,
-                  spans
-                });
-              }
-            }
-          }
-        }
-        return;
-      }
-
-      if (tag === 'h1' || tag === 'h2' || tag === 'h3') {
-        const baseHSize = tag === 'h1' ? 22 : tag === 'h2' ? 16 : 14;
-        const spans = parseInlineNodes(el, {
-          fontFamily: defaultFontFamily,
-          fontSizePt: baseHSize,
-          bold: true,
-          italic: false,
-          underline: false,
-          strikethrough: false,
-          colorHex: defaultTextColor,
-          bgColorHex: null,
-          linkUrl: null
-        });
-        if (spans.length > 0) {
-          blocks.push({
-            type: tag,
-            align,
-            indent: indentLevel,
-            spans
-          });
-        }
-      } else if (tag === 'hr') {
-        blocks.push({
-          type: 'hr',
-          align: 'left',
-          indent: 0,
-          spans: []
-        });
-      } else if (tag === 'ul' || tag === 'ol') {
-        const isOrdered = tag === 'ol';
-        let listIndex = 1;
-        for (const child of Array.from(el.children)) {
-          if (child.tagName.toLowerCase() === 'li') {
-            const spans = parseInlineNodes(child, {
-              fontFamily: defaultFontFamily,
-              fontSizePt: defaultFontSize,
-              bold: false,
-              italic: false,
-              underline: false,
-              strikethrough: false,
-              colorHex: defaultTextColor,
-              bgColorHex: null,
-              linkUrl: null
-            });
-            blocks.push({
-              type: isOrdered ? 'li-number' : 'li-bullet',
-              align,
-              indent: Math.max(1, indentLevel + 1),
-              listIndex: isOrdered ? listIndex++ : undefined,
-              spans
-            });
-          }
-        }
-      } else {
-        // Paragraph, div, blockquote, or plain container
-        const spans = parseInlineNodes(el, {
-          fontFamily: defaultFontFamily,
-          fontSizePt: defaultFontSize,
-          bold: false,
-          italic: false,
-          underline: false,
-          strikethrough: false,
-          colorHex: defaultTextColor,
-          bgColorHex: null,
-          linkUrl: null
-        });
-        if (spans.length > 0) {
-          blocks.push({
-            type: 'p',
-            align,
-            indent: indentLevel,
-            spans
-          });
-        }
-      }
-    };
-
-    for (const child of Array.from(container.childNodes)) {
-      if (child.nodeType === Node.ELEMENT_NODE) {
-        processElementBlock(child as HTMLElement);
-      } else if (child.nodeType === Node.TEXT_NODE) {
-        const text = child.textContent?.trim();
-        if (text) {
-          blocks.push({
-            type: 'p',
-            align: defaultTextAlign,
-            indent: 0,
-            spans: [{
-              text,
-              fontFamily: defaultFontFamily,
-              fontSizePt: defaultFontSize,
-              bold: false,
-              italic: false,
-              underline: false,
-              strikethrough: false,
-              colorHex: defaultTextColor,
-              bgColorHex: null,
-              linkUrl: null
-            }]
-          });
-        }
-      }
-    }
-
-    if (blocks.length === 0) {
-      blocks.push({
-        type: 'p',
-        align: defaultTextAlign,
-        indent: 0,
-        spans: [{
-          text: '',
-          fontFamily: defaultFontFamily,
-          fontSizePt: defaultFontSize,
-          bold: false,
-          italic: false,
-          underline: false,
-          strikethrough: false,
-          colorHex: defaultTextColor,
-          bgColorHex: null,
-          linkUrl: null
-        }]
-      });
-    }
-
-    return blocks;
-  }, [defaultFontFamily, defaultFontSize, defaultTextColor, defaultTextAlign]);
-
-  // Pagination & Layout Engine
-  const paginatedDoc = useMemo<PaginatedDoc>(() => {
-    // 1. Base page dimensions in points (72 pt per inch)
-    const baseW = pageSize === 'letter' ? 612 : pageSize === 'legal' ? 612 : 595.28;
-    const baseH = pageSize === 'letter' ? 792 : pageSize === 'legal' ? 1008 : 841.89;
-
-    const pageWidthPt = orientation === 'landscape' ? Math.max(baseW, baseH) : Math.min(baseW, baseH);
-    const pageHeightPt = orientation === 'landscape' ? Math.min(baseW, baseH) : Math.max(baseW, baseH);
-    const aspectRatio = pageWidthPt / pageHeightPt;
-
-    // 2. Margins in points
-    const marginPt = margin === 'compact' ? 28.35 : margin === 'wide' ? 56.7 : 42.52;
-    const contentWidthPt = pageWidthPt - (marginPt * 2);
-
-    const topMarginPt = headerTitle.trim() ? marginPt + 28 : marginPt;
-    const bottomMarginPt = (footerText.trim() || includePageNumbers) ? marginPt + 28 : marginPt;
-    const contentHeightPt = Math.max(80, pageHeightPt - topMarginPt - bottomMarginPt);
-
-    // 3. Measure text spans using an offscreen canvas context
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    const measureSpanWidth = (spanText: string, family: FontFamilyOption, sizePt: number, bold: boolean, italic: boolean): number => {
-      if (!ctx) return spanText.length * (sizePt * 0.55);
-      const fontStr = `${bold ? 'bold ' : ''}${italic ? 'italic ' : ''}${sizePt}px ${getCssFontFamily(family)}`;
-      ctx.font = fontStr;
-      return ctx.measureText(spanText).width;
-    };
-
-    // 4. Parse rich blocks and wrap into lines
-    const parsedBlocks = parseHtmlToFormattedBlocks(editorHtml);
-
-    const pages: PaginatedPage[] = [];
-    let currentPageIndex = 0;
-    let currentYOffsetPt = 0;
-    let currentPageBlocks: PaginatedPage['blocks'] = [];
-
-    const flushCurrentPage = () => {
-      pages.push({
-        pageIndex: currentPageIndex,
-        blocks: currentPageBlocks,
-      });
-      currentPageIndex++;
-      currentPageBlocks = [];
-      currentYOffsetPt = 0;
-    };
-
-    for (const block of parsedBlocks) {
-      if (block.type === 'hr') {
-        const hrHeight = 16;
-        if (currentYOffsetPt + hrHeight > contentHeightPt && currentPageBlocks.length > 0) {
-          flushCurrentPage();
-        }
-        currentPageBlocks.push({
-          block,
-          lines: [{
-            spans: [],
-            lineWidthPt: contentWidthPt,
-            lineHeightPt: hrHeight,
-            isFirstLineOfBlock: true
-          }]
-        });
-        currentYOffsetPt += hrHeight;
-        continue;
-      }
-
-      // Word wrapping across spans for paragraph / heading / list item
-      const listIndentPt = block.indent > 0 ? 18 * block.indent : 0;
-      const effectiveContentWidth = contentWidthPt - listIndentPt;
-
-      // Extract words from spans with styling preserved
-      const wordsWithStyle: {
-        word: string;
-        span: InlineSpan;
-        width: number;
-        spaceWidth: number;
-      }[] = [];
-
-      for (const span of block.spans) {
-        // Handle newlines explicitly
-        const parts = span.text.split('\n');
-        for (let p = 0; p < parts.length; p++) {
-          const part = parts[p];
-          if (part) {
-            const rawWords = part.split(' ');
-            for (let w = 0; w < rawWords.length; w++) {
-              const wordStr = rawWords[w];
-              if (wordStr === '' && rawWords.length > 1) continue;
-              const wWidth = measureSpanWidth(wordStr, span.fontFamily, span.fontSizePt, span.bold, span.italic);
-              const spaceWidth = measureSpanWidth(' ', span.fontFamily, span.fontSizePt, span.bold, span.italic);
-              wordsWithStyle.push({
-                word: wordStr,
-                span,
-                width: wWidth,
-                spaceWidth
-              });
-            }
-          }
-          if (p < parts.length - 1) {
-            // Force line break token
-            wordsWithStyle.push({
-              word: '\n',
-              span,
-              width: 0,
-              spaceWidth: 0
-            });
-          }
-        }
-      }
-
-      // Build wrapped lines for this block
-      const blockLines: {
-        spans: (InlineSpan & { widthPt: number })[];
-        lineWidthPt: number;
-        lineHeightPt: number;
-        isFirstLineOfBlock: boolean;
-        listMarker?: string;
-      }[] = [];
-
-      let currentLineSpans: (InlineSpan & { widthPt: number })[] = [];
-      let currentLineWidth = 0;
-      let maxLineFontSize = block.type === 'h1' ? 22 : block.type === 'h2' ? 16 : block.type === 'h3' ? 14 : defaultFontSize;
-
-      const finishLine = () => {
-        if (currentLineSpans.length === 0) return;
-        const lineHeight = maxLineFontSize * defaultLineSpacing;
-        blockLines.push({
-          spans: currentLineSpans,
-          lineWidthPt: currentLineWidth,
-          lineHeightPt: lineHeight,
-          isFirstLineOfBlock: blockLines.length === 0,
-          listMarker: blockLines.length === 0 
-            ? (block.type === 'li-bullet' ? '•' : block.type === 'li-number' ? `${block.listIndex || 1}.` : undefined)
-            : undefined
-        });
-        currentLineSpans = [];
-        currentLineWidth = 0;
-        maxLineFontSize = defaultFontSize;
-      };
-
-      for (let i = 0; i < wordsWithStyle.length; i++) {
-        const item = wordsWithStyle[i];
-
-        if (item.word === '\n') {
-          finishLine();
-          continue;
-        }
-
-        const isFirstInLine = currentLineSpans.length === 0;
-        const addedWidth = isFirstInLine ? item.width : item.spaceWidth + item.width;
-
-        if (currentLineWidth + addedWidth <= effectiveContentWidth || isFirstInLine) {
-          const textToAdd = isFirstInLine ? item.word : ' ' + item.word;
-          currentLineSpans.push({
-            ...item.span,
-            text: textToAdd,
-            widthPt: addedWidth
-          });
-          currentLineWidth += addedWidth;
-          maxLineFontSize = Math.max(maxLineFontSize, item.span.fontSizePt);
-        } else {
-          finishLine();
-          currentLineSpans.push({
-            ...item.span,
-            text: item.word,
-            widthPt: item.width
-          });
-          currentLineWidth = item.width;
-          maxLineFontSize = item.span.fontSizePt;
-        }
-      }
-
-      finishLine();
-
-      if (blockLines.length === 0) {
-        blockLines.push({
-          spans: [{
-            text: '',
-            fontFamily: defaultFontFamily,
-            fontSizePt: defaultFontSize,
-            bold: false,
-            italic: false,
-            underline: false,
-            strikethrough: false,
-            colorHex: defaultTextColor,
-            bgColorHex: null,
-            linkUrl: null,
-            widthPt: 0
-          }],
-          lineWidthPt: 0,
-          lineHeightPt: defaultFontSize * defaultLineSpacing,
-          isFirstLineOfBlock: true
-        });
-      }
-
-      // Add extra top margin for headings
-      const headingSpacingAbove = block.type === 'h1' ? 14 : block.type === 'h2' ? 10 : block.type === 'h3' ? 8 : 4;
-      const headingSpacingBelow = block.type === 'h1' ? 8 : block.type === 'h2' ? 6 : block.type === 'h3' ? 4 : 4;
-
-      currentYOffsetPt += headingSpacingAbove;
-
-      // Distribute block lines across pages
-      let currentBlockLinesForPage: typeof blockLines = [];
-
-      for (const line of blockLines) {
-        if (currentYOffsetPt + line.lineHeightPt > contentHeightPt && currentPageBlocks.length > 0) {
-          if (currentBlockLinesForPage.length > 0) {
-            currentPageBlocks.push({
-              block,
-              lines: currentBlockLinesForPage
-            });
-            currentBlockLinesForPage = [];
-          }
-          flushCurrentPage();
-        }
-
-        currentBlockLinesForPage.push(line);
-        currentYOffsetPt += line.lineHeightPt;
-      }
-
-      if (currentBlockLinesForPage.length > 0) {
-        currentPageBlocks.push({
-          block,
-          lines: currentBlockLinesForPage
-        });
-      }
-
-      currentYOffsetPt += headingSpacingBelow;
-    }
-
-    if (currentPageBlocks.length > 0 || pages.length === 0) {
-      flushCurrentPage();
-    }
-
-    return {
-      pages,
-      pageWidthPt,
-      pageHeightPt,
-      marginPt,
-      topMarginPt,
-      bottomMarginPt,
-      contentWidthPt,
-      contentHeightPt,
-      aspectRatio
-    };
-  }, [
-    editorHtml, pageSize, orientation, margin, defaultFontFamily, defaultFontSize,
-    defaultLineSpacing, defaultTextColor, defaultTextAlign, headerTitle, footerText, 
-    includePageNumbers, parseHtmlToFormattedBlocks
-  ]);
-
-  // Generate binary PDF document via pdf-lib with full vector text, formatting & highlights
-  const generatePdfBlob = async (): Promise<{ blob: Blob; totalPages: number }> => {
-    if (!stats.plainText.trim()) {
-      throw new Error('Please enter some text in the document editor before downloading.');
-    }
-
-    const pdfDoc = await PDFDocument.create();
-
-    // Embed Standard Font Families
-    const fontHelvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fontHelveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const fontHelveticaOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-    const fontHelveticaBoldOblique = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
-
-    const fontTimes = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-    const fontTimesBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
-    const fontTimesItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
-    const fontTimesBoldItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanBoldItalic);
-
-    const fontCourier = await pdfDoc.embedFont(StandardFonts.Courier);
-    const fontCourierBold = await pdfDoc.embedFont(StandardFonts.CourierBold);
-    const fontCourierOblique = await pdfDoc.embedFont(StandardFonts.CourierOblique);
-    const fontCourierBoldOblique = await pdfDoc.embedFont(StandardFonts.CourierBoldOblique);
-
-    const getPdfFont = (family: FontFamilyOption, bold: boolean, italic: boolean) => {
-      if (family === 'TimesRoman') {
-        if (bold && italic) return fontTimesBoldItalic;
-        if (bold) return fontTimesBold;
-        if (italic) return fontTimesItalic;
-        return fontTimes;
-      }
-      if (family === 'Courier') {
-        if (bold && italic) return fontCourierBoldOblique;
-        if (bold) return fontCourierBold;
-        if (italic) return fontCourierOblique;
-        return fontCourier;
-      }
-      // Default Helvetica
-      if (bold && italic) return fontHelveticaBoldOblique;
-      if (bold) return fontHelveticaBold;
-      if (italic) return fontHelveticaOblique;
-      return fontHelvetica;
-    };
-
-    const { 
-      pages, pageWidthPt, pageHeightPt, marginPt, 
-      topMarginPt, contentWidthPt 
-    } = paginatedDoc;
-
-    const mutedColorRgb = rgb(0.45, 0.5, 0.58);
-    const totalPages = pages.length;
-
-    // Draw each paginated page
-    pages.forEach((pageData, pIdx) => {
-      const page = pdfDoc.addPage([pageWidthPt, pageHeightPt]);
-      const pageNum = pIdx + 1;
-
-      // 1. Draw Document Header
-      if (headerTitle.trim()) {
-        const safeHeader = headerTitle.trim().replace(/[^\x00-\x7F\xA0-\xFF]/g, '?');
-        const headerFontSize = 9;
-        const headerY = pageHeightPt - marginPt + 4;
-        
-        page.drawText(safeHeader, {
-          x: marginPt,
-          y: headerY,
-          size: headerFontSize,
-          font: fontHelveticaBold,
-          color: mutedColorRgb,
-        });
-
-        // Header divider line
-        page.drawLine({
-          start: { x: marginPt, y: headerY - 5 },
-          end: { x: pageWidthPt - marginPt, y: headerY - 5 },
-          thickness: 0.5,
-          color: rgb(0.85, 0.88, 0.92),
-        });
-      }
-
-      // 2. Draw Document Body Blocks & Styled Spans
-      let currentY = pageHeightPt - topMarginPt;
-
-      for (const blockItem of pageData.blocks) {
-        const { block, lines } = blockItem;
-
-        if (block.type === 'hr') {
-          currentY -= 8;
-          page.drawLine({
-            start: { x: marginPt, y: currentY },
-            end: { x: pageWidthPt - marginPt, y: currentY },
-            thickness: 0.75,
-            color: rgb(0.8, 0.84, 0.88),
-          });
-          currentY -= 8;
-          continue;
-        }
-
-        const indentOffset = block.indent > 0 ? 18 * block.indent : 0;
-        const effectiveWidth = contentWidthPt - indentOffset;
-
-        for (const line of lines) {
-          currentY -= line.lineHeightPt;
-
-          // Calculate exact line width based on embedded PDF font metrics
-          let trueLineWidth = 0;
-          for (const span of line.spans) {
-            if (!span.text) continue;
-            const safeText = span.text.replace(/[^\x00-\x7F\xA0-\xFF]/g, '?');
-            const spanFont = getPdfFont(span.fontFamily, span.bold, span.italic);
-            try {
-              trueLineWidth += spanFont.widthOfTextAtSize(safeText, span.fontSizePt);
-            } catch {
-              trueLineWidth += span.widthPt;
-            }
-          }
-
-          let startX = marginPt + indentOffset;
-          if (block.align === 'center') {
-            startX = marginPt + indentOffset + Math.max(0, (effectiveWidth - trueLineWidth) / 2);
-          } else if (block.align === 'right') {
-            startX = marginPt + indentOffset + Math.max(0, effectiveWidth - trueLineWidth);
-          }
-
-          // Draw list marker if applicable
-          if (line.listMarker) {
-            const markerFont = fontHelveticaBold;
-            page.drawText(line.listMarker, {
-              x: marginPt + indentOffset - 14,
-              y: currentY,
-              size: line.spans[0]?.fontSizePt || defaultFontSize,
-              font: markerFont,
-              color: parseColorToRgb(defaultTextColor),
-            });
-          }
-
-          let spanX = startX;
-          for (const span of line.spans) {
-            if (!span.text) continue;
-
-            const safeText = span.text.replace(/[^\x00-\x7F\xA0-\xFF]/g, '?');
-            const spanFont = getPdfFont(span.fontFamily, span.bold, span.italic);
-            const textColorRgb = parseColorToRgb(span.colorHex);
-
-            let calculatedWidth = span.widthPt;
-            try {
-              calculatedWidth = spanFont.widthOfTextAtSize(safeText, span.fontSizePt);
-            } catch {
-              // fallback
-            }
-
-            // Draw highlight background rectangle if specified
-            if (span.bgColorHex && span.bgColorHex !== 'transparent') {
-              const bgRgb = parseColorToRgb(span.bgColorHex);
-              page.drawRectangle({
-                x: spanX - 1,
-                y: currentY - 2,
-                width: calculatedWidth + 2,
-                height: span.fontSizePt + 3,
-                color: bgRgb,
-              });
-            }
-
-            // Draw text
-            page.drawText(safeText, {
-              x: spanX,
-              y: currentY,
-              size: span.fontSizePt,
-              font: spanFont,
-              color: textColorRgb,
-            });
-
-            // Draw Underline
-            if (span.underline) {
-              page.drawLine({
-                start: { x: spanX, y: currentY - 1.5 },
-                end: { x: spanX + calculatedWidth, y: currentY - 1.5 },
-                thickness: 0.75,
-                color: textColorRgb,
-              });
-            }
-
-            // Draw Strikethrough
-            if (span.strikethrough) {
-              const strikeY = currentY + (span.fontSizePt * 0.35);
-              page.drawLine({
-                start: { x: spanX, y: strikeY },
-                end: { x: spanX + calculatedWidth, y: strikeY },
-                thickness: 0.75,
-                color: textColorRgb,
-              });
-            }
-
-            spanX += calculatedWidth;
-          }
-        }
-      }
-
-      // 3. Draw Document Footer & Page Numbers
-      if (footerText.trim() || includePageNumbers) {
-        const footerY = marginPt - 4;
-        const footerFontSize = 9;
-
-        // Footer divider rule
-        page.drawLine({
-          start: { x: marginPt, y: footerY + 12 },
-          end: { x: pageWidthPt - marginPt, y: footerY + 12 },
-          thickness: 0.5,
-          color: rgb(0.85, 0.88, 0.92),
-        });
-
-        if (footerText.trim()) {
-          const safeFooter = footerText.trim().replace(/[^\x00-\x7F\xA0-\xFF]/g, '?');
-          page.drawText(safeFooter, {
-            x: marginPt,
-            y: footerY,
-            size: footerFontSize,
-            font: fontHelvetica,
-            color: mutedColorRgb,
-          });
-        }
-
-        if (includePageNumbers) {
-          const pageStr = `Page ${pageNum} of ${totalPages}`;
-          const pageStrWidth = fontHelvetica.widthOfTextAtSize(pageStr, footerFontSize);
-          page.drawText(pageStr, {
-            x: pageWidthPt - marginPt - pageStrWidth,
-            y: footerY,
-            size: footerFontSize,
-            font: fontHelvetica,
-            color: mutedColorRgb,
-          });
-        }
-      }
+  // Update canonical doc with history tracking
+  const updateDocWithHistory = useCallback((newDoc: CanonicalDocument) => {
+    setCanonicalDoc((prevDoc) => {
+      setUndoStack((prev) => [...prev.slice(-25), prevDoc]);
+      setRedoStack([]);
+      return newDoc;
     });
+  }, []);
 
-    const pdfBytes = await pdfDoc.save();
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-    return { blob, totalPages };
-  };
+  // Undo & Redo Handlers
+  const handleUndo = useCallback(() => {
+    if (undoStack.length === 0) return;
+    const previous = undoStack[undoStack.length - 1];
+    setUndoStack((prev) => prev.slice(0, -1));
+    setRedoStack((prev) => [...prev, canonicalDoc]);
+    setCanonicalDoc(previous);
+  }, [undoStack, canonicalDoc]);
+
+  const handleRedo = useCallback(() => {
+    if (redoStack.length === 0) return;
+    const next = redoStack[redoStack.length - 1];
+    setRedoStack((prev) => prev.slice(0, -1));
+    setUndoStack((prev) => [...prev, canonicalDoc]);
+    setCanonicalDoc(next);
+  }, [redoStack, canonicalDoc]);
+
+  // Calculate paper dimensions and mathematical pagination
+  const dimensions = useMemo(() => {
+    return calculateDimensions(pageSize, orientation, margin, headerTitle, footerText, includePageNumbers);
+  }, [pageSize, orientation, margin, headerTitle, footerText, includePageNumbers]);
+
+  const paginatedDoc = useMemo(() => {
+    return paginateDocument(canonicalDoc, dimensions, lineSpacing, defaultFontSize, defaultFontFamily);
+  }, [canonicalDoc, dimensions, lineSpacing, defaultFontSize, defaultFontFamily]);
+
+  // Document Statistics
+  const docStats = useMemo(() => {
+    const stats = countCanonicalStats(canonicalDoc);
+    return {
+      words: stats.words,
+      chars: stats.chars,
+      pages: Math.max(1, paginatedDoc.totalPages),
+    };
+  }, [canonicalDoc, paginatedDoc]);
+
+  // Capture user selection across the document pages
+  const handleSelectionChange = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+
+    const desk = deskContainerRef.current;
+    if (!desk || !desk.contains(range.commonAncestorContainer)) return;
+
+    let startNode: Node | null = range.startContainer;
+    let startSpanEl = (
+      startNode.nodeType === Node.ELEMENT_NODE
+        ? (startNode as HTMLElement)
+        : startNode.parentElement
+    )?.closest('[data-span-id]') as HTMLElement | null;
+
+    let endNode: Node | null = range.endContainer;
+    let endSpanEl = (
+      endNode.nodeType === Node.ELEMENT_NODE
+        ? (endNode as HTMLElement)
+        : endNode.parentElement
+    )?.closest('[data-span-id]') as HTMLElement | null;
+
+    if (startSpanEl && endSpanEl) {
+      const startSpanId = startSpanEl.getAttribute('data-span-id');
+      const startBlockId = startSpanEl.getAttribute('data-block-id');
+      const endSpanId = endSpanEl.getAttribute('data-span-id');
+      const endBlockId = endSpanEl.getAttribute('data-block-id');
+
+      if (startSpanId && startBlockId && endSpanId && endBlockId) {
+        lastSelectionRef.current = {
+          startBlockId,
+          startSpanId,
+          startOffset: range.startOffset,
+          endBlockId,
+          endSpanId,
+          endOffset: range.endOffset,
+        };
+        lastActiveBlockIdRef.current = startBlockId;
+
+        // Sync toolbar indicators from start block
+        const targetBlock = canonicalDoc.blocks.find((b) => b.id === startBlockId);
+        if (targetBlock) {
+          setCurrentBlockType(targetBlock.type);
+          setCurrentAlign(targetBlock.align);
+          const targetSpan = targetBlock.spans.find((s) => s.id === startSpanId);
+          if (targetSpan) {
+            setCurrentFontFamily(targetSpan.fontFamily);
+            setCurrentFontSize(targetSpan.fontSizePt);
+          }
+        }
+      }
+    }
+  }, [canonicalDoc]);
+
+  // Attach selection listeners
+  useEffect(() => {
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => document.removeEventListener('selectionchange', handleSelectionChange);
+  }, [handleSelectionChange]);
+
+  // Toolbar Format Handlers
+  const handleApplyStyle = useCallback(
+    (options: {
+      bold?: boolean;
+      italic?: boolean;
+      underline?: boolean;
+      colorHex?: string;
+      bgColorHex?: string | null;
+      fontFamily?: FontFamilyOption;
+      fontSizePt?: number;
+    }) => {
+      const sel = lastSelectionRef.current;
+      if (sel) {
+        const newDoc = applyStyleToCanonicalDoc(canonicalDoc, sel, options);
+        updateDocWithHistory(newDoc);
+      } else if (lastActiveBlockIdRef.current) {
+        // Apply to entire active block if no range selected
+        const block = canonicalDoc.blocks.find((b) => b.id === lastActiveBlockIdRef.current);
+        if (block && block.spans.length > 0) {
+          const fakeSel: CanonicalSelection = {
+            startBlockId: block.id,
+            startSpanId: block.spans[0].id,
+            startOffset: 0,
+            endBlockId: block.id,
+            endSpanId: block.spans[block.spans.length - 1].id,
+            endOffset: block.spans[block.spans.length - 1].text.length,
+          };
+          const newDoc = applyStyleToCanonicalDoc(canonicalDoc, fakeSel, options);
+          updateDocWithHistory(newDoc);
+        }
+      }
+
+      if (options.fontFamily) setCurrentFontFamily(options.fontFamily);
+      if (options.fontSizePt) setCurrentFontSize(options.fontSizePt);
+    },
+    [canonicalDoc, updateDocWithHistory]
+  );
+
+  const handleApplyBlockType = useCallback(
+    (type: BlockType) => {
+      const sel = lastSelectionRef.current;
+      let targetBlockIds: string[] = [];
+
+      if (sel) {
+        targetBlockIds = [sel.startBlockId, sel.endBlockId];
+      } else if (lastActiveBlockIdRef.current) {
+        targetBlockIds = [lastActiveBlockIdRef.current];
+      } else if (canonicalDoc.blocks.length > 0) {
+        targetBlockIds = [canonicalDoc.blocks[0].id];
+      }
+
+      if (targetBlockIds.length > 0) {
+        const newDoc = applyBlockTypeToCanonicalDoc(
+          canonicalDoc,
+          targetBlockIds,
+          type,
+          defaultFontFamily,
+          defaultFontSize
+        );
+        updateDocWithHistory(newDoc);
+        setCurrentBlockType(type);
+      }
+    },
+    [canonicalDoc, defaultFontFamily, defaultFontSize, updateDocWithHistory]
+  );
+
+  const handleApplyAlign = useCallback(
+    (align: TextAlignOption) => {
+      const sel = lastSelectionRef.current;
+      let targetBlockIds: string[] = [];
+
+      if (sel) {
+        targetBlockIds = [sel.startBlockId, sel.endBlockId];
+      } else if (lastActiveBlockIdRef.current) {
+        targetBlockIds = [lastActiveBlockIdRef.current];
+      } else if (canonicalDoc.blocks.length > 0) {
+        targetBlockIds = [canonicalDoc.blocks[0].id];
+      }
+
+      if (targetBlockIds.length > 0) {
+        const newDoc = applyAlignToCanonicalDoc(canonicalDoc, targetBlockIds, align);
+        updateDocWithHistory(newDoc);
+        setCurrentAlign(align);
+      }
+    },
+    [canonicalDoc, updateDocWithHistory]
+  );
+
+  const handleInsertPageBreak = useCallback(() => {
+    const targetBlockId = lastActiveBlockIdRef.current || canonicalDoc.blocks[canonicalDoc.blocks.length - 1]?.id;
+    const newDoc = insertPageBreakToCanonicalDoc(canonicalDoc, targetBlockId);
+    updateDocWithHistory(newDoc);
+  }, [canonicalDoc, updateDocWithHistory]);
+
+  const handleInsertHr = useCallback(() => {
+    const targetBlockId = lastActiveBlockIdRef.current || canonicalDoc.blocks[canonicalDoc.blocks.length - 1]?.id;
+    const newDoc = insertHrToCanonicalDoc(canonicalDoc, targetBlockId);
+    updateDocWithHistory(newDoc);
+  }, [canonicalDoc, updateDocWithHistory]);
+
+  const handleClearFormatting = useCallback(() => {
+    const sel = lastSelectionRef.current;
+    if (sel) {
+      const newDoc = clearFormattingFromCanonicalDoc(
+        canonicalDoc,
+        sel,
+        defaultFontFamily,
+        defaultFontSize
+      );
+      updateDocWithHistory(newDoc);
+    }
+  }, [canonicalDoc, defaultFontFamily, defaultFontSize, updateDocWithHistory]);
+
+  // Block Content Editing Handler (When user edits directly on the page)
+  const handleBlockContentChange = useCallback(
+    (blockId: string, newText: string) => {
+      const block = canonicalDoc.blocks.find((b) => b.id === blockId);
+      if (!block) return;
+      const currentText = block.spans.map((s) => s.text).join('');
+      if (currentText === newText) return;
+
+      const newDoc = updateBlockTextInCanonicalDoc(
+        canonicalDoc,
+        blockId,
+        newText,
+        defaultFontFamily,
+        defaultFontSize
+      );
+      updateDocWithHistory(newDoc);
+    },
+    [canonicalDoc, defaultFontFamily, defaultFontSize, updateDocWithHistory]
+  );
 
   // Download PDF Action
-  const handleDownload = async () => {
-    setErrorMsg(null);
-    if (!stats.plainText.trim()) {
-      setErrorMsg('Please enter some text in the editor before downloading the PDF.');
-      return;
-    }
-
-    setIsProcessing(true);
-
+  const handleDownloadPdf = async () => {
     try {
-      const { blob, totalPages } = await generatePdfBlob();
-      
-      if (pdfBlobUrl) {
-        URL.revokeObjectURL(pdfBlobUrl);
-      }
+      setIsGenerating(true);
+      const pdfBlob = await generatePdfBlob(
+        paginatedDoc,
+        headerTitle,
+        footerText,
+        includePageNumbers
+      );
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${
+        headerTitle.trim() ? headerTitle.replace(/[^a-zA-Z0-9_-]/g, '_') : 'document'
+      }.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-      const newUrl = URL.createObjectURL(blob);
-      setPdfBlobUrl(newUrl);
-      setPdfStats({
-        size: blob.size,
-        pages: totalPages,
-      });
-
-      const downloadName = pdfFileName.trim().endsWith('.pdf') 
-        ? pdfFileName.trim() 
-        : `${pdfFileName.trim() || 'toolsbar-document'}.pdf`;
-
-      const link = document.createElement('a');
-      link.href = newUrl;
-      link.download = downloadName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err: any) {
-      console.error('PDF generation error:', err);
-      setErrorMsg(err.message || 'Failed to generate PDF. Please verify your document text.');
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 3500);
+    } catch (err) {
+      console.error('PDF Generation Error:', err);
     } finally {
-      setIsProcessing(false);
+      setIsGenerating(false);
     }
   };
 
-  const handleCopyText = async () => {
-    if (!stats.plainText) return;
-    await navigator.clipboard.writeText(stats.plainText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleClear = () => {
-    if (editorRef.current) {
-      editorRef.current.innerHTML = '';
-      setEditorHtml('');
-    }
-    setErrorMsg(null);
-    if (pdfBlobUrl) {
-      URL.revokeObjectURL(pdfBlobUrl);
-      setPdfBlobUrl(null);
-      setPdfStats(null);
-    }
-  };
-
+  // Load Standard Sample
   const handleLoadSample = () => {
-    if (editorRef.current) {
-      editorRef.current.innerHTML = SAMPLE_RICH_HTML;
-      setEditorHtml(SAMPLE_RICH_HTML);
-    }
+    const newDoc = parsePlainTextToCanonical(STANDARD_SAMPLE_TEXT, defaultFontFamily, defaultFontSize);
+    updateDocWithHistory(newDoc);
   };
 
-  // Open/Close dropdown popovers using trigger bounding rect for portal placement
-  const toggleDropdown = (type: 'color' | 'highlight' | 'heading' | 'font' | 'fontSize' | 'link', e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    saveCurrentSelection();
-    if (openDropdown === type) {
-      setOpenDropdown(null);
-      setDropdownTriggerRect(null);
-    } else {
-      const rect = e.currentTarget.getBoundingClientRect();
-      setDropdownTriggerRect(rect);
-      setOpenDropdown(type);
-    }
+  // Clear Document to 1 Blank Page
+  const handleClearDocument = () => {
+    const newDoc = parsePlainTextToCanonical('', defaultFontFamily, defaultFontSize);
+    updateDocWithHistory(newDoc);
   };
 
-  // Render floating popovers in document.body via Portal to prevent any container clipping
-  const renderPortalPopover = () => {
-    if (!openDropdown || !dropdownTriggerRect) return null;
-
-    const spacing = 6;
-    const top = dropdownTriggerRect.bottom + spacing;
-    let width = 230;
-    if (openDropdown === 'fontSize') width = 110;
-    if (openDropdown === 'heading') width = 175;
-    if (openDropdown === 'font') width = 210;
-    if (openDropdown === 'link') width = 270;
-    if (openDropdown === 'color' || openDropdown === 'highlight') width = 252;
-
-    let left = dropdownTriggerRect.left;
-    if (typeof window !== 'undefined') {
-      if (left + width > window.innerWidth - 12) {
-        left = Math.max(12, window.innerWidth - width - 12);
+  // Open Raw Text Modal
+  const handleOpenTextModal = () => {
+    // Generate readable markdown-like plain text from canonicalDoc
+    const textLines: string[] = [];
+    for (const block of canonicalDoc.blocks) {
+      if (block.type === 'page-break') {
+        textLines.push('<<<PAGE_BREAK>>>');
+        continue;
       }
-      if (left < 12) left = 12;
+      if (block.type === 'hr') {
+        textLines.push('---');
+        continue;
+      }
+      const prefix =
+        block.type === 'h1'
+          ? '# '
+          : block.type === 'h2'
+          ? '## '
+          : block.type === 'h3'
+          ? '### '
+          : block.type === 'bullet'
+          ? '- '
+          : block.type === 'number'
+          ? `${block.listIndex || 1}. `
+          : '';
+      const text = block.spans.map((s) => s.text).join('');
+      textLines.push(`${prefix}${text}`);
     }
-
-    return createPortal(
-      <div
-        data-popover-portal="true"
-        style={{
-          position: 'fixed',
-          top: `${top}px`,
-          left: `${left}px`,
-          width: `${width}px`,
-          zIndex: 9999,
-        }}
-        className="rounded-2xl bg-white dark:bg-[#151824] border border-slate-200/90 dark:border-white/10 shadow-2xl p-2 space-y-2 text-slate-800 dark:text-neutral-100 animate-in fade-in zoom-in-95 duration-150"
-      >
-        {/* Headings Popover */}
-        {openDropdown === 'heading' && (
-          <div className="space-y-1">
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { applyHeading('p'); setOpenDropdown(null); }}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors ${activeStyles.heading === 'p' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-200'}`}
-            >
-              Normal Text
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { applyHeading('h1'); setOpenDropdown(null); }}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-base font-bold cursor-pointer transition-colors ${activeStyles.heading === 'h1' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
-            >
-              Heading 1
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { applyHeading('h2'); setOpenDropdown(null); }}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-sm font-semibold cursor-pointer transition-colors ${activeStyles.heading === 'h2' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
-            >
-              Heading 2
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { applyHeading('h3'); setOpenDropdown(null); }}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-colors ${activeStyles.heading === 'h3' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-800 dark:text-white'}`}
-            >
-              Heading 3
-            </button>
-          </div>
-        )}
-
-        {/* Font Family Popover */}
-        {openDropdown === 'font' && (
-          <div className="space-y-1">
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { applyInlineStyle('fontFamily', 'Helvetica'); setOpenDropdown(null); }}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-sans cursor-pointer transition-colors ${activeStyles.fontFamily === 'Helvetica' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-200'}`}
-            >
-              Helvetica (Clean Sans)
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { applyInlineStyle('fontFamily', 'TimesRoman'); setOpenDropdown(null); }}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-serif cursor-pointer transition-colors ${activeStyles.fontFamily === 'TimesRoman' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-200'}`}
-            >
-              Times New Roman (Editorial Serif)
-            </button>
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => { applyInlineStyle('fontFamily', 'Courier'); setOpenDropdown(null); }}
-              className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-mono cursor-pointer transition-colors ${activeStyles.fontFamily === 'Courier' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-200'}`}
-            >
-              Courier (Monospace Code)
-            </button>
-          </div>
-        )}
-
-        {/* Font Size Popover */}
-        {openDropdown === 'fontSize' && (
-          <div className="max-h-52 overflow-y-auto space-y-0.5 pr-1">
-            {FONT_SIZE_OPTIONS.map((size) => (
-              <button
-                key={size}
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => { applyInlineStyle('fontSize', `${size}pt`); setOpenDropdown(null); }}
-                className={`w-full text-left px-2.5 py-1 rounded-xl text-xs font-mono transition-colors cursor-pointer ${activeStyles.fontSize === size ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-neutral-300'}`}
-              >
-                {size} pt
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Text Color Popover */}
-        {openDropdown === 'color' && (
-          <div className="p-1 space-y-2.5">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Text Color</span>
-            <div className="grid grid-cols-5 gap-1.5">
-              {TEXT_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  title={c.name}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => { applyInlineStyle('color', c.value); setOpenDropdown(null); }}
-                  style={{ backgroundColor: c.value }}
-                  className="w-7 h-7 rounded-lg border border-black/10 shadow-xs hover:scale-110 transition-transform cursor-pointer"
-                />
-              ))}
-            </div>
-            <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
-              <span className="text-[11px] text-slate-500 font-medium">Custom Color</span>
-              <input
-                type="color"
-                value={rgbOrHexToHex(activeStyles.color)}
-                onMouseDown={(e) => e.stopPropagation()}
-                onChange={(e) => applyInlineStyle('color', e.target.value)}
-                className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Highlighter Popover */}
-        {openDropdown === 'highlight' && (
-          <div className="p-1 space-y-2.5">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Text Highlight</span>
-            <div className="grid grid-cols-5 gap-1.5">
-              {HIGHLIGHT_COLORS.map((h) => (
-                <button
-                  key={h.name}
-                  type="button"
-                  title={h.name}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => { applyHighlight(h.value); setOpenDropdown(null); }}
-                  style={{ backgroundColor: h.value }}
-                  className={`w-7 h-7 rounded-lg border border-slate-300 dark:border-white/20 shadow-xs hover:scale-110 transition-transform flex items-center justify-center text-[10px] font-bold cursor-pointer ${h.value === 'transparent' ? 'bg-slate-100 text-slate-500' : ''}`}
-                >
-                  {h.value === 'transparent' ? '✕' : ''}
-                </button>
-              ))}
-            </div>
-            <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
-              <span className="text-[11px] text-slate-500 font-medium">Custom Highlight</span>
-              <input
-                type="color"
-                value={activeStyles.highlight !== 'transparent' ? rgbOrHexToHex(activeStyles.highlight) : '#fef08a'}
-                onMouseDown={(e) => e.stopPropagation()}
-                onChange={(e) => applyHighlight(e.target.value)}
-                className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Hyperlink Popover */}
-        {openDropdown === 'link' && (
-          <div className="p-1 space-y-2">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Insert Hyperlink</span>
-            <input
-              type="url"
-              placeholder="https://example.com"
-              value={linkInputUrl}
-              onChange={(e) => setLinkInputUrl(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleApplyLink()}
-              className="w-full px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
-            />
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setOpenDropdown(null)}
-                className="px-2.5 py-1 rounded-lg text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={handleApplyLink}
-                className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-xs cursor-pointer"
-              >
-                Apply Link
-              </button>
-            </div>
-          </div>
-        )}
-      </div>,
-      document.body
-    );
+    setModalRawText(textLines.join('\n'));
+    setIsTextModalOpen(true);
   };
+
+  // Apply Modal Text to Document
+  const handleApplyModalText = () => {
+    const newDoc = parsePlainTextToCanonical(modalRawText, defaultFontFamily, defaultFontSize);
+    updateDocWithHistory(newDoc);
+    setIsTextModalOpen(false);
+  };
+
+  // Load 17-Page Test Document inside modal
+  const handleLoad17PageTest = () => {
+    const testDocText = generateSeventeenPageDoc();
+    setModalRawText(testDocText);
+  };
+
+  // Scale calculations for rendering
+  const scalePtToPx = 1.12;
+  const unscaledPageWidthPx = Math.round(dimensions.pageWidthPt * scalePtToPx);
+  const unscaledPageHeightPx = Math.round(dimensions.pageHeightPt * scalePtToPx);
+  const unscaledContentHeightPx = Math.round(dimensions.contentHeightPt * scalePtToPx);
+
+  // Responsive scale factor for mobile viewports
+  const scaleFactor = deskWidth > 0 && deskWidth < unscaledPageWidthPx + 32
+    ? Math.max(0.4, (deskWidth - 32) / unscaledPageWidthPx)
+    : 1.0;
+
+  const scaledContainerWidthPx = Math.round(unscaledPageWidthPx * scaleFactor);
+  const scaledContainerHeightPx = Math.round(unscaledPageHeightPx * scaleFactor);
 
   return (
-    <div className="space-y-8" id="text-to-pdf-tool">
-      {/* 100% Client-Side Privacy Notice */}
-      <div className="rounded-2xl p-4 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-          <span>
-            <strong>100% Client-Side Document Privacy:</strong> Rich text styling, fonts, and PDF generation compile entirely in your browser.
-          </span>
+    <div className="w-full max-w-6xl mx-auto space-y-6">
+      {/* Header Banner with Toolsbar Glassmorphism */}
+      <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-white/60 dark:border-slate-800 shadow-xl p-6 sm:p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/60 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>True WYSIWYG Document Editor Studio</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Text to PDF Studio
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-2xl">
+              Format typography, colors, and highlights seamlessly in an authentic multi-page layout. What you see
+              on every physical paper sheet compiles identically into your vector PDF.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleOpenTextModal}
+              className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-2 transition-all"
+            >
+              <FileText className="w-3.5 h-3.5 text-indigo-500" />
+              <span>Edit / Paste Text</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold border flex items-center gap-2 transition-all ${
+                isSettingsOpen
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/20'
+                  : 'bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 shadow-sm'
+              }`}
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Page Setup</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={isGenerating}
+              className="px-5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 active:scale-[0.98] text-white shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all disabled:opacity-50"
+            >
+              <Download className="w-4 h-4" />
+              <span>{isGenerating ? 'Compiling PDF...' : 'Download PDF'}</span>
+            </button>
+          </div>
         </div>
-        <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-emerald-500/20 text-[10px] font-semibold uppercase tracking-wider">
-          Local Engine
-        </span>
+
+        {/* Expandable Page Setup Drawer */}
+        {isSettingsOpen && (
+          <div className="mt-6 pt-6 border-t border-slate-200/80 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Page Size & Orientation */}
+            <div className="space-y-2 bg-white/40 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+              <label className="font-semibold text-slate-700 dark:text-slate-300">Format & Orientation</label>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(e.target.value as PageSizeOption)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="a4">A4 (210×297mm)</option>
+                  <option value="letter">US Letter (8.5×11")</option>
+                  <option value="legal">US Legal (8.5×14")</option>
+                </select>
+                <select
+                  value={orientation}
+                  onChange={(e) => setOrientation(e.target.value as PageOrientationOption)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Margins & Line Spacing */}
+            <div className="space-y-2 bg-white/40 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+              <label className="font-semibold text-slate-700 dark:text-slate-300">Margins & Spacing</label>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={margin}
+                  onChange={(e) => setMargin(e.target.value as MarginOption)}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="compact">Narrow (0.5")</option>
+                  <option value="standard">Normal (0.75")</option>
+                  <option value="wide">Wide (1.0")</option>
+                </select>
+                <select
+                  value={lineSpacing}
+                  onChange={(e) => setLineSpacing(parseFloat(e.target.value))}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="1.0">1.0 Single</option>
+                  <option value="1.15">1.15 Tight</option>
+                  <option value="1.4">1.4 Normal</option>
+                  <option value="1.5">1.5 Relaxed</option>
+                  <option value="2.0">2.0 Double</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Running Header */}
+            <div className="space-y-2 bg-white/40 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+              <label className="font-semibold text-slate-700 dark:text-slate-300">Running Header</label>
+              <input
+                type="text"
+                value={headerTitle}
+                onChange={(e) => setHeaderTitle(e.target.value)}
+                placeholder="Optional header text..."
+                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400"
+              />
+            </div>
+
+            {/* Running Footer & Page Numbers */}
+            <div className="space-y-2 bg-white/40 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                <span>Footer & Numbers</span>
+                <label className="flex items-center gap-1.5 cursor-pointer font-normal text-[11px] text-indigo-600 dark:text-indigo-400">
+                  <input
+                    type="checkbox"
+                    checked={includePageNumbers}
+                    onChange={(e) => setIncludePageNumbers(e.target.checked)}
+                    className="rounded text-indigo-600 focus:ring-0"
+                  />
+                  <span>Page numbers</span>
+                </label>
+              </label>
+              <input
+                type="text"
+                value={footerText}
+                onChange={(e) => setFooterText(e.target.value)}
+                placeholder="Optional footer text..."
+                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Error Alert */}
-      {errorMsg && (
-        <div className="rounded-2xl p-4 bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 flex items-center gap-3 text-xs">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <p className="flex-1">{errorMsg}</p>
-          <button 
-            onClick={() => setErrorMsg(null)}
-            className="p-1 hover:bg-rose-500/20 rounded-lg text-xs font-semibold cursor-pointer"
+      {/* Floating Sticky Rich-Text Toolbar */}
+      <div className="sticky top-4 z-40">
+        <Toolbar
+          onApplyStyle={handleApplyStyle}
+          onApplyBlockType={handleApplyBlockType}
+          onApplyAlign={handleApplyAlign}
+          onInsertPageBreak={handleInsertPageBreak}
+          onInsertHr={handleInsertHr}
+          onClearFormatting={handleClearFormatting}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          canUndo={undoStack.length > 0}
+          canRedo={redoStack.length > 0}
+          currentFontFamily={currentFontFamily}
+          currentFontSize={currentFontSize}
+          currentBlockType={currentBlockType}
+          currentAlign={currentAlign}
+        />
+      </div>
+
+      {/* Auxiliary Action Bar & Document Statistics */}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400 px-1">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-semibold text-slate-900 dark:text-white">
+              {docStats.pages} {docStats.pages === 1 ? 'Page' : 'Pages'}
+            </span>
+          </div>
+          <span className="text-slate-300 dark:text-slate-700">•</span>
+          <div>{docStats.words.toLocaleString()} words</div>
+          <span className="text-slate-300 dark:text-slate-700">•</span>
+          <div>{docStats.chars.toLocaleString()} characters</div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleLoadSample}
+            className="px-2.5 py-1 rounded-lg bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium transition-colors"
           >
-            Dismiss
+            Sample
           </button>
+          <button
+            type="button"
+            onClick={handleClearDocument}
+            className="px-2.5 py-1 rounded-lg bg-white/60 dark:bg-slate-800/60 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 font-medium transition-colors flex items-center gap-1"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Clear</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Success Notification */}
+      {downloadSuccess && (
+        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-xl text-xs flex items-center gap-2 animate-in fade-in duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>
+            Vector PDF generated successfully! All {docStats.pages} pages with typography, highlights, and formatting are saved.
+          </span>
         </div>
       )}
 
-      {/* Workspace: Single WYSIWYG Document Editor */}
-      <div className="max-w-5xl mx-auto space-y-6">
-        
-        {/* Main Document Workspace Card */}
-        <div className="rounded-3xl p-4 sm:p-6 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xl space-y-3 sm:space-y-4">
-          
-          {/* Header with Title and Action buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200 dark:border-white/[0.06]">
-            <div className="flex items-center gap-2.5">
-              <FileText className="w-4 h-4 text-indigo-500" />
-              <span className="text-xs uppercase font-bold tracking-wider text-slate-700 dark:text-neutral-300">
-                WYSIWYG Document Editor
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold font-mono">
-                {paginatedDoc.pages.length} {paginatedDoc.pages.length === 1 ? 'Page' : 'Pages'}
-              </span>
-            </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCopyText}
-                  disabled={!stats.plainText}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-300 text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? 'Copied' : 'Copy'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  disabled={!stats.plainText}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Clear
-                </button>
-              </div>
-            </div>
-
-            {/* Professional Rich-Text Formatting Toolbar */}
-            <div 
-              ref={toolbarRef}
-              className="p-2 rounded-2xl bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 flex items-center gap-1 sm:gap-1.5 select-none relative z-20 overflow-x-auto scrollbar-thin"
+      {/* THE WYSIWYG DOCUMENT CANVAS DESK: RENDERS GENUINE, INDIVIDUAL PHYSICAL PAPER SHEETS */}
+      <div
+        id="document-pages-desk"
+        ref={deskContainerRef}
+        className="relative rounded-2xl bg-slate-200/90 dark:bg-[#0b0e17] border border-slate-300/80 dark:border-slate-800/80 shadow-inner p-4 sm:p-8 md:p-12 flex flex-col items-center min-h-[750px] space-y-8 overflow-y-auto"
+      >
+        {paginatedDoc.pages.map((page) => (
+          <div
+            key={`page-container-${page.pageNumber}`}
+            className="page-wrapper relative flex justify-center shrink-0"
+            style={{
+              width: `${scaledContainerWidthPx}px`,
+              height: `${scaledContainerHeightPx}px`,
+            }}
+          >
+            <div
+              id={`paper-sheet-${page.pageNumber}`}
+              className="paper-sheet absolute top-0 left-0 bg-white text-slate-900 border border-slate-300/90 shadow-2xl rounded-[2px] transition-all overflow-hidden select-text"
+              style={{
+                width: `${unscaledPageWidthPx}px`,
+                height: `${unscaledPageHeightPx}px`,
+                transform: scaleFactor < 1.0 ? `scale(${scaleFactor})` : undefined,
+                transformOrigin: 'top left',
+                paddingLeft: `${Math.round(dimensions.marginPt * scalePtToPx)}px`,
+                paddingRight: `${Math.round(dimensions.marginPt * scalePtToPx)}px`,
+                paddingTop: `${Math.round(dimensions.topMarginPt * scalePtToPx)}px`,
+                paddingBottom: `${Math.round(dimensions.bottomMarginPt * scalePtToPx)}px`,
+                fontFamily:
+                  defaultFontFamily === 'TimesRoman'
+                    ? '"Times New Roman", Times, serif'
+                    : defaultFontFamily === 'Courier'
+                    ? 'Courier, monospace'
+                    : 'Helvetica, Arial, sans-serif',
+              }}
             >
-              {/* Undo / Redo Group */}
-              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10 flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('undo')}
-                  title="Undo (Ctrl+Z)"
-                  aria-label="Undo"
-                  className="p-1.5 text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                >
-                  <Undo2 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('redo')}
-                  title="Redo (Ctrl+Y)"
-                  aria-label="Redo"
-                  className="p-1.5 text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                >
-                  <Redo2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Headings Dropdown */}
-              <div className="relative flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => toggleDropdown('heading', e)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  <span>
-                    {activeStyles.heading === 'h1' ? 'Heading 1' : activeStyles.heading === 'h2' ? 'Heading 2' : activeStyles.heading === 'h3' ? 'Heading 3' : 'Normal'}
+              {/* Authentic Page Running Header */}
+              {headerTitle.trim() && (
+                <div className="absolute top-3 left-6 right-6 flex justify-between items-center border-b border-slate-200 pb-1.5 text-[11px] text-slate-400 font-sans select-none">
+                  <span className="truncate max-w-[70%]">{headerTitle}</span>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-slate-400 shrink-0">
+                    {pageSize.toUpperCase()} • {orientation}
                   </span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
-                </button>
+                </div>
+              )}
+
+              {/* Exact Fixed-Height Content Area */}
+              <div
+                className="page-content-area w-full overflow-hidden"
+                style={{
+                  height: `${unscaledContentHeightPx}px`,
+                  lineHeight: lineSpacing,
+                }}
+              >
+                {page.blockSlices.length === 0 ? (
+                  <div
+                    contentEditable={true}
+                    suppressContentEditableWarning={true}
+                    onFocus={() => {
+                      lastActiveBlockIdRef.current = canonicalDoc.blocks[0]?.id || null;
+                    }}
+                    onBlur={(e) => {
+                      if (canonicalDoc.blocks[0]) {
+                        handleBlockContentChange(canonicalDoc.blocks[0].id, e.currentTarget.innerText);
+                      }
+                    }}
+                    className="w-full min-h-[30px] outline-none text-slate-400 italic text-sm"
+                  >
+                    Click here to start typing...
+                  </div>
+                ) : (
+                  page.blockSlices.map((slice, sIdx) => (
+                    <div
+                      key={`slice-${slice.blockId}-${sIdx}`}
+                      data-block-id={slice.blockId}
+                      contentEditable={true}
+                      suppressContentEditableWarning={true}
+                      onFocus={() => {
+                        lastActiveBlockIdRef.current = slice.blockId;
+                      }}
+                      onBlur={(e) => {
+                        handleBlockContentChange(slice.blockId, e.currentTarget.innerText);
+                      }}
+                      className={`page-block-slice outline-none relative transition-colors focus:ring-1 focus:ring-indigo-300 rounded-[2px] ${
+                        slice.type === 'h1'
+                          ? 'text-2xl font-bold mt-4 mb-2 text-slate-900'
+                          : slice.type === 'h2'
+                          ? 'text-xl font-bold mt-3 mb-1.5 text-slate-800'
+                          : slice.type === 'h3'
+                          ? 'text-lg font-semibold mt-2.5 mb-1 text-slate-800'
+                          : slice.type === 'bullet'
+                          ? 'my-1 pl-5 relative'
+                          : slice.type === 'number'
+                          ? 'my-1 pl-5 relative'
+                          : 'my-1 text-slate-800'
+                      }`}
+                      style={{
+                        textAlign: slice.align,
+                      }}
+                    >
+                      {slice.type === 'hr' ? (
+                        <hr className="my-2 border-t border-slate-300 pointer-events-none" />
+                      ) : (
+                        slice.lines.map((line, lIdx) => (
+                          <div
+                            key={`line-${lIdx}`}
+                            className="page-line relative flex flex-wrap items-baseline"
+                            style={{
+                              lineHeight: `${Math.round(line.lineHeightPt * scalePtToPx)}px`,
+                              justifyContent:
+                                slice.align === 'center'
+                                  ? 'center'
+                                  : slice.align === 'right'
+                                  ? 'flex-end'
+                                  : 'flex-start',
+                            }}
+                          >
+                            {line.listMarker && (
+                              <span className="inline-block w-4 -ml-4 select-none font-medium text-slate-500">
+                                {line.listMarker}
+                              </span>
+                            )}
+                            {line.spans.map((span) => (
+                              <span
+                                key={span.id}
+                                data-span-id={span.id}
+                                data-block-id={slice.blockId}
+                                style={{
+                                  fontFamily:
+                                    span.fontFamily === 'TimesRoman'
+                                      ? '"Times New Roman", Times, serif'
+                                      : span.fontFamily === 'Courier'
+                                      ? 'Courier, monospace'
+                                      : 'Helvetica, Arial, sans-serif',
+                                  fontSize: `${Math.round(span.fontSizePt * scalePtToPx)}px`,
+                                  fontWeight: span.bold ? 700 : 400,
+                                  fontStyle: span.italic ? 'italic' : 'normal',
+                                  textDecoration: span.underline ? 'underline' : 'none',
+                                  color: span.colorHex || '#0f172a',
+                                  backgroundColor:
+                                    span.bgColorHex && span.bgColorHex !== 'transparent'
+                                      ? span.bgColorHex
+                                      : undefined,
+                                  borderRadius:
+                                    span.bgColorHex && span.bgColorHex !== 'transparent'
+                                      ? '2px'
+                                      : undefined,
+                                  padding:
+                                    span.bgColorHex && span.bgColorHex !== 'transparent'
+                                      ? '0 1px'
+                                      : undefined,
+                                }}
+                              >
+                                {span.text}
+                              </span>
+                            ))}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
 
-              {/* Font Family Dropdown */}
-              <div className="relative flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => toggleDropdown('font', e)}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  <span className="truncate max-w-[80px]">
-                    {activeStyles.fontFamily === 'TimesRoman' ? 'Times' : activeStyles.fontFamily === 'Courier' ? 'Courier' : 'Helvetica'}
-                  </span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
-                </button>
-              </div>
+              {/* Authentic Page Running Footer & Page Number */}
+              {(footerText.trim() || includePageNumbers) && (
+                <div className="absolute bottom-3 left-6 right-6 flex justify-between items-center border-t border-slate-200 pt-1.5 text-[11px] text-slate-400 font-sans select-none">
+                  <span className="truncate max-w-[70%]">{footerText}</span>
+                  {includePageNumbers && (
+                    <span className="font-medium text-slate-500 shrink-0">
+                      Page {page.pageNumber} of {paginatedDoc.totalPages}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
 
-              {/* Font Size Dropdown */}
-              <div className="relative flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => toggleDropdown('fontSize', e)}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-xs font-mono font-semibold text-slate-700 dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  <span>{activeStyles.fontSize}pt</span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
-                </button>
+      {/* Bulk Text Editor & 17-Page Test Modal */}
+      {isTextModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                  Document Text Editor & Bulk Paste
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Paste full articles, markdown, or load the 17-page test document.
+                </p>
               </div>
-
-              {/* Bold, Italic, Underline, Strike Buttons Group */}
-              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10 flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('bold')}
-                  title="Bold (Ctrl+B)"
-                  aria-label="Bold"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.bold ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <Bold className="w-3.5 h-3.5 font-bold" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('italic')}
-                  title="Italic (Ctrl+I)"
-                  aria-label="Italic"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.italic ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <Italic className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('underline')}
-                  title="Underline (Ctrl+U)"
-                  aria-label="Underline"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.underline ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <Underline className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('strikeThrough')}
-                  title="Strikethrough"
-                  aria-label="Strikethrough"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.strikethrough ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <Strikethrough className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Text Color Picker Dropdown */}
-              <div className="relative flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => toggleDropdown('color', e)}
-                  title="Text Color"
-                  className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  <Palette className="w-3.5 h-3.5 text-slate-700 dark:text-neutral-300" />
-                  <span 
-                    className="w-2.5 h-2.5 rounded-full border border-black/10 dark:border-white/20"
-                    style={{ backgroundColor: activeStyles.color }}
-                  />
-                </button>
-              </div>
-
-              {/* Highlighter Dropdown */}
-              <div className="relative flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => toggleDropdown('highlight', e)}
-                  title="Highlight Color"
-                  className="flex items-center gap-1 p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  <Highlighter className="w-3.5 h-3.5 text-slate-700 dark:text-neutral-300" />
-                  <span 
-                    className="w-2.5 h-2.5 rounded-full border border-black/10 dark:border-white/20"
-                    style={{ backgroundColor: activeStyles.highlight === 'transparent' ? '#fef08a' : activeStyles.highlight }}
-                  />
-                </button>
-              </div>
-
-              {/* Text Alignment Group */}
-              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10 flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyAlignment('left')}
-                  title="Align Left"
-                  aria-label="Align Left"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.align === 'left' ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <AlignLeft className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyAlignment('center')}
-                  title="Align Center"
-                  aria-label="Align Center"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.align === 'center' ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <AlignCenter className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyAlignment('right')}
-                  title="Align Right"
-                  aria-label="Align Right"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.align === 'right' ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <AlignRight className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => applyAlignment('justify')}
-                  title="Justify"
-                  aria-label="Justify"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.align === 'justify' ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <AlignJustify className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Lists & Indentation Group */}
-              <div className="flex items-center bg-white dark:bg-white/5 rounded-xl p-0.5 border border-slate-200/80 dark:border-white/10 flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('insertUnorderedList')}
-                  title="Bulleted List"
-                  aria-label="Bulleted List"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.list === 'ul' ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <List className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('insertOrderedList')}
-                  title="Numbered List"
-                  aria-label="Numbered List"
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeStyles.list === 'ol' ? 'bg-indigo-100 dark:bg-indigo-600 text-indigo-700 dark:text-white' : 'text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10'}`}
-                >
-                  <ListOrdered className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('outdent')}
-                  title="Decrease Indent"
-                  aria-label="Decrease Indent"
-                  className="p-1.5 text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                >
-                  <Outdent className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => executeCommand('indent')}
-                  title="Increase Indent"
-                  aria-label="Increase Indent"
-                  className="p-1.5 text-slate-600 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                >
-                  <Indent className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Link Modal Dropdown */}
-              <div className="relative flex-shrink-0">
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={(e) => toggleDropdown('link', e)}
-                  title="Insert Hyperlink"
-                  className="p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-300 transition-colors cursor-pointer"
-                >
-                  <Link2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Clear Formatting */}
               <button
                 type="button"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => executeCommand('removeFormat')}
-                title="Clear Formatting"
-                aria-label="Clear Formatting"
-                className="p-1.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200/80 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 text-slate-600 dark:text-neutral-300 transition-colors cursor-pointer flex-shrink-0"
+                onClick={() => setIsTextModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
-                <RemoveFormatting className="w-3.5 h-3.5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* WYSIWYG Document Canvas / Desk Area */}
-            <div className="rounded-2xl bg-slate-200/80 dark:bg-[#0c0e17] p-3 sm:p-8 border border-slate-300/80 dark:border-white/10 flex flex-col items-center justify-start min-h-[620px] shadow-inner overflow-x-auto">
-              {/* The Authentic Document Sheet */}
-              <div 
-                className={`w-full max-w-[760px] bg-white text-slate-900 rounded-sm shadow-2xl border border-slate-200/80 transition-all flex flex-col justify-between ${
-                  margin === 'compact' 
-                    ? 'p-6 sm:p-8' 
-                    : margin === 'wide' 
-                    ? 'p-10 sm:p-14' 
-                    : 'p-8 sm:p-10'
-                }`}
-                style={{
-                  minHeight: orientation === 'landscape' ? '540px' : '760px',
-                }}
-              >
-                {/* Top Document Header Line (if configured) */}
-                {headerTitle.trim() && (
-                  <div className="pb-3 mb-4 border-b border-slate-300 flex items-center justify-between text-xs text-slate-500 font-serif">
-                    <span className="font-semibold uppercase tracking-wider">{headerTitle}</span>
-                    <span className="font-mono text-[10px]">{pageSize.toUpperCase()} • {orientation}</span>
-                  </div>
-                )}
-
-                {/* Editable Rich-Text Canvas Area - THE SAME SURFACE AS FINAL DOCUMENT */}
-                <div
-                  ref={editorRef}
-                  contentEditable
-                  suppressContentEditableWarning
-                  onPaste={handlePaste}
-                  onInput={handleEditorInput}
-                  onKeyUp={() => {
-                    saveCurrentSelection();
-                    updateActiveToolbarStates();
-                  }}
-                  onMouseUp={() => {
-                    saveCurrentSelection();
-                    updateActiveToolbarStates();
-                  }}
-                  onFocus={() => {
-                    saveCurrentSelection();
-                    updateActiveToolbarStates();
-                  }}
-                  className="w-full flex-1 min-h-[500px] focus:outline-none text-slate-900 leading-relaxed transition-all prose prose-slate max-w-none"
-                  style={{
-                    fontFamily: getCssFontFamily(defaultFontFamily),
-                    fontSize: `${defaultFontSize}pt`,
-                    lineHeight: defaultLineSpacing,
-                    color: defaultTextColor,
-                    textAlign: defaultTextAlign,
-                  }}
-                />
-
-                {/* Bottom Document Footer Line (if configured) */}
-                {(footerText.trim() || includePageNumbers) && (
-                  <div className="pt-4 mt-6 border-t border-slate-300 flex items-center justify-between text-xs text-slate-500 font-serif">
-                    <span>{footerText.trim() || ''}</span>
-                    {includePageNumbers && (
-                      <span className="font-mono text-[11px] font-semibold">
-                        Page 1 of {paginatedDoc.pages.length}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Document Metrics Bar under canvas */}
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-600 dark:text-neutral-400 bg-white/70 dark:bg-white/5 px-4 py-1.5 rounded-full border border-slate-200/80 dark:border-white/10 backdrop-blur-sm shadow-xs font-mono">
-                <span><strong>{stats.words.toLocaleString()}</strong> words</span>
-                <span>•</span>
-                <span><strong>{stats.characters.toLocaleString()}</strong> characters</span>
-                <span>•</span>
-                <span><strong>{paginatedDoc.pages.length}</strong> {paginatedDoc.pages.length === 1 ? 'PDF page' : 'PDF pages'}</span>
-                <span>•</span>
-                <span>{pageSize.toUpperCase()} ({orientation})</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Page Formatting & Global Typography Controls */}
-          <div className="rounded-3xl p-4 sm:p-6 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-xl space-y-4 sm:space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/[0.06]">
-              <div className="flex items-center gap-2">
-                <Settings className="w-4 h-4 text-indigo-500" />
-                <span className="text-xs uppercase font-bold tracking-wider text-slate-700 dark:text-neutral-300">
-                  Page & Typography Controls
+            <div className="p-6 flex-1 overflow-y-auto space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className="text-slate-500">
+                  Syntax: # for H1, ## for H2, - for bullet, 1. for number, &lt;&lt;&lt;PAGE_BREAK&gt;&gt;&gt; for page break
                 </span>
+                <button
+                  type="button"
+                  onClick={handleLoad17PageTest}
+                  className="px-2.5 py-1 rounded-md bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 font-medium transition-colors"
+                >
+                  Load 17-Page Stress Test Text
+                </button>
               </div>
 
-              {/* Navigation Pill for Settings */}
-              <div className="flex rounded-xl bg-slate-100 dark:bg-white/5 p-1 border border-slate-200 dark:border-white/10 text-[11px]">
+              <textarea
+                value={modalRawText}
+                onChange={(e) => setModalRawText(e.target.value)}
+                placeholder="Paste or write your document text here..."
+                rows={18}
+                className="w-full font-mono text-xs p-4 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-y"
+              />
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+              <div className="text-xs text-slate-500">
+                {modalRawText.trim().split(/\s+/).filter(Boolean).length} words • {modalRawText.length} characters
+              </div>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setActiveSettingsTab('page')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                    activeSettingsTab === 'page'
-                      ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                  }`}
+                  onClick={() => setIsTextModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  Page
+                  Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveSettingsTab('typography')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                    activeSettingsTab === 'typography'
-                      ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                  }`}
+                  onClick={handleApplyModalText}
+                  className="px-5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all"
                 >
-                  Typography
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveSettingsTab('headerFooter')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                    activeSettingsTab === 'headerFooter'
-                      ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                  }`}
-                >
-                  Headers & Notes
+                  Apply to Document
                 </button>
               </div>
             </div>
-
-            {/* Tab 1: Page Layout Settings */}
-            {activeSettingsTab === 'page' && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-in fade-in duration-150">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300 block">
-                    Page Size
-                  </label>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => setPageSize(e.target.value as PageSizeOption)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
-                  >
-                    <option value="a4">A4 (210 × 297 mm)</option>
-                    <option value="letter">US Letter (8.5 × 11 in)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300 block">
-                    Orientation
-                  </label>
-                  <select
-                    value={orientation}
-                    onChange={(e) => setOrientation(e.target.value as PageOrientationOption)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
-                  >
-                    <option value="portrait">Portrait</option>
-                    <option value="landscape">Landscape</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300 block">
-                    Margins
-                  </label>
-                  <select
-                    value={margin}
-                    onChange={(e) => setMargin(e.target.value as MarginOption)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
-                  >
-                    <option value="compact">Compact (10 mm)</option>
-                    <option value="standard">Standard (15 mm)</option>
-                    <option value="wide">Wide (20 mm)</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 2: Document-Level Typography Defaults */}
-            {activeSettingsTab === 'typography' && (
-              <div className="space-y-4 animate-in fade-in duration-150">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300 block">
-                      Default Font Family
-                    </label>
-                    <select
-                      value={defaultFontFamily}
-                      onChange={(e) => setDefaultFontFamily(e.target.value as FontFamilyOption)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
-                    >
-                      <option value="Helvetica">Helvetica (Standard Sans)</option>
-                      <option value="TimesRoman">Times New Roman (Serif)</option>
-                      <option value="Courier">Courier (Monospace)</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300 block">
-                      Default Text Alignment
-                    </label>
-                    <div className="flex rounded-xl bg-slate-100 dark:bg-white/5 p-1 border border-slate-200 dark:border-white/10">
-                      <button
-                        type="button"
-                        onClick={() => setDefaultTextAlign('left')}
-                        aria-label="Align Left"
-                        className={`flex-1 py-1.5 rounded-lg flex items-center justify-center transition-all ${
-                          defaultTextAlign === 'left' 
-                            ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm' 
-                            : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                        }`}
-                      >
-                        <AlignLeft className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDefaultTextAlign('center')}
-                        aria-label="Align Center"
-                        className={`flex-1 py-1.5 rounded-lg flex items-center justify-center transition-all ${
-                          defaultTextAlign === 'center' 
-                            ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm' 
-                            : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                        }`}
-                      >
-                        <AlignCenter className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDefaultTextAlign('right')}
-                        aria-label="Align Right"
-                        className={`flex-1 py-1.5 rounded-lg flex items-center justify-center transition-all ${
-                          defaultTextAlign === 'right' 
-                            ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm' 
-                            : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                        }`}
-                      >
-                        <AlignRight className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDefaultTextAlign('justify')}
-                        aria-label="Justify"
-                        className={`flex-1 py-1.5 rounded-lg flex items-center justify-center transition-all ${
-                          defaultTextAlign === 'justify' 
-                            ? 'bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm' 
-                            : 'text-slate-500 hover:text-slate-900 dark:text-neutral-400 dark:hover:text-white'
-                        }`}
-                      >
-                        <AlignJustify className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-neutral-300">
-                      <span>Base Font Size</span>
-                      <span className="font-mono text-indigo-600 dark:text-indigo-400">{defaultFontSize} pt</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={8}
-                      max={22}
-                      step={1}
-                      value={defaultFontSize}
-                      onChange={(e) => setDefaultFontSize(Number(e.target.value))}
-                      className="w-full accent-indigo-600 cursor-pointer"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-neutral-300">
-                      <span>Line Spacing</span>
-                      <span className="font-mono text-indigo-600 dark:text-indigo-400">{defaultLineSpacing}x</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={1.1}
-                      max={2.2}
-                      step={0.1}
-                      value={defaultLineSpacing}
-                      onChange={(e) => setDefaultLineSpacing(Number(e.target.value))}
-                      className="w-full accent-indigo-600 cursor-pointer"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300 block">
-                      Default Text Color
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={defaultTextColor}
-                        onChange={(e) => setDefaultTextColor(e.target.value)}
-                        className="w-8 h-8 rounded-lg border border-slate-200 dark:border-white/10 cursor-pointer bg-transparent"
-                      />
-                      <input
-                        type="text"
-                        value={defaultTextColor}
-                        onChange={(e) => setDefaultTextColor(e.target.value)}
-                        className="w-full px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-mono text-slate-900 dark:text-white focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab 3: Headers & Footers Settings */}
-            {activeSettingsTab === 'headerFooter' && (
-              <div className="space-y-3.5 animate-in fade-in duration-150">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300 block">
-                    Document Header / Title
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Project Proposal — Confidential"
-                    value={headerTitle}
-                    onChange={(e) => setHeaderTitle(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700 dark:text-neutral-300 block">
-                    Footer Note
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Generated via Toolsbar (toolsbar.site)"
-                    value={footerText}
-                    onChange={(e) => setFooterText(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-neutral-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={includePageNumbers}
-                      onChange={(e) => setIncludePageNumbers(e.target.checked)}
-                      className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-white/20 accent-indigo-600 cursor-pointer"
-                    />
-                    Include automated page numbers (e.g. Page 1 of 3)
-                  </label>
-
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-neutral-400">
-                    <span>File:</span>
-                    <input
-                      type="text"
-                      value={pdfFileName}
-                      onChange={(e) => setPdfFileName(e.target.value)}
-                      placeholder="document.pdf"
-                      className="w-36 px-2 py-1 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[11px] font-mono text-slate-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Primary Download Action Section */}
-          <div className="pt-2 space-y-4">
-            <button
-              type="button"
-              disabled={!stats.plainText.trim() || isProcessing}
-              onClick={handleDownload}
-              className="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-white/10 text-white font-semibold text-sm shadow-xl shadow-indigo-600/25 disabled:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
-            >
-              {isProcessing ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Compiling PDF Document...</span>
-                </>
-              ) : (
-                <>
-                  <Download className="w-4 h-4" />
-                  <span>Download PDF ({paginatedDoc.pages.length} {paginatedDoc.pages.length === 1 ? 'Page' : 'Pages'})</span>
-                </>
-              )}
-            </button>
-
-            {/* Success Status Card */}
-            {pdfStats && pdfBlobUrl && (
-              <div className="rounded-3xl p-5 bg-gradient-to-br from-emerald-500/10 via-indigo-500/5 to-transparent border border-emerald-500/30 backdrop-blur-xl shadow-xl space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
-                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                    <span>PDF Download Ready ({pdfStats.pages} {pdfStats.pages === 1 ? 'Page' : 'Pages'}, {formatFileSize(pdfStats.size)})</span>
-                  </div>
-                  <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
-                    {pdfFileName}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={pdfBlobUrl}
-                    download={pdfFileName || 'toolsbar-document.pdf'}
-                    className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold text-center shadow-md transition-colors cursor-pointer"
-                  >
-                    Download Again
-                  </a>
-                  <a
-                    href={pdfBlobUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 text-slate-800 dark:text-white text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    Open PDF
-                  </a>
-                </div>
-              </div>
-            )}
           </div>
         </div>
+      )}
 
-        {/* Portal-Rendered Dropdowns */}
-        {renderPortalPopover()}
+      {/* Document Privacy Notice */}
+      <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+          <span>
+            <strong>100% Client-Side Privacy:</strong> All text, typography measurements, and vector PDF compilation
+            execute strictly inside your browser sandbox. No data is ever transmitted to external servers.
+          </span>
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
+};

@@ -33,7 +33,7 @@ export const WordCounter: React.FC = () => {
       };
     }
 
-    const wordsArr = raw.match(/[\p{L}\p{N}_\u2019'-]+/gu) || [];
+    const wordsArr: string[] = raw.match(/[\p{L}\p{N}_\u2019'-]+/gu) || [];
     const wordsCount = wordsArr.length;
     const charsWithSpaces = text.length;
     const charsNoSpaces = text.replace(/\s+/g, '').length;
