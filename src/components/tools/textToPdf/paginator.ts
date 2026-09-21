@@ -82,22 +82,30 @@ export function paginateDocument(
   let currentPageIndex = 0;
   let currentPageHeight = 0;
   let currentPageSlices: PageBlockSlice[] = [];
+  let currentFirstBlockPos: number | undefined = undefined;
 
-  const startNewPage = () => {
+  const startNewPage = (nextBlockPos?: number) => {
     pages.push({
       pageIndex: currentPageIndex,
       pageNumber: currentPageIndex + 1,
+      firstBlockPos: currentFirstBlockPos,
+      usedHeightPt: currentPageHeight,
       blockSlices: currentPageSlices,
     });
     currentPageIndex++;
     currentPageHeight = 0;
     currentPageSlices = [];
+    currentFirstBlockPos = nextBlockPos;
   };
 
   let listCounter = 1;
 
   for (let bIdx = 0; bIdx < doc.blocks.length; bIdx++) {
     const block = doc.blocks[bIdx];
+
+    if (currentFirstBlockPos === undefined && block.pos !== undefined) {
+      currentFirstBlockPos = block.pos;
+    }
 
     // Reset numbered list counter if block is not a numbered list
     if (block.type === 'number') {
@@ -108,7 +116,7 @@ export function paginateDocument(
 
     // Explicit Page Break
     if (block.type === 'page-break') {
-      startNewPage();
+      startNewPage(doc.blocks[bIdx + 1]?.pos);
       continue;
     }
 
@@ -116,7 +124,7 @@ export function paginateDocument(
     if (block.type === 'hr') {
       const hrHeight = 16;
       if (currentPageHeight + hrHeight > contentHeightPt && currentPageSlices.length > 0) {
-        startNewPage();
+        startNewPage(block.pos);
       }
       currentPageSlices.push({
         blockId: block.id,
@@ -286,9 +294,23 @@ export function paginateDocument(
       commitLine();
     }
 
-    // Now distribute lines across pages based on exact remaining page height
-    if (currentPageHeight + spacingAbove + 14 > contentHeightPt && currentPageSlices.length > 0) {
-      startNewPage();
+    // Calculate total height of this block
+    const blockLinesHeight = blockLines.reduce((acc, l) => acc + l.lineHeightPt, 0);
+    const blockTotalHeight = spacingAbove + blockLinesHeight + spacingBelow;
+
+    // Distribute lines across pages based on remaining page height:
+    // If the entire block fits on a fresh page, but overflows the remaining space on current page,
+    // move the ENTIRE block to the next page cleanly (prevents orphan headers & clipped lists).
+    if (
+      currentPageHeight + blockTotalHeight > contentHeightPt &&
+      currentPageSlices.length > 0 &&
+      blockTotalHeight <= contentHeightPt
+    ) {
+      startNewPage(block.pos);
+      currentPageHeight += spacingAbove;
+    } else if (currentPageHeight + spacingAbove + 14 > contentHeightPt && currentPageSlices.length > 0) {
+      startNewPage(block.pos);
+      currentPageHeight += spacingAbove;
     } else {
       currentPageHeight += spacingAbove;
     }
@@ -308,7 +330,7 @@ export function paginateDocument(
           });
           currentSliceLines = [];
         }
-        startNewPage();
+        startNewPage(block.pos);
       }
 
       currentSliceLines.push(line);
@@ -333,6 +355,8 @@ export function paginateDocument(
     pages.push({
       pageIndex: currentPageIndex,
       pageNumber: currentPageIndex + 1,
+      firstBlockPos: currentFirstBlockPos,
+      usedHeightPt: currentPageHeight,
       blockSlices: currentPageSlices,
     });
   }

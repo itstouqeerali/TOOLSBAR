@@ -1,5 +1,109 @@
 // Sample documents for TextToPdf Studio
 
+export function sampleTextToHtml(raw: string): string {
+  const parts = raw.split('<<<PAGE_BREAK>>>');
+  return parts
+    .map((section) => {
+      const lines = section.trim().split('\n');
+      const htmlLines: string[] = [];
+      let inUl = false;
+      let inOl = false;
+
+      for (let line of lines) {
+        line = line.trim();
+        if (!line) {
+          if (inUl) {
+            htmlLines.push('</ul>');
+            inUl = false;
+          }
+          if (inOl) {
+            htmlLines.push('</ol>');
+            inOl = false;
+          }
+          continue;
+        }
+
+        if (line.startsWith('# ')) {
+          if (inUl) {
+            htmlLines.push('</ul>');
+            inUl = false;
+          }
+          if (inOl) {
+            htmlLines.push('</ol>');
+            inOl = false;
+          }
+          htmlLines.push(`<h1>${line.slice(2)}</h1>`);
+        } else if (line.startsWith('## ')) {
+          if (inUl) {
+            htmlLines.push('</ul>');
+            inUl = false;
+          }
+          if (inOl) {
+            htmlLines.push('</ol>');
+            inOl = false;
+          }
+          htmlLines.push(`<h2>${line.slice(3)}</h2>`);
+        } else if (line.startsWith('### ')) {
+          if (inUl) {
+            htmlLines.push('</ul>');
+            inUl = false;
+          }
+          if (inOl) {
+            htmlLines.push('</ol>');
+            inOl = false;
+          }
+          htmlLines.push(`<h3>${line.slice(4)}</h3>`);
+        } else if (line === '---') {
+          if (inUl) {
+            htmlLines.push('</ul>');
+            inUl = false;
+          }
+          if (inOl) {
+            htmlLines.push('</ol>');
+            inOl = false;
+          }
+          htmlLines.push('<hr />');
+        } else if (line.startsWith('- ')) {
+          if (inOl) {
+            htmlLines.push('</ol>');
+            inOl = false;
+          }
+          if (!inUl) {
+            htmlLines.push('<ul>');
+            inUl = true;
+          }
+          htmlLines.push(`<li>${line.slice(2)}</li>`);
+        } else if (/^\d+\.\s/.test(line)) {
+          if (inUl) {
+            htmlLines.push('</ul>');
+            inUl = false;
+          }
+          if (!inOl) {
+            htmlLines.push('<ol>');
+            inOl = true;
+          }
+          htmlLines.push(`<li>${line.replace(/^\d+\.\s/, '')}</li>`);
+        } else {
+          if (inUl) {
+            htmlLines.push('</ul>');
+            inUl = false;
+          }
+          if (inOl) {
+            htmlLines.push('</ol>');
+            inOl = false;
+          }
+          htmlLines.push(`<p>${line}</p>`);
+        }
+      }
+
+      if (inUl) htmlLines.push('</ul>');
+      if (inOl) htmlLines.push('</ol>');
+
+      return htmlLines.join('\n');
+    })
+    .join('\n<div data-type="page-break"></div>\n');
+}
+
 export const STANDARD_SAMPLE_TEXT = `# Toolsbar Professional Document Studio
 Client-Side Rich Text to PDF Generator & Vector Publisher
 ---
@@ -63,6 +167,8 @@ Enterprise compliance requirements increasingly restrict sending sensitive text,
 ### Conclusion & Final Output
 This sample demonstrates a complete four-page technical document. When downloaded, the resulting PDF file will exactly mirror the page breaks, margins, typography, highlights, and headers shown on this screen.
 `;
+
+export const STANDARD_SAMPLE_HTML = sampleTextToHtml(STANDARD_SAMPLE_TEXT);
 
 // Helper to generate a genuine 17-page document for large document test
 export function generateSeventeenPageDoc(): string {

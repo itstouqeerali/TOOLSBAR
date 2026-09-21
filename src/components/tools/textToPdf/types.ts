@@ -24,6 +24,7 @@ export interface FormattedBlock {
   align: TextAlignOption;
   indent?: number;
   listIndex?: number;
+  pos?: number;
   spans: InlineSpan[];
 }
 
@@ -50,6 +51,8 @@ export interface PageBlockSlice {
 export interface PaginatedPage {
   pageIndex: number;
   pageNumber: number;
+  firstBlockPos?: number;
+  usedHeightPt?: number;
   blockSlices: PageBlockSlice[];
 }
 
