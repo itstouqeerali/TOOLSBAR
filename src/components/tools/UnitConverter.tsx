@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Scale, ArrowRightLeft, Copy, Check, Sparkles, Hash } from 'lucide-react';
 
 type UnitCategory = 'length' | 'weight' | 'temperature' | 'area' | 'volume' | 'speed' | 'digital' | 'time';
@@ -111,11 +112,38 @@ const UNIT_GROUPS: Record<UnitCategory, { name: string; icon: string; units: Uni
 };
 
 export const UnitConverter: React.FC = () => {
-  const [category, setCategory] = useState<UnitCategory>('length');
-  const [fromUnitId, setFromUnitId] = useState<string>('m');
-  const [toUnitId, setToUnitId] = useState<string>('ft');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const getCategoryFromSearch = (): UnitCategory => {
+    const params = new URLSearchParams(location.search);
+    const cat = (params.get('category') || params.get('tab'))?.toLowerCase();
+    if (cat === 'temperature' || cat === 'temp') return 'temperature';
+    if (cat === 'digital' || cat === 'data' || cat === 'data-storage' || cat === 'storage') return 'digital';
+    if (cat === 'weight' || cat === 'mass') return 'weight';
+    if (cat === 'area') return 'area';
+    if (cat === 'volume') return 'volume';
+    if (cat === 'speed') return 'speed';
+    if (cat === 'time') return 'time';
+    return 'length';
+  };
+
+  const initialCat = getCategoryFromSearch();
+  const [category, setCategory] = useState<UnitCategory>(initialCat);
+  const [fromUnitId, setFromUnitId] = useState<string>(() => UNIT_GROUPS[initialCat].units[0].id);
+  const [toUnitId, setToUnitId] = useState<string>(() => UNIT_GROUPS[initialCat].units[1]?.id || UNIT_GROUPS[initialCat].units[0].id);
   const [inputValue, setInputValue] = useState<string>('100');
   const [copied, setCopied] = useState<boolean>(false);
+
+  useEffect(() => {
+    const searchedCat = getCategoryFromSearch();
+    if (searchedCat !== category) {
+      setCategory(searchedCat);
+      const units = UNIT_GROUPS[searchedCat].units;
+      setFromUnitId(units[0].id);
+      setToUnitId(units[1] ? units[1].id : units[0].id);
+    }
+  }, [location.search]);
 
   // Sync unit defaults on category switch
   const currentUnits = UNIT_GROUPS[category].units;
@@ -125,6 +153,7 @@ export const UnitConverter: React.FC = () => {
     const units = UNIT_GROUPS[newCat].units;
     setFromUnitId(units[0].id);
     setToUnitId(units[1] ? units[1].id : units[0].id);
+    navigate(`/tools/unit-converter?category=${newCat}`, { replace: true });
   };
 
   const fromUnit = currentUnits.find(u => u.id === fromUnitId) || currentUnits[0];

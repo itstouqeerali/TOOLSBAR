@@ -123,13 +123,13 @@
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow), var(--glass-highlight);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   box-shadow: var(--glass-shadow-hover), var(--glass-highlight-hover);
 }
 
@@ -696,5 +696,62 @@ html.light ::-webkit-scrollbar-thumb:hover {
 .tiptap-doc-editor .tiptap ::selection {
   background-color: #c7d2fe !important;
   color: #1e1b4b !important;
+}
+
+/* ==========================================================================
+   Professional Premium Staggered Animations
+   Subtle fade-in and slide-up effect on page & tab load (0.45s - 0.5s ease-out)
+   ========================================================================== */
+
+@keyframes fadeInUpSmooth {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageFadeInSmooth {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: pageFadeInSmooth 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUpSmooth 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger-1 { animation-delay: 35ms; }
+.stagger-2 { animation-delay: 70ms; }
+.stagger-3 { animation-delay: 105ms; }
+.stagger-4 { animation-delay: 140ms; }
+.stagger-5 { animation-delay: 175ms; }
+.stagger-6 { animation-delay: 210ms; }
+.stagger-7 { animation-delay: 245ms; }
+.stagger-8 { animation-delay: 280ms; }
+.stagger-9 { animation-delay: 315ms; }
+.stagger-10 { animation-delay: 350ms; }
+.stagger-11 { animation-delay: 385ms; }
+.stagger-12 { animation-delay: 420ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter,
+  .animate-fade-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 

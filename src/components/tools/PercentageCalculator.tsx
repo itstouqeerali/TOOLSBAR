@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Copy, Check, RotateCcw, Percent, ArrowRight, HelpCircle, Calculator } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Copy, Check, RotateCcw, Percent, ArrowRight, HelpCircle, Calculator, Tag, Receipt, Split } from 'lucide-react';
+import { DiscountCalculator } from './DiscountCalculator';
+import { GstTaxCalculator } from './GstTaxCalculator';
+import { RatioCalculator } from './RatioCalculator';
 
 type Mode = 'percent_of' | 'is_what_percent' | 'increase_decrease' | 'add_subtract' | 'what_is_whole';
 
-export const PercentageCalculator: React.FC = () => {
+const StandardPercentageCore: React.FC = () => {
   const [mode, setMode] = useState<Mode>('percent_of');
   const [valA, setValA] = useState<string>('15');
   const [valB, setValB] = useState<string>('120');
@@ -436,6 +440,82 @@ export const PercentageCalculator: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+};
+
+type PercentageWorkspaceTab = 'standard' | 'discount' | 'tax' | 'ratio';
+
+export const PercentageCalculator: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const getTabFromSearch = (): PercentageWorkspaceTab => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab')?.toLowerCase();
+    if (tabParam === 'discount' || tabParam === 'sale') return 'discount';
+    if (tabParam === 'tax' || tabParam === 'gst' || tabParam === 'vat') return 'tax';
+    if (tabParam === 'ratio' || tabParam === 'aspect') return 'ratio';
+    return 'standard';
+  };
+
+  const [activeTab, setActiveTab] = useState<PercentageWorkspaceTab>(getTabFromSearch);
+
+  useEffect(() => {
+    const tab = getTabFromSearch();
+    if (tab !== activeTab) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
+
+  const handleTabChange = (tab: PercentageWorkspaceTab) => {
+    setActiveTab(tab);
+    navigate(`/tools/percentage-calculator?tab=${tab}`, { replace: true });
+  };
+
+  return (
+    <div className="space-y-8" id="percentage-calculator-workspace">
+      {/* Workspace Navigation Bar */}
+      <div className="glass-panel p-2 sm:p-2.5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm border border-slate-200/80 dark:border-white/10">
+        <div className="flex items-center gap-2 px-2 text-xs font-semibold text-slate-700 dark:text-neutral-300">
+          <Percent className="w-4 h-4 text-indigo-500" />
+          <span>Percentage & Proportions Suite</span>
+        </div>
+
+        <div className="flex items-center gap-1.5 w-full sm:w-auto p-1 bg-slate-100/80 dark:bg-black/40 rounded-xl border border-slate-200/60 dark:border-white/5 overflow-x-auto">
+          {[
+            { id: 'standard', label: 'Standard %', icon: Calculator },
+            { id: 'discount', label: 'Discount & Sale', icon: Tag },
+            { id: 'tax', label: 'GST & Sales Tax', icon: Receipt },
+            { id: 'ratio', label: 'Ratio & Aspect', icon: Split },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleTabChange(item.id as PercentageWorkspaceTab)}
+                className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  isActive
+                    ? 'bg-white dark:bg-white/15 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/10'
+                    : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-500' : 'text-slate-400'}`} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Active Tab Panel */}
+      <div className="animate-in fade-in duration-200">
+        {activeTab === 'standard' && <StandardPercentageCore />}
+        {activeTab === 'discount' && <DiscountCalculator />}
+        {activeTab === 'tax' && <GstTaxCalculator />}
+        {activeTab === 'ratio' && <RatioCalculator />}
       </div>
     </div>
   );

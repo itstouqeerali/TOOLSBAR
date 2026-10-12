@@ -107,7 +107,7 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
             {category?.name || tool.category}
           </span>
           <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-1">
-            <Lock className="w-3 h-3" /> 100% Client-Side Privacy
+            <Lock className="w-3 h-3" /> Client-Side Processing
           </span>
         </div>
 

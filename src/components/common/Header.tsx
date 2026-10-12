@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Moon, Sun, Menu, X, 
-  Layers, Flame, Grid, ShieldCheck, LogOut, User as UserIcon
+  Sparkles, Wrench, Search, Command, LogOut, User as UserIcon
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
@@ -19,6 +19,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ 
   currentPath, 
   onNavigate, 
+  onOpenSearch,
   onOpenRegister,
   onOpenSignIn,
 }) => {
@@ -35,25 +36,22 @@ export const Header: React.FC<HeaderProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems = [
-    { label: 'All Tools', path: 'tools', icon: Grid },
-    { label: 'Categories', path: 'categories', icon: Layers },
-    { label: 'Popular', path: 'popular', icon: Flame },
-  ];
+  const isAiActive = currentPath === 'ai-tools' || currentPath.startsWith('ai-tools/');
+  const isUtilitiesActive = currentPath === 'tools' || currentPath.startsWith('tools/');
 
   return (
     <header
       id="main-header"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass-header ${
-        isScrolled ? 'py-3' : 'py-4 sm:py-5'
+        isScrolled ? 'py-2.5 sm:py-3' : 'py-3.5 sm:py-4'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="flex items-center justify-between gap-4">
           {/* LEFT: Logo / Brand */}
           <button
             onClick={() => { onNavigate(''); setMobileMenuOpen(false); }}
-            className="flex items-center gap-2.5 group cursor-pointer focus:outline-none"
+            className="flex items-center gap-2.5 group cursor-pointer focus:outline-none shrink-0"
             id="header-logo-btn"
             aria-label="Toolsbar Home"
           >
@@ -62,156 +60,179 @@ export const Header: React.FC<HeaderProps> = ({
                 <ToolsbarLogo className="w-full h-full text-indigo-600 dark:text-white group-hover:scale-105 transition-transform" />
               </div>
             </div>
-            <div className="flex items-center">
-              <span className="text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors">
+            <div className="flex flex-col text-left">
+              <span className="text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors leading-none">
                 Toolsbar
+              </span>
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-neutral-400 tracking-wider uppercase mt-0.5">
+                AI & Utilities
               </span>
             </div>
           </button>
 
-          {/* CENTER / NAVIGATION: Desktop Links */}
-          <nav className="hidden md:flex items-center gap-1 p-1 rounded-2xl glass-panel shadow-inner">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPath === item.path || (item.path === 'tools' && currentPath.startsWith('tools/'));
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => onNavigate(item.path)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-indigo-600/15 dark:bg-white/10 text-indigo-700 dark:text-white shadow-sm border border-indigo-500/25 dark:border-white/10'
-                      : 'text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/40 dark:hover:bg-white/[0.05]'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* RIGHT: Actions (Theme Toggle + Auth Controls) */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Theme Toggle */}
+          {/* RIGHT: Desktop Controls (Theme + Sign In + Sign Up) & Mobile Controls (Theme + Hamburger) */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* Theme Toggle - Visible on all devices */}
             <button
               onClick={toggleTheme}
               id="theme-toggle-btn"
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
-              className="p-2 rounded-xl glass-button text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-all cursor-pointer shadow-sm"
+              aria-label="Toggle theme color"
+              className="p-2 rounded-xl glass-button text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-all cursor-pointer shrink-0"
             >
               {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
+                <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-180 duration-300" />
               ) : (
-                <Moon className="w-4 h-4 text-indigo-600" />
+                <Moon className="w-4 h-4 text-slate-600 animate-in spin-in-180 duration-300" />
               )}
             </button>
 
-            {/* Auth Controls */}
+            {/* Desktop Auth Controls - Strictly hidden on mobile, shown on desktop */}
             {user ? (
-              <UserMenu onNavigate={onNavigate} />
+              <div className="hidden md:block">
+                <UserMenu onNavigate={onNavigate} />
+              </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2">
                 <button
                   onClick={onOpenSignIn}
                   id="header-signin-btn"
-                  className="hidden sm:inline-block px-3.5 py-1.5 rounded-full text-xs font-semibold glass-button text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-colors cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold glass-button text-slate-700 hover:text-slate-900 dark:text-neutral-200 dark:hover:text-white border border-slate-200/80 dark:border-white/10 transition-all cursor-pointer shadow-sm"
                 >
                   Sign In
                 </button>
-
                 <button
                   onClick={onOpenRegister}
-                  id="header-register-btn"
-                  className="px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs tracking-normal transition-all shadow-md shadow-indigo-600/25 hover:shadow-lg active:scale-95 cursor-pointer whitespace-nowrap"
+                  id="header-signup-btn"
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
                 >
-                  Register
+                  Sign Up
                 </button>
               </div>
             )}
 
-            {/* Mobile Hamburger */}
+            {/* Mobile Menu Hamburger Toggle - Visible only on mobile (<md) */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl glass-button text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white cursor-pointer"
-              id="mobile-menu-btn"
+              id="mobile-menu-toggle-btn"
+              className="p-2 rounded-xl glass-button md:hidden text-slate-700 dark:text-neutral-300 transition-colors cursor-pointer shrink-0"
               aria-label="Toggle mobile menu"
             >
-              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Dropdown Drawer */}
+        {/* CENTER / PRIMARY NAVIGATION: Absolutely & mathematically centered across desktop header */}
+        <nav 
+          aria-label="Main Navigation"
+          className="hidden md:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 items-center gap-1.5 p-1 rounded-2xl glass-panel shadow-inner border border-slate-200/80 dark:border-white/10 pointer-events-auto z-10"
+        >
+          <button
+            onClick={() => onNavigate('ai-tools')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              isAiActive
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/[0.05]'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI Tools</span>
+          </button>
+
+          <button
+            onClick={() => onNavigate('tools')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              isUtilitiesActive
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/[0.05]'
+            }`}
+          >
+            <Wrench className="w-3.5 h-3.5" />
+            <span>Utilities</span>
+          </button>
+        </nav>
+
+        {/* Mobile Dropdown Panel */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-3 p-4 rounded-2xl glass-popover shadow-2xl space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="space-y-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = currentPath === item.path || (item.path === 'tools' && currentPath.startsWith('tools/'));
-                return (
-                  <button
-                    key={item.path}
-                    onClick={() => { onNavigate(item.path); setMobileMenuOpen(false); }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      isActive ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-white/5'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                  </button>
-                );
-              })}
+          <div className="md:hidden mt-3 p-4 rounded-3xl glass-popover border border-slate-200/90 dark:border-white/10 space-y-4 animate-in slide-in-from-top-2 duration-200 shadow-2xl">
+            <nav className="flex flex-col gap-1.5">
+              <button
+                onClick={() => { onNavigate('ai-tools'); setMobileMenuOpen(false); }}
+                className={`flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition-all text-left ${
+                  isAiActive 
+                    ? 'bg-indigo-600 text-white' 
+                    : 'text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5'
+                }`}
+              >
+                <span className="flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4" /> AI Tools Discovery
+                </span>
+                <span className="text-xs opacity-75">Directory & Guides</span>
+              </button>
 
-              {isAdmin && (
+              <button
+                onClick={() => { onNavigate('tools'); setMobileMenuOpen(false); }}
+                className={`flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition-all text-left ${
+                  isUtilitiesActive 
+                    ? 'bg-indigo-600 text-white' 
+                    : 'text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5'
+                }`}
+              >
+                <span className="flex items-center gap-2.5">
+                  <Wrench className="w-4 h-4" /> Native Utilities
+                </span>
+                <span className="text-xs opacity-75">12 Free Tools</span>
+              </button>
+            </nav>
+
+            {onOpenSearch && (
+              <button
+                onClick={() => { setMobileMenuOpen(false); onOpenSearch(); }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white text-xs font-semibold border border-slate-200 dark:border-white/10"
+              >
+                <Search className="w-4 h-4 text-slate-500" />
+                <span>Search All AI Tools & Utilities</span>
+              </button>
+            )}
+
+            {user ? (
+              <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex flex-col gap-1.5">
                 <button
-                  onClick={() => { onNavigate('admin'); setMobileMenuOpen(false); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/15"
+                  onClick={() => { setMobileMenuOpen(false); onNavigate('account'); }}
+                  className="flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-neutral-200 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
                 >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Admin Dashboard</span>
+                  <span className="flex items-center gap-2">
+                    <UserIcon className="w-3.5 h-3.5 text-indigo-500" /> My Account
+                  </span>
+                  <span className="text-[11px] opacity-75">{userProfile?.displayName || user.displayName || 'Member'}</span>
                 </button>
-              )}
-            </div>
-
-            <div className="pt-2 border-t border-slate-100 dark:border-white/10 space-y-2">
-              {user ? (
-                <div className="space-y-2">
-                  <div className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.03] text-xs text-slate-600 dark:text-neutral-300 font-mono truncate">
-                    {user.email}
-                  </div>
-                  <button
-                    onClick={async () => {
-                      setMobileMenuOpen(false);
-                      await signOut();
-                    }}
-                    className="w-full py-2.5 px-4 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 font-semibold text-xs transition-all text-center flex items-center justify-center gap-2"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => { onOpenSignIn?.(); setMobileMenuOpen(false); }}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white font-semibold text-xs transition-all text-center"
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => { onOpenRegister?.(); setMobileMenuOpen(false); }}
-                    className="w-full py-2.5 px-4 rounded-xl bg-white text-slate-950 font-semibold text-xs transition-all text-center shadow-sm"
-                  >
-                    Register
-                  </button>
-                </div>
-              )}
-            </div>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); signOut(); }}
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" /> Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="pt-2 border-t border-slate-200 dark:border-white/10 flex items-center gap-2">
+                <button
+                  onClick={() => { setMobileMenuOpen(false); onOpenSignIn?.(); }}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-neutral-300 text-center glass-button cursor-pointer"
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => { setMobileMenuOpen(false); onOpenRegister?.(); }}
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-semibold text-center shadow-md shadow-indigo-600/20 cursor-pointer"
+                >
+                  Create Account
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
     </header>
   );
 };
-

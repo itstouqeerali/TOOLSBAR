@@ -2,193 +2,26 @@ import { Category } from '../types';
 
 export const CATEGORIES: Category[] = [
   {
-    id: 'calculators',
-    name: 'Calculators & Math',
-    slug: 'calculators',
-    icon: 'Calculator',
-    description: 'Instant percentage, financial, scientific, and mathematical utilities.',
-    toolCount: 9,
-    colorAccent: 'from-blue-500/20 to-cyan-500/20',
-    editorial: {
-      overview: 'The Calculators & Math suite on Toolsbar provides instant, precise computational utilities designed for everyday finances, academic problem solving, and commercial calculations. Rather than navigating cumbersome spreadsheets or complex formula sheets, you can quickly solve percentages, evaluate compound and simple interest rates, estimate monthly loan EMIs, and compute sales discounts or GST taxes with real-time feedback as you adjust values. Every calculator clearly breaks down mathematical formulas step-by-step so you understand exactly how results are calculated.',
-      keyCapabilities: [
-        'Evaluate percentage increases, percentage decreases, differences, and proportional ratios',
-        'Estimate monthly loan repayments (EMI) with complete principal and interest payment schedules',
-        'Compute compound interest accumulation over months or years with customizable compounding frequencies',
-        'Calculate sales discounts, markups, and GST/VAT tax amounts for retail budgeting and invoicing'
-      ],
-      practicalUseCases: [
-        'Determining the final checkout price after applying a seasonal 20% discount and regional sales tax',
-        'Planning a 5-year auto loan or mortgage budget to compare total interest paid across various interest rates',
-        'Calculating percentage changes in monthly business revenue, household utility expenses, or project metrics'
-      ],
-      helpfulNote: 'Mathematical calculations and financial estimates provide informative guidance for budgeting and planning. For legal tax filings or official banking contracts, consult certified financial professionals.'
-    }
-  },
-  {
-    id: 'datetime',
-    name: 'Date & Time',
-    slug: 'datetime',
-    icon: 'Calendar',
-    description: 'Precise age calculator, time zone diff, countdowns, and epoch timestamps.',
-    toolCount: 2,
-    colorAccent: 'from-amber-500/20 to-orange-500/20',
-    editorial: {
-      overview: 'The Date & Time collection provides precise chronological tools for calculating intervals between dates, determining exact ages, and converting temporal data formats. Whether you need to find your exact age down to the day and second, compute elapsed duration between project milestones, or translate developer Unix timestamps into human-readable ISO dates, these utilities eliminate timezone errors and manual leap-year mathematics. All calculations run instantly on your device with zero latency.',
-      keyCapabilities: [
-        'Calculate exact chronological age in completed years, months, weeks, days, and live ticking seconds',
-        'Convert Unix epoch timestamps (seconds and milliseconds) to UTC and localized date-time strings',
-        'Determine days remaining until birthdays, anniversaries, and scheduled project deadlines'
-      ],
-      practicalUseCases: [
-        'Verifying precise age requirements for legal forms, visa applications, competition entries, or insurance',
-        'Debugging server log timestamps and converting UTC epoch values into local team timezones during testing',
-        'Tracking milestone countdowns for product releases, event schedules, or academic semesters'
-      ],
-      helpfulNote: 'Calculations accurately account for Gregorian calendar leap years, varying month lengths, and standard UTC timezone offsets.'
-    }
-  },
-  {
-    id: 'text',
-    name: 'Text & Content',
-    slug: 'text',
-    icon: 'FileText',
-    description: 'Word counters, character statistics, case converters, and typography tools.',
-    toolCount: 8,
-    colorAccent: 'from-indigo-500/20 to-purple-500/20',
-    editorial: {
-      overview: 'The Text & Content toolkit brings together essential utilities for writers, editors, copywriters, and content creators who need fast, clean text manipulation. From counting words and analyzing reading times for essays to adjusting letter casing, removing duplicate lines from data sets, and cleaning up awkward whitespace, these tools streamline content preparation. All processing happens in your browser\'s local memory, making it safe to format unpublished drafts, personal notes, and internal business documents.',
-      keyCapabilities: [
-        'Analyze word count, character count (with and without spaces), sentences, and reading ease metrics',
-        'Convert text between uppercase, lowercase, title case, sentence case, camelCase, and kebab-case',
-        'Deduplicate lists, sort paragraphs alphabetically or numerically, and eliminate excess blank spaces',
-        'Generate web-ready URL slugs and placeholder Lorem Ipsum paragraphs for layout prototyping'
-      ],
-      practicalUseCases: [
-        'Ensuring social media updates, ads, and search meta descriptions stay within strict character limits',
-        'Cleaning up messy tabular exports or spreadsheet columns by stripping duplicated lines and extra whitespace',
-        'Formatting article headings, academic titles, or book chapters in standard Title Case'
-      ],
-      helpfulNote: 'Text manipulation executes purely in client memory without transmitting your drafts or sensitive notes to any remote servers.'
-    }
-  },
-  {
-    id: 'developer',
-    name: 'Developer Utilities',
-    slug: 'developer',
-    icon: 'Code2',
-    description: 'JSON formatters, code minifiers, Base64 encoding, JWT decoder, and hashing.',
-    toolCount: 10,
-    colorAccent: 'from-emerald-500/20 to-teal-500/20',
-    editorial: {
-      overview: 'The Developer Utilities section offers essential syntax formatters, encoders, and debugging tools crafted for software engineers, QA testers, and web developers. Working with raw JSON data, encoded URLs, Base64 strings, cryptographic hashes, and JWT authentication tokens frequently requires quick, reliable verification. Toolsbar gives developers a distraction-free, zero-latency environment to beautify minified payloads, validate regular expressions, inspect token headers and claims, and format code snippets directly in the browser.',
-      keyCapabilities: [
-        'Format, validate, and minify JSON, HTML, CSS, and JavaScript with customizable indentation',
-        'Encode and decode Base64 strings, binary data, and percent-encoded URL query parameters',
-        'Inspect and decode JSON Web Tokens (JWT) to inspect claims, expiration timestamps, and headers',
-        'Generate random UUID v4 identifiers, test regular expression patterns, and produce cryptographic hashes (MD5, SHA-1, SHA-256)'
-      ],
-      practicalUseCases: [
-        'Pretty-printing an API payload to inspect nested response objects during backend integration',
-        'Decoding a JWT bearer token to check user permissions and verify expiration time claims',
-        'Generating unique UUIDs for database seeding, fixture creation, and API mock data'
-      ],
-      helpfulNote: 'Developer tools execute in-browser so proprietary API responses, tokens, and code snippets are never transmitted across the network.'
-    }
-  },
-  {
-    id: 'converters',
-    name: 'Unit Converters',
-    slug: 'converters',
-    icon: 'Scale',
-    description: 'Universal conversions for length, mass, temperature, data storage, and volume.',
-    toolCount: 3,
-    colorAccent: 'from-violet-500/20 to-fuchsia-500/20',
-    editorial: {
-      overview: 'The Unit Converters category provides rapid, mathematically rigorous translations across metric, imperial, digital, and scientific measurement systems. Whether converting distance measurements for DIY home projects, switching between Fahrenheit and Celsius for cooking and weather, or calculating digital file sizes from gigabytes to terabytes, these tools give you instantaneous two-way conversions with clear conversion formulas displayed.',
-      keyCapabilities: [
-        'Convert lengths, masses, areas, volumes, and speeds across metric and imperial standards',
-        'Translate temperatures between Celsius, Fahrenheit, and Kelvin scales with bidirectional formulas',
-        'Convert digital storage capacities across bits, bytes, kilobytes, megabytes, gigabytes, and terabytes'
-      ],
-      practicalUseCases: [
-        'Converting cooking recipe oven temperatures between Fahrenheit and Celsius for kitchen baking',
-        'Calculating bandwidth allowances and cloud storage bucket capacities in megabytes vs. gigabytes',
-        'Translating construction or hardware measurements between inches, feet, centimeters, and meters'
-      ],
-      helpfulNote: 'Values are computed using standard international measurement definitions and high-precision floating-point mathematics.'
-    }
-  },
-  {
-    id: 'qr',
-    name: 'QR & Barcodes',
-    slug: 'qr',
-    icon: 'QrCode',
-    description: 'Custom styled QR generators for URLs, WiFi credentials, vCards, and text.',
-    toolCount: 1,
-    colorAccent: 'from-pink-500/20 to-rose-500/20',
-    editorial: {
-      overview: 'The QR & Barcodes collection empowers businesses, educators, and individuals to generate clean, high-resolution Quick Response (QR) codes for digital and print distribution. You can instantly encode website URLs, plain text, Wi-Fi network credentials, email addresses, and contact cards into scannable 2D barcodes. With customizable foreground and background colors, high-contrast settings, and downloadable PNG vectors, you can easily create scannable materials for print posters, product packaging, menus, and conference badges.',
-      keyCapabilities: [
-        'Generate standard-compliant QR codes with adjustable error-correction levels',
-        'Encode website links, Wi-Fi credentials with automated WPA/WPA2 join parameters, and vCard contact details',
-        'Customize foreground and background color combinations while maintaining optical contrast',
-        'Download generated QR codes as high-resolution PNG image files for print and web publication'
-      ],
-      practicalUseCases: [
-        'Creating a contactless restaurant table menu link or event sign-up URL',
-        'Generating a secure Wi-Fi login QR code for office guest lobbies or home visitors',
-        'Adding a vCard QR code to physical business cards and marketing flyers'
-      ],
-      helpfulNote: 'Always verify scanning with a mobile device camera before printing large batches, ensuring high color contrast between foreground pixels and background canvas.'
-    }
-  },
-  {
-    id: 'generators',
-    name: 'Generators & Security',
-    slug: 'generators',
-    icon: 'KeyRound',
-    description: 'Cryptographic password generator with customizable entropy and character sets.',
-    toolCount: 1,
-    colorAccent: 'from-sky-500/20 to-blue-500/20',
-    editorial: {
-      overview: 'The Generators & Security category provides cryptographic utilities for producing secure credentials. Protecting online accounts requires strong, unpredictable passwords that resist credential stuffing and dictionary attacks. Our password generator uses your browser\'s native cryptographic pseudo-random number generator (window.crypto.getRandomValues) to create high-entropy passwords with custom character sets, avoiding weak predictable patterns without transmitting keys over the network.',
-      keyCapabilities: [
-        'Generate cryptographically secure passwords with customizable character sets, lengths, and symbols',
-        'Assess password entropy, strength scores, and crack-time estimates',
-        'Quick presets for PINs, memorable phrases, and complex administrative credentials'
-      ],
-      practicalUseCases: [
-        'Creating randomized, high-entropy master passwords for password managers and online accounts',
-        'Generating random alphanumeric passwords for new user account provisioning',
-        'Creating temporary single-use passwords with custom symbol requirements'
-      ],
-      helpfulNote: 'Generated passwords are created locally in your browser session using window.crypto and are never logged, stored, or transmitted to any server.'
-    }
-  },
-  {
     id: 'pdf',
     name: 'PDF & Documents',
     slug: 'pdf',
     icon: 'FileSpreadsheet',
-    description: 'Compress, merge, split, convert, and protect PDF files securely in browser.',
-    toolCount: 5,
+    description: 'Compose, merge, split, compress, and compile images to vector PDF files in browser.',
+    toolCount: 3,
     colorAccent: 'from-red-500/20 to-amber-500/20',
     editorial: {
-      overview: 'The PDF & Documents category provides clean, client-side document utilities for managing everyday PDF workflows without expensive software subscriptions. You can merge multiple PDF reports into a single consolidated file, extract specific pages with page splitting, compress oversized documents for email attachment limits, convert photo galleries into neat PDF binders, and compose documents using a focused text editor. Processing runs in browser memory to keep sensitive contracts, invoices, and resumes private.',
+      overview: 'The PDF & Documents suite on Toolsbar provides comprehensive, client-side document processing without cloud file uploads. From creating formatted documents with real-time logical pagination in Text to PDF, to sequencing photo galleries in Images to PDF, to merging, splitting, and compressing multi-page files in the PDF Toolkit, every operation runs inside your web browser for absolute confidentiality.',
       keyCapabilities: [
-        'Merge multiple PDF files in custom page orders into a unified document',
-        'Extract individual pages or specified page ranges from multi-page PDF documents',
-        'Compress document file sizes to meet email and portal attachment thresholds',
-        'Assemble image files (JPG, PNG) into clean, multi-page PDF albums',
-        'Compose formatted documents directly into PDF format using our focused document editor'
+        'Compose formatted documents with dynamic page breaks and export to vector PDF via Text to PDF',
+        'Convert photo sets (JPG, PNG) into organized, multi-page PDF documents with custom margins',
+        'Merge multiple PDF documents in custom sequence, extract page ranges, and optimize file sizes in PDF Toolkit'
       ],
       practicalUseCases: [
-        'Combining signed contract pages, receipts, and supporting attachments into a single file for submission',
-        'Extracting a single chapter or invoice page from a 50-page vendor report',
-        'Compressing high-resolution scanned documents to under 5 MB for government and job portal uploads'
+        'Writing and printing professional contracts, resumes, and formal letters directly to PDF',
+        'Compiling scanned receipts, identity documents, and photos into a single consolidated file',
+        'Extracting specific chapters or compressing oversized PDF attachments under 5 MB for email delivery'
       ],
-      helpfulNote: 'Document manipulation is handled in your browser memory via WebAssembly and modern web APIs, ensuring your private files are never uploaded to remote cloud servers.'
+      helpfulNote: 'Document manipulation executes locally in your browser memory via WebAssembly and PDF-Lib with zero server telemetry.'
     }
   },
   {
@@ -196,43 +29,139 @@ export const CATEGORIES: Category[] = [
     name: 'Images & Media',
     slug: 'images',
     icon: 'Image',
-    description: 'Lossless compression, format conversion (JPG, PNG, WebP), and resizing.',
-    toolCount: 5,
+    description: 'Lossless compression, pixel-perfect resizing, and multi-format conversion (JPG, PNG, WebP).',
+    toolCount: 1,
     colorAccent: 'from-cyan-500/20 to-blue-500/20',
     editorial: {
-      overview: 'The Images & Media collection provides fast, privacy-respecting graphic utilities for optimizing, resizing, and converting web images. Whether you are preparing photos for website publishing, converting PNG screenshots into compact WebP or JPG files to save storage, or resizing dimensions for social media profile banners, these tools deliver crisp visual quality without watermarks. Utilizing HTML5 Canvas and browser-native compression, your media files remain on your local computer.',
+      overview: 'The Images & Media workspace provides fast, privacy-focused visual utilities to optimize and transform graphics for web publishing and design. Our Image Toolkit brings together responsive compression with real-time size comparison, dimension resizing with aspect-ratio locking, and bi-directional format conversion across WebP, PNG, and JPG formats.',
       keyCapabilities: [
-        'Compress JPG, PNG, and WebP images with adjustable visual quality and live file size comparisons',
-        'Convert between modern image formats (PNG to JPG, JPG to PNG, and WebP)',
-        'Resize image dimensions with aspect-ratio locking and customizable width and height parameters'
+        'Compress high-resolution photographs with live before-and-after byte comparisons',
+        'Resize dimensions with aspect-ratio preservation and custom pixel width/height inputs',
+        'Convert between WebP, PNG, and JPG formats in browser canvas memory without watermarks'
       ],
       practicalUseCases: [
-        'Compressing product photos and blog headers to improve website page load speeds and Core Web Vitals',
-        'Converting transparent PNG logos to universal JPG format for email signatures',
-        'Resizing high-resolution camera photos to exact dimensions required for social profiles or passports'
+        'Optimizing product photos and banner images to achieve higher Google PageSpeed scores',
+        'Converting transparent PNG logos to high-efficiency WebP format for fast web delivery',
+        'Resizing passport photos, social profile pictures, or banners to specific pixel boundaries'
       ],
-      helpfulNote: 'Image processing occurs in your browser\'s canvas memory. No files are uploaded to third-party hosting services, ensuring complete confidentiality for personal photos.'
+      helpfulNote: 'All image rendering and compression takes place in HTML5 Canvas memory on your local machine.'
     }
   },
   {
-    id: 'colors',
-    name: 'Color Tools',
-    slug: 'colors',
-    icon: 'Palette',
-    description: 'Color palette generator and harmony utilities (currently in development).',
-    toolCount: 1,
-    colorAccent: 'from-purple-500/20 to-pink-500/20',
+    id: 'calculators',
+    name: 'Calculators',
+    slug: 'calculators',
+    icon: 'Calculator',
+    description: 'Percentages, retail discounts, sales tax, chronological age, and financial loan EMI calculators.',
+    toolCount: 3,
+    colorAccent: 'from-blue-500/20 to-cyan-500/20',
     editorial: {
-      overview: 'The Color Tools category is currently in active development. We are engineering browser-native color utilities to assist designers and frontend developers in generating color palettes, testing color harmonies, and previewing color formats. Once launched, these utilities will provide intuitive color exploration directly within your browser.',
+      overview: 'The Calculators department delivers instant, mathematically rigorous computational utilities for everyday financial planning, commercial transactions, and milestone tracking. Solve standard percentages, retail discounts, and GST taxes in the Percentage Calculator, evaluate monthly mortgage EMIs and compounding interest in the Finance Calculator, or track exact elapsed lifespan down to the second in the Age Calculator.',
       keyCapabilities: [
-        'Color palette generation and harmonic color scheme exploration (In Development)',
-        'Color space format previews for web stylesheets (In Development)'
+        'Evaluate percentage changes, retail markdowns, and sales tax with step-by-step formula breakdowns',
+        'Compute monthly loan repayments (EMI) with full principal and interest payment schedules',
+        'Calculate exact chronological age with live ticking seconds and upcoming birthday countdowns'
       ],
       practicalUseCases: [
-        'Exploring complementary and monochromatic palettes for website layouts (upcoming)',
-        'Previewing color palettes for digital design systems (upcoming)'
+        'Calculating store discounts and regional sales tax during retail checkout budgeting',
+        'Comparing auto loans, home mortgages, and compounding interest growth across various terms',
+        'Verifying exact age requirements for travel visas, competition entries, or civil applications'
       ],
-      helpfulNote: 'Utilities in this category are currently under construction and will be made available as browser-ready components upon completion.'
+      helpfulNote: 'Calculations run in real-time in high-precision JavaScript floating-point arithmetic with clear mathematical formulas.'
+    }
+  },
+  {
+    id: 'text',
+    name: 'Text & Content',
+    slug: 'text',
+    icon: 'FileText',
+    description: 'Comprehensive text workspace for word counts, case changes, line cleaning, and slug generation.',
+    toolCount: 1,
+    colorAccent: 'from-indigo-500/20 to-purple-500/20',
+    editorial: {
+      overview: 'The Text & Content toolkit brings together indispensable tools for writers, copywriters, and developers who work with written content daily. The unified Text Toolkit provides detailed word and character metrics with social media limit gauges, grammatical case conversion, line deduplication and sorting, web URL slug creation, and placeholder Lorem Ipsum generation.',
+      keyCapabilities: [
+        'Measure word counts, character density, reading time estimates, and social media post limits',
+        'Convert text between sentence case, Title Case, UPPERCASE, camelCase, and kebab-case',
+        'Clean raw lists by stripping duplicate lines, removing redundant spaces, and sorting alphabetically',
+        'Generate SEO-friendly URL slugs and custom-length Lorem Ipsum placeholder paragraphs'
+      ],
+      practicalUseCases: [
+        'Drafting social media posts, headlines, and meta descriptions to avoid character truncation',
+        'Cleaning up messy spreadsheet text exports, customer lists, and raw log files',
+        'Generating clean URL paths and placeholder content for website design mockups'
+      ],
+      helpfulNote: 'All text analysis and formatting runs strictly in your browser session with zero external API calls.'
+    }
+  },
+  {
+    id: 'developer',
+    name: 'Developer',
+    slug: 'developer',
+    icon: 'Code2',
+    description: 'JSON Studio, syntax formatters, Base64, URL encoding, JWT decoder, UUIDs, and hashing.',
+    toolCount: 2,
+    colorAccent: 'from-emerald-500/20 to-teal-500/20',
+    editorial: {
+      overview: 'The Developer collection provides indispensable debugging, encoding, and formatting utilities for software engineers and web developers. Inspect, beautify, and minify payloads in the specialized JSON Studio, or use the Developer Toolbox for multi-language code formatting (HTML, CSS, JS), Base64 and URL encoding, cryptographic hashing, UUID generation, JWT token decoding, and Unix epoch conversions.',
+      keyCapabilities: [
+        'Validate, beautify, and compress JSON payloads with line-by-line syntax error identification',
+        'Format and minify HTML, CSS, and JavaScript source code with customizable indentation',
+        'Encode/decode Base64 and URL strings, inspect JWT authentication claims, and generate UUID v4 IDs',
+        'Create cryptographic checksums (MD5, SHA-1, SHA-256) and convert Unix epoch timestamps'
+      ],
+      practicalUseCases: [
+        'Inspecting nested REST API payloads and verifying token expiration claims during development',
+        'Formatting minified stylesheet and script snippets for code reviews and documentation',
+        'Generating test UUIDs and secure cryptographic passwords for database fixtures'
+      ],
+      helpfulNote: 'Developer utilities run purely client-side; proprietary credentials, API keys, and tokens are never transmitted.'
+    }
+  },
+  {
+    id: 'converters',
+    name: 'Converters',
+    slug: 'converters',
+    icon: 'Scale',
+    description: 'Universal measurement translator for distance, mass, temperature, storage, area, and speed.',
+    toolCount: 1,
+    colorAccent: 'from-violet-500/20 to-fuchsia-500/20',
+    editorial: {
+      overview: 'The Converters category provides instant, mathematically rigorous translations across metric, imperial, digital, and scientific measurement standards. The Universal Unit Converter seamlessly handles distance, mass/weight, temperature (°C, °F, K), digital data storage (bytes to petabytes), area, volume, and velocity with bidirectional precision.',
+      keyCapabilities: [
+        'Convert lengths, weights, areas, liquid volumes, and velocities across metric and imperial systems',
+        'Translate temperature between Celsius, Fahrenheit, and Kelvin with standard scientific formulas',
+        'Convert digital storage capacities across bits, bytes, kilobytes, megabytes, gigabytes, and terabytes'
+      ],
+      practicalUseCases: [
+        'Translating international recipe temperatures and ingredient weights for cooking and baking',
+        'Calculating cloud storage allocations and bandwidth metrics in megabytes vs. gigabytes',
+        'Converting construction and engineering dimensions between metric and imperial standards'
+      ],
+      helpfulNote: 'All conversions rely on standard international measurement definitions and floating-point precision.'
+    }
+  },
+  {
+    id: 'qr',
+    name: 'QR & Codes',
+    slug: 'qr',
+    icon: 'QrCode',
+    description: 'High-resolution custom QR code generator for links, WiFi credentials, vCards, and text.',
+    toolCount: 1,
+    colorAccent: 'from-pink-500/20 to-rose-500/20',
+    editorial: {
+      overview: 'The QR & Codes utility provides a high-resolution generator for creating Quick Response 2D barcodes for print and digital publication. Easily encode website URLs, plain text, Wi-Fi credentials with automated connection flags, and contact cards with custom colors and downloadable PNG assets.',
+      keyCapabilities: [
+        'Generate standard-compliant QR codes with selectable error-correction levels',
+        'Encode website URLs, Wi-Fi credentials, vCard contact info, and plain text notes',
+        'Customize foreground and background colors and download high-resolution PNG image files'
+      ],
+      practicalUseCases: [
+        'Creating contactless restaurant table menus, event flyers, or conference badge links',
+        'Generating a guest Wi-Fi access code for office reception areas or homes',
+        'Adding scannable contact details to printed business cards and promotional materials'
+      ],
+      helpfulNote: 'Always test scanning your QR code with a phone camera before printing large physical batches.'
     }
   }
 ];
@@ -247,6 +176,22 @@ export interface CategoryStyle {
 }
 
 export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
+  pdf: {
+    iconBg: 'bg-red-50 dark:bg-red-500/10',
+    iconText: 'text-red-600 dark:text-red-400',
+    border: 'border-red-200/80 dark:border-red-500/20',
+    badgeBg: 'bg-red-50 dark:bg-red-500/15',
+    badgeText: 'text-red-700 dark:text-red-300',
+    hoverBg: 'group-hover:bg-red-600',
+  },
+  images: {
+    iconBg: 'bg-cyan-50 dark:bg-cyan-500/10',
+    iconText: 'text-cyan-600 dark:text-cyan-400',
+    border: 'border-cyan-200/80 dark:border-cyan-500/20',
+    badgeBg: 'bg-cyan-50 dark:bg-cyan-500/15',
+    badgeText: 'text-cyan-700 dark:text-cyan-300',
+    hoverBg: 'group-hover:bg-cyan-600',
+  },
   calculators: {
     iconBg: 'bg-blue-50 dark:bg-blue-500/10',
     iconText: 'text-blue-600 dark:text-blue-400',
@@ -254,14 +199,6 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
     badgeBg: 'bg-blue-50 dark:bg-blue-500/15',
     badgeText: 'text-blue-700 dark:text-blue-300',
     hoverBg: 'group-hover:bg-blue-600',
-  },
-  datetime: {
-    iconBg: 'bg-amber-50 dark:bg-amber-500/10',
-    iconText: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-200/80 dark:border-amber-500/20',
-    badgeBg: 'bg-amber-50 dark:bg-amber-500/15',
-    badgeText: 'text-amber-700 dark:text-amber-300',
-    hoverBg: 'group-hover:bg-amber-600',
   },
   text: {
     iconBg: 'bg-indigo-50 dark:bg-indigo-500/10',
@@ -294,37 +231,5 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
     badgeBg: 'bg-rose-50 dark:bg-rose-500/15',
     badgeText: 'text-rose-700 dark:text-rose-300',
     hoverBg: 'group-hover:bg-rose-600',
-  },
-  generators: {
-    iconBg: 'bg-sky-50 dark:bg-sky-500/10',
-    iconText: 'text-sky-600 dark:text-sky-400',
-    border: 'border-sky-200/80 dark:border-sky-500/20',
-    badgeBg: 'bg-sky-50 dark:bg-sky-500/15',
-    badgeText: 'text-sky-700 dark:text-sky-300',
-    hoverBg: 'group-hover:bg-sky-600',
-  },
-  pdf: {
-    iconBg: 'bg-red-50 dark:bg-red-500/10',
-    iconText: 'text-red-600 dark:text-red-400',
-    border: 'border-red-200/80 dark:border-red-500/20',
-    badgeBg: 'bg-red-50 dark:bg-red-500/15',
-    badgeText: 'text-red-700 dark:text-red-300',
-    hoverBg: 'group-hover:bg-red-600',
-  },
-  images: {
-    iconBg: 'bg-cyan-50 dark:bg-cyan-500/10',
-    iconText: 'text-cyan-600 dark:text-cyan-400',
-    border: 'border-cyan-200/80 dark:border-cyan-500/20',
-    badgeBg: 'bg-cyan-50 dark:bg-cyan-500/15',
-    badgeText: 'text-cyan-700 dark:text-cyan-300',
-    hoverBg: 'group-hover:bg-cyan-600',
-  },
-  colors: {
-    iconBg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10',
-    iconText: 'text-fuchsia-600 dark:text-fuchsia-400',
-    border: 'border-fuchsia-200/80 dark:border-fuchsia-500/20',
-    badgeBg: 'bg-fuchsia-50 dark:bg-fuchsia-500/15',
-    badgeText: 'text-fuchsia-700 dark:text-fuchsia-300',
-    hoverBg: 'group-hover:bg-fuchsia-600',
   },
 };

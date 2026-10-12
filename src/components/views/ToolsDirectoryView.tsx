@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Sparkles, Grid, Layers, ArrowUpDown } from 'lucide-react';
+import { Search, Grid, Sparkles } from 'lucide-react';
 import { TOOLS } from '../../data/tools';
 import { CATEGORIES } from '../../data/categories';
 import { ToolCard } from '../common/ToolCard';
-import { CategoryId } from '../../types';
 
 interface ToolsDirectoryViewProps {
   onNavigate: (path: string) => void;
@@ -13,7 +12,6 @@ interface ToolsDirectoryViewProps {
 export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNavigate, onOpenAuth }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'ready' | 'roadmap'>('all');
 
   const filteredTools = useMemo(() => {
     return TOOLS.filter((tool) => {
@@ -21,9 +19,6 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
       if (selectedCategory !== 'all' && tool.category !== selectedCategory) {
         return false;
       }
-      // Status filter
-      if (statusFilter === 'ready' && !tool.isImplemented) return false;
-      if (statusFilter === 'roadmap' && tool.isImplemented) return false;
 
       // Query filter
       if (searchQuery.trim()) {
@@ -36,24 +31,24 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
 
       return true;
     });
-  }, [selectedCategory, searchQuery, statusFilter]);
+  }, [selectedCategory, searchQuery]);
 
   return (
-    <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" id="tools-directory-view">
+    <div className="pt-28 pb-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-10" id="tools-directory-view">
       {/* Header */}
-      <div className="space-y-3 max-w-3xl">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-          <Grid className="w-3.5 h-3.5" /> Full Tool Registry
+      <div className="space-y-4 max-w-4xl">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+          <Grid className="w-3.5 h-3.5" /> Toolsbar Native Utilities
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold font-display text-slate-900 dark:text-white tracking-tight">
-          All Digital Utilities
+          12 Built-In Digital Utilities
         </h1>
         <p className="text-slate-600 dark:text-neutral-300 text-sm sm:text-base leading-relaxed">
-          Browse our complete catalog of browser-first tools. Filter by category, execution status, or search for a specific utility.
+          These 12 flagship tools execute directly in your web browser with complete client-side privacy and zero latency. No account or external subscription required.
         </p>
       </div>
 
-      {/* Search & Filter Control Bar */}
+      {/* Search & Filter Control Bar - Shifted directly up with consistent spacing */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search Input */}
@@ -63,30 +58,9 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter by name, keyword, or action..."
+              placeholder="Search by tool name, purpose, or capability..."
               className="w-full glass-input rounded-2xl pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none transition-all"
             />
-          </div>
-
-          {/* Status Filter */}
-          <div className="flex p-1 rounded-2xl glass-panel shrink-0 shadow-sm">
-            {[
-              { id: 'all', label: 'All' },
-              { id: 'ready', label: 'Ready Now' },
-              { id: 'roadmap', label: 'Roadmap' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setStatusFilter(tab.id as any)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                  statusFilter === tab.id
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                    : 'text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -124,14 +98,22 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
 
       {/* Grid of Filtered Tools */}
       {filteredTools.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-          {filteredTools.map((tool) => (
-            <ToolCard
+        <div 
+          key={`${selectedCategory}-${searchQuery}`}
+          className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"
+        >
+          {filteredTools.map((tool, idx) => (
+            <div
               key={tool.id}
-              tool={tool}
-              onClick={() => onNavigate(`tools/${tool.slug}`)}
-              onOpenAuth={onOpenAuth}
-            />
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${Math.min(idx * 30, 360)}ms` }}
+            >
+              <ToolCard
+                tool={tool}
+                onClick={() => onNavigate(`tools/${tool.slug}`)}
+                onOpenAuth={onOpenAuth}
+              />
+            </div>
           ))}
         </div>
       ) : (
@@ -144,7 +126,7 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
             Try adjusting your search criteria or switching to a different category filter.
           </p>
           <button
-            onClick={() => { setSearchQuery(''); setSelectedCategory('all'); setStatusFilter('all'); }}
+            onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
             className="text-xs px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold cursor-pointer"
           >
             Reset Filters
@@ -152,9 +134,9 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
         </div>
       )}
 
-      {/* Directory Editorial Overview */}
-      <section className="mt-12 pt-10 border-t border-slate-200/80 dark:border-white/[0.08]" aria-labelledby="directory-overview-heading">
-        <div className="rounded-3xl p-6 sm:p-10 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-4 max-w-5xl">
+      {/* Directory Guide Card - Perfectly centered horizontally with 100% symmetrical vertical spacing above and below */}
+      <section className="!mt-16 sm:!mt-24 w-full" aria-labelledby="directory-overview-heading">
+        <div className="w-full max-w-5xl mx-auto rounded-3xl p-6 sm:p-10 bg-white/80 dark:bg-white/[0.025] border border-slate-200/90 dark:border-white/[0.08] backdrop-blur-xl shadow-sm space-y-4">
           <div className="space-y-1">
             <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5" /> Directory Guide

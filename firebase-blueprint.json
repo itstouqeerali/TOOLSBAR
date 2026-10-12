@@ -37,12 +37,55 @@
         "lastLoginAt": { "type": "string", "format": "date-time", "description": "Last session login timestamp" }
       },
       "required": ["uid", "email", "role", "createdAt"]
+    },
+    "aiTools": {
+      "title": "AITool",
+      "description": "External AI tool record for discovery, categorization, and pricing guidance",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "slug": { "type": "string" },
+        "name": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "officialUrl": { "type": "string" },
+        "shortDescription": { "type": "string" },
+        "fullDescription": { "type": "string" },
+        "primaryCategory": { "type": "string" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "bestFor": { "type": "array", "items": { "type": "string" } },
+        "pricingType": { "type": "string", "enum": ["free", "freemium", "paid", "free-trial", "contact-sales"] },
+        "startingPrice": { "type": "string" },
+        "currency": { "type": "string" },
+        "pricingSummary": { "type": "string" },
+        "pricingUrl": { "type": "string" },
+        "hasFreePlan": { "type": "boolean" },
+        "hasFreeTrial": { "type": "boolean" },
+        "platforms": { "type": "array", "items": { "type": "string" } },
+        "keyFeatures": { "type": "array", "items": { "type": "string" } },
+        "useCases": { "type": "array", "items": { "type": "string" } },
+        "strengths": { "type": "array", "items": { "type": "string" } },
+        "limitations": { "type": "array", "items": { "type": "string" } },
+        "alternatives": { "type": "array", "items": { "type": "string" } },
+        "dateAdded": { "type": "string" },
+        "lastVerifiedAt": { "type": "string" },
+        "lastPricingVerifiedAt": { "type": "string" },
+        "isFeatured": { "type": "boolean" },
+        "isPublished": { "type": "boolean" },
+        "seoTitle": { "type": "string" },
+        "seoDescription": { "type": "string" }
+      },
+      "required": ["id", "slug", "name", "officialUrl", "shortDescription", "primaryCategory", "pricingType", "isPublished"]
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "users",
       "description": "User document store. Read/write governed by role and UID matching rules."
+    },
+    "/aiTools/{toolId}": {
+      "schema": "aiTools",
+      "description": "AI discovery directory collection. Public read for published tools; admin read/write."
     }
   }
 }

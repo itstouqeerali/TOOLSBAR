@@ -51,6 +51,14 @@ service cloud.firestore {
       // Deletion only by admin, super-admin cannot be deleted
       allow delete: if isAdmin() && resource.data.email != 'kingtouqeerali@gmail.com';
     }
+
+    // AI Tools discovery collection
+    match /aiTools/{toolId} {
+      // Anyone can read published AI tools, or admins can read all (including drafts)
+      allow read: if (resource.data.isPublished == true) || isAdmin();
+      // Only admins can create, update, or delete AI tools
+      allow create, update, delete: if isAdmin();
+    }
   }
 }
 

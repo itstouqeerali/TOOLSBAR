@@ -40,9 +40,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({ onNavigate }) => {
         className="flex items-center gap-2 pl-1.5 pr-2.5 py-1.5 rounded-full glass-button text-slate-800 dark:text-neutral-200 transition-all cursor-pointer shadow-sm text-xs"
         aria-label="User account menu"
       >
-        {userProfile?.photoURL || user.photoURL ? (
+        {(userProfile?.photoURL || user.photoURL) ? (
           <img
-            src={userProfile?.photoURL || user.photoURL || ''}
+            src={userProfile?.photoURL || user.photoURL || undefined}
             alt={displayName}
             referrerPolicy="no-referrer"
             className="w-6 h-6 rounded-full object-cover shadow-sm"

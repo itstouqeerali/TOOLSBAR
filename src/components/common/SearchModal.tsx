@@ -1,78 +1,48 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Search, X, ArrowRight, Sparkles, Command, CornerDownLeft, 
-  Percent, Calendar, FileText, Type, CaseSensitive, Code2, 
-  Binary, Scale, QrCode, KeyRound, Activity, Tag, BarChart3, 
-  Split, Landmark, TrendingUp, CreditCard, Receipt, ListFilter, 
-  AlignLeft, ArrowUpDown, Link2, Minimize2, Globe, Fingerprint, 
-  ShieldCheck, HardDrive, Thermometer, FileSpreadsheet, Image, 
-  Maximize2, Palette, Clock, Layers, Scissors, FileCode, FileImage 
+  Wrench, ExternalLink, Bot, Layers, ArrowUpRight 
 } from 'lucide-react';
 import { TOOLS } from '../../data/tools';
-import { CATEGORIES } from '../../data/categories';
+import { getCachedAiTools } from '../../services/aiToolsService';
+import { AI_CATEGORIES } from '../../data/aiCategories';
+import { AiTool } from '../../types/aiTools';
 import { Tool } from '../../types';
+import { AiToolLogo } from './AiToolLogo';
 
 interface SearchModalProps {
   isOpen: boolean;
+  initialQuery?: string;
   onClose: () => void;
-  onSelectTool: (slug: string) => void;
+  onNavigate?: (path: string) => void;
+  onSelectTool?: (slug: string) => void;
 }
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  Percent,
-  Calendar,
-  FileText,
-  Type,
-  CaseSensitive,
-  Code2,
-  Binary,
-  Scale,
-  QrCode,
-  KeyRound,
-  Activity,
-  Tag,
-  BarChart3,
-  Split,
-  Landmark,
-  TrendingUp,
-  CreditCard,
-  Receipt,
-  ListFilter,
-  AlignLeft,
-  ArrowUpDown,
-  Link2,
-  Minimize2,
-  Globe,
-  Fingerprint,
-  Search,
-  ShieldCheck,
-  HardDrive,
-  Thermometer,
-  FileSpreadsheet,
-  Image,
-  Maximize2,
-  Palette,
-  Sparkles,
-  Layers,
-  Scissors,
-  FileCode,
-  FileImage,
-  Clock,
-};
-
-export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSelectTool }) => {
-  const [query, setQuery] = useState('');
+export const SearchModal: React.FC<SearchModalProps> = ({ 
+  isOpen, 
+  initialQuery = '',
+  onClose, 
+  onNavigate,
+  onSelectTool 
+}) => {
+  const [query, setQuery] = useState(initialQuery);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Focus input and reset query on open, manage body scroll lock
+  const aiTools = useMemo(() => getCachedAiTools(false), [isOpen]);
+  const nativeTools = useMemo(() => TOOLS.filter((t) => t.isImplemented), []);
+
+  // Focus input and set initial query on open, manage body scroll lock
   useEffect(() => {
     if (isOpen) {
-      setQuery('');
+      setQuery(initialQuery || '');
       setSelectedIndex(0);
       document.body.style.overflow = 'hidden';
       const timer = setTimeout(() => {
         inputRef.current?.focus();
+        if (initialQuery) {
+          inputRef.current?.select();
+        }
       }, 50);
       return () => {
         clearTimeout(timer);
@@ -81,7 +51,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
     } else {
       document.body.style.overflow = '';
     }
-  }, [isOpen]);
+  }, [isOpen, initialQuery]);
 
   // Global key listener for ESC when open
   useEffect(() => {
@@ -97,36 +67,80 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Filtered tools with fuzzy keyword ranking
-  const results = useMemo(() => {
+  // Combined search results grouped into AI Tools and Native Utilities
+  const { matchingAiTools, matchingUtilities } = useMemo(() => {
     const q = query.toLowerCase().trim();
     if (!q) {
-      // Prioritize popular and ready tools when no query is entered
-      return TOOLS.filter(t => t.isImplemented).slice(0, 8);
+      return {
+        matchingAiTools: aiTools.filter((t) => t.isFeatured).slice(0, 5),
+        matchingUtilities: nativeTools.slice(0, 4)
+      };
     }
 
-    return TOOLS.filter((tool) => {
-      const matchName = tool.name.toLowerCase().includes(q);
-      const matchDesc = tool.description.toLowerCase().includes(q);
-      const matchCat = tool.category.toLowerCase().includes(q);
-      const matchSlug = tool.slug.toLowerCase().includes(q);
-      const matchKeywords = tool.keywords.some(k => k.toLowerCase().includes(q));
-      return matchName || matchDesc || matchCat || matchSlug || matchKeywords;
-    }).slice(0, 12);
-  }, [query]);
+    const terms = q.split(/\s+/).filter(Boolean);
+
+    const ai = aiTools.filter((t) => {
+      const fullText = [
+        t.name,
+        t.shortDescription,
+        t.fullDescription,
+        t.primaryCategory,
+        ...(t.categories || []),
+        ...(t.tags || []),
+        ...(t.bestFor || []),
+        ...(t.useCases || []),
+        ...(t.keyFeatures || [])
+      ].join(' ').toLowerCase();
+
+      return fullText.includes(q) || terms.every((term) => fullText.includes(term));
+    }).slice(0, 8);
+
+    const utils = nativeTools.filter((tool) => {
+      const fullText = [
+        tool.name,
+        tool.description,
+        tool.shortDesc || '',
+        tool.category,
+        ...(tool.keywords || [])
+      ].join(' ').toLowerCase();
+
+      return fullText.includes(q) || terms.every((term) => fullText.includes(term));
+    }).slice(0, 6);
+
+    return {
+      matchingAiTools: ai,
+      matchingUtilities: utils
+    };
+  }, [query, aiTools, nativeTools]);
+
+  const allResults = useMemo(() => {
+    return [
+      ...matchingAiTools.map((t) => ({ type: 'ai' as const, item: t, path: `ai-tools/${t.slug}` })),
+      ...matchingUtilities.map((u) => ({ type: 'utility' as const, item: u, path: `tools/${u.slug}` }))
+    ];
+  }, [matchingAiTools, matchingUtilities]);
+
+  const handleSelect = (path: string, legacySlug?: string) => {
+    if (onNavigate) {
+      onNavigate(path);
+    } else if (onSelectTool && legacySlug) {
+      onSelectTool(legacySlug);
+    }
+    onClose();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex(prev => (prev < results.length - 1 ? prev + 1 : 0));
+      setSelectedIndex((prev) => (prev < allResults.length - 1 ? prev + 1 : 0));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIndex(prev => (prev > 0 ? prev - 1 : results.length - 1));
+      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : allResults.length - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (results[selectedIndex]) {
-        onSelectTool(results[selectedIndex].slug);
-        onClose();
+      if (allResults[selectedIndex]) {
+        const selected = allResults[selectedIndex];
+        handleSelect(selected.path, (selected.item as any).slug);
       }
     }
   };
@@ -156,7 +170,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
             value={query}
             onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
             onKeyDown={handleKeyDown}
-            placeholder="Search all 43 tools (pdf, image, json, code, jwt, hash, qr, emi)..."
+            placeholder="Search AI tools, utilities, or describe what you want to do..."
             className="w-full bg-transparent text-slate-900 dark:text-white text-base sm:text-lg placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none font-medium selection:bg-indigo-500/40"
             autoComplete="off"
             spellCheck="false"
@@ -173,7 +187,6 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
             </button>
           )}
 
-          {/* Explicit, Touch-Friendly Close Button */}
           <button
             onClick={onClose}
             id="search-close-btn"
@@ -190,88 +203,137 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onSel
         </div>
 
         {/* Results List */}
-        <div className="overflow-y-auto p-2.5 sm:p-3 space-y-1.5 flex-1 min-h-[160px] max-h-[55vh]">
-          {results.length > 0 ? (
-            results.map((tool, idx) => {
-              const isSelected = idx === selectedIndex;
-              const cat = CATEGORIES.find(c => c.id === tool.category);
-              const IconComponent = (tool.icon && ICON_MAP[tool.icon]) || Sparkles;
+        <div className="overflow-y-auto p-3 sm:p-4 space-y-4 flex-1 min-h-[160px] max-h-[60vh]">
+          {allResults.length > 0 ? (
+            <>
+              {/* Group 1: AI Tools Discovery */}
+              {matchingAiTools.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="px-3 py-1 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" /> AI Tools Discovery
+                    </span>
+                    <span>{matchingAiTools.length} found</span>
+                  </div>
 
-              return (
-                <div
-                  key={tool.id}
-                  id={`search-result-${tool.slug}`}
-                  onClick={() => { onSelectTool(tool.slug); onClose(); }}
-                  onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`p-3 sm:p-3.5 rounded-2xl flex items-center justify-between cursor-pointer transition-all ${
-                    isSelected
-                      ? 'bg-indigo-50 border border-indigo-200 text-indigo-950 shadow-sm dark:bg-indigo-600/25 dark:border-indigo-500/40 dark:text-white dark:shadow-lg'
-                      : 'hover:bg-slate-100/80 text-slate-700 border border-transparent dark:hover:bg-white/5 dark:text-neutral-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all ${
-                      isSelected 
-                        ? 'bg-indigo-600 text-white shadow-md' 
-                        : 'bg-slate-100 dark:bg-white/5 text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-white/10'
-                    }`}>
-                      <IconComponent className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">{tool.name}</span>
-                        {tool.badge && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30">
-                            {tool.badge}
-                          </span>
-                        )}
-                        <span className="text-[11px] text-slate-400 dark:text-neutral-400 truncate hidden sm:inline">
-                          &bull; {cat?.name || tool.category}
-                        </span>
+                  {matchingAiTools.map((tool, idx) => {
+                    const itemIndex = idx;
+                    const isSelected = itemIndex === selectedIndex;
+                    return (
+                      <div
+                        key={tool.id}
+                        onClick={() => handleSelect(`ai-tools/${tool.slug}`, tool.slug)}
+                        className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between gap-3 transition-all ${
+                          isSelected
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                            : 'hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-800 dark:text-neutral-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center p-1 shrink-0 ${
+                            isSelected ? 'bg-white/20' : 'bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 shadow-xs'
+                          }`}>
+                            <AiToolLogo slug={tool.slug} name={tool.name} className="w-full h-full object-contain" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm truncate">{tool.name}</span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
+                                isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-neutral-400'
+                              }`}>
+                                {tool.pricingType}
+                              </span>
+                            </div>
+                            <p className={`text-xs truncate ${isSelected ? 'text-white/80' : 'text-slate-500 dark:text-neutral-400'}`}>
+                              {tool.shortDescription}
+                            </p>
+                          </div>
+                        </div>
+
+                        <ArrowRight className={`w-4 h-4 shrink-0 transition-transform ${isSelected ? 'translate-x-1 text-white' : 'text-slate-400'}`} />
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-neutral-400 truncate max-w-sm sm:max-w-md">{tool.shortDesc || tool.description}</p>
-                    </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Group 2: Native Built-in Utilities */}
+              {matchingUtilities.length > 0 && (
+                <div className="space-y-1.5 pt-2 border-t border-slate-200/60 dark:border-white/[0.06]">
+                  <div className="px-3 py-1 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    <span className="flex items-center gap-1.5">
+                      <Wrench className="w-3 h-3" /> Toolsbar Native Utilities
+                    </span>
+                    <span>{matchingUtilities.length} found</span>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0 ml-2">
-                    {isSelected && (
-                      <span className="text-[10px] text-indigo-600 dark:text-indigo-300 font-mono hidden sm:flex items-center gap-1">
-                        Open <CornerDownLeft className="w-3 h-3" />
-                      </span>
-                    )}
-                    <ArrowRight className={`w-4 h-4 transition-transform ${isSelected ? 'text-indigo-600 dark:text-indigo-400 translate-x-1' : 'text-slate-400 dark:text-neutral-500'}`} />
-                  </div>
+                  {matchingUtilities.map((utility, idx) => {
+                    const itemIndex = matchingAiTools.length + idx;
+                    const isSelected = itemIndex === selectedIndex;
+                    return (
+                      <div
+                        key={utility.id}
+                        onClick={() => handleSelect(`tools/${utility.slug}`, utility.slug)}
+                        className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between gap-3 transition-all ${
+                          isSelected
+                            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                            : 'hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-800 dark:text-neutral-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center p-1.5 shrink-0 ${
+                            isSelected ? 'bg-white/20 text-white' : 'bg-emerald-50 dark:bg-white/5 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-white/10'
+                          }`}>
+                            <Wrench className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm truncate">{utility.name}</span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
+                                isSelected ? 'bg-white/20 text-white' : 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                              }`}>
+                                Built-In Tool
+                              </span>
+                            </div>
+                            <p className={`text-xs truncate ${isSelected ? 'text-white/80' : 'text-slate-500 dark:text-neutral-400'}`}>
+                              {utility.shortDesc}
+                            </p>
+                          </div>
+                        </div>
+
+                        <ArrowRight className={`w-4 h-4 shrink-0 transition-transform ${isSelected ? 'translate-x-1 text-white' : 'text-slate-400'}`} />
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })
+              )}
+            </>
           ) : (
-            <div className="py-12 text-center text-slate-500 dark:text-neutral-400 text-sm space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto text-slate-400 dark:text-neutral-500">
-                <Search className="w-5 h-5" />
-              </div>
-              <p>No utilities found for "<span className="text-slate-900 dark:text-white font-medium">{query}</span>"</p>
-              <p className="text-xs text-slate-400 dark:text-neutral-500">Try searching for keywords like "math", "text", "hash", "date", or "json"</p>
+            <div className="p-8 text-center space-y-2">
+              <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                No matching tools found for "{query}"
+              </p>
+              <p className="text-xs text-slate-500 dark:text-neutral-400">
+                Try searching for broad tasks like "video", "image", "coding", "pdf", or "calc".
+              </p>
             </div>
           )}
         </div>
 
-        {/* Footer shortcuts & exit prompt */}
-        <div className="p-3 bg-slate-50/90 dark:bg-black/50 border-t border-slate-200 dark:border-white/[0.08] flex items-center justify-between text-[11px] text-slate-500 dark:text-neutral-400">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden sm:inline">Navigate: <kbd className="font-mono bg-slate-200/80 dark:bg-white/5 text-slate-600 dark:text-neutral-400 px-1 py-0.5 rounded border border-slate-300 dark:border-white/10">↑</kbd> <kbd className="font-mono bg-slate-200/80 dark:bg-white/5 text-slate-600 dark:text-neutral-400 px-1 py-0.5 rounded border border-slate-300 dark:border-white/10">↓</kbd></span>
-            <span className="hidden sm:inline">&bull;</span>
-            <span><kbd className="font-mono bg-slate-200/80 dark:bg-white/5 px-1.5 py-0.5 rounded border border-slate-300 dark:border-white/10 text-slate-700 dark:text-neutral-300">↵ Enter</kbd> to open</span>
-          </div>
-
+        {/* Modal Footer Hotkeys */}
+        <div className="p-3 border-t border-slate-200/80 dark:border-white/[0.08] bg-slate-50/50 dark:bg-black/30 flex items-center justify-between text-[11px] text-slate-500 dark:text-neutral-400 px-4">
           <div className="flex items-center gap-3">
-            <span className="hidden xs:inline text-slate-400 dark:text-neutral-500">100% private in-browser</span>
-            <button
-              onClick={onClose}
-              className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold cursor-pointer underline-offset-2 hover:underline"
-            >
-              Exit search
-            </button>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono">↑</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono">↓</kbd>
+              <span className="ml-1">Navigate</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono">↵</kbd>
+              <span className="ml-1">Select</span>
+            </span>
           </div>
+          <span>Esc to exit</span>
         </div>
       </div>
     </div>

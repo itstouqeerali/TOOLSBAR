@@ -34,6 +34,7 @@ export interface PageSEOMetadata {
   ogType?: 'website' | 'article';
   ogImage?: string;
   jsonLd?: Record<string, any>[];
+  noindex?: boolean;
 }
 
 /**
@@ -423,6 +424,13 @@ export function applyPageSEO(meta: PageSEOMetadata): void {
     setMetaTag('name', 'keywords', meta.keywords.join(', '));
   }
   setLinkTag('canonical', canonicalUrl);
+
+  // Robots indexing policy
+  if (meta.noindex) {
+    setMetaTag('name', 'robots', 'noindex, nofollow');
+  } else {
+    setMetaTag('name', 'robots', 'index, follow');
+  }
 
   // Open Graph
   setMetaTag('property', 'og:title', meta.title);

@@ -126,14 +126,12 @@ export function tiptapToCanonical(
         blocks.push(block);
       } else if (nodeType === 'bulletList' || nodeType === 'orderedList') {
         if (nodeType === 'orderedList') listIndex = 1;
-        let itemOffset = 1;
-        node.forEach((listItem: any) => {
-          let innerOffset = 1;
-          listItem.forEach((innerNode: any) => {
-            processNode(innerNode, pos + itemOffset + innerOffset, nodeType);
-            innerOffset += innerNode.nodeSize;
+        node.forEach((listItem: any, itemOffset: number) => {
+          const listItemPos = pos + 1 + itemOffset;
+          listItem.forEach((innerNode: any, innerOffset: number) => {
+            const innerNodePos = listItemPos + 1 + innerOffset;
+            processNode(innerNode, innerNodePos, nodeType);
           });
-          itemOffset += listItem.nodeSize;
         });
       } else if (nodeType === 'horizontalRule') {
         blocks.push({

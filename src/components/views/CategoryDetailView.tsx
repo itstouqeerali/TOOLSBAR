@@ -70,13 +70,18 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-          {categoryTools.map((tool) => (
-            <ToolCard
+          {categoryTools.map((tool, idx) => (
+            <div
               key={tool.id}
-              tool={tool}
-              onClick={() => onNavigate(`tools/${tool.slug}`)}
-              onOpenAuth={onOpenAuth}
-            />
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${Math.min(idx * 35, 360)}ms` }}
+            >
+              <ToolCard
+                tool={tool}
+                onClick={() => onNavigate(`tools/${tool.slug}`)}
+                onOpenAuth={onOpenAuth}
+              />
+            </div>
           ))}
         </div>
       </div>

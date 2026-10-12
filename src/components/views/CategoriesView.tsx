@@ -26,12 +26,13 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({ onNavigate }) =>
 
       {/* Grid of Categories */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {CATEGORIES.map((category) => {
+        {CATEGORIES.map((category, idx) => {
           const categoryTools = TOOLS.filter(t => t.category === category.id);
           return (
             <div
               key={category.id}
-              className="rounded-3xl p-6 sm:p-7 glass-panel flex flex-col justify-between space-y-6"
+              style={{ animationDelay: `${Math.min(idx * 40, 360)}ms` }}
+              className="animate-fade-in-up rounded-3xl p-6 sm:p-7 glass-panel flex flex-col justify-between space-y-6"
             >
               <div>
                 <CategoryCard

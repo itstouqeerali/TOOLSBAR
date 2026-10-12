@@ -35,8 +35,11 @@ function createPageBreakSpacerDOM(
   container.style.display = 'block';
   container.style.width = '100%';
   container.style.height = `${spacerHeight}px`;
+  container.style.minHeight = `${spacerHeight}px`;
+  container.style.maxHeight = `${spacerHeight}px`;
   container.style.margin = '0';
   container.style.padding = '0';
+  container.style.clear = 'both';
 
   return container;
 }
@@ -61,7 +64,10 @@ function buildPaginationDecorations(doc: any, options: VisualPaginationOptions):
     );
 
     if (options.onTotalPagesChange) {
-      options.onTotalPagesChange(paginated.totalPages);
+      const pageCount = paginated.totalPages;
+      setTimeout(() => {
+        options.onTotalPagesChange?.(pageCount);
+      }, 0);
     }
 
     const ptToPx = 96 / 72;
@@ -76,9 +82,23 @@ function buildPaginationDecorations(doc: any, options: VisualPaginationOptions):
     for (let p = 1; p < paginated.pages.length; p++) {
       const prevPage = paginated.pages[p - 1];
       const page = paginated.pages[p];
-      const pos = page.firstBlockPos;
-      if (typeof pos === 'number' && pos > 0 && pos <= doc.content.size && !usedPositions.has(pos)) {
+      let pos = page.firstBlockPos;
+
+      // Fallback to first block slice if firstBlockPos is undefined
+      if (typeof pos !== 'number' && page.blockSlices && page.blockSlices.length > 0) {
+        const firstBlockId = page.blockSlices[0].blockId;
+        const block = canonicalDoc.blocks.find((b) => b.id === firstBlockId);
+        if (block && typeof block.pos === 'number') {
+          pos = block.pos;
+        }
+      }
+
+      if (typeof pos === 'number' && pos >= 0 && pos <= doc.content.size) {
+        if (usedPositions.has(pos)) {
+          pos = Math.min(doc.content.size, pos + 1);
+        }
         usedPositions.add(pos);
+
         const usedHeightPx = Math.round((prevPage.usedHeightPt || 0) * ptToPx);
         const remainingWhitePx = Math.max(0, contentHeightPx - usedHeightPx);
         const spacerHeight = remainingWhitePx + bottomMarginPx + PAGE_GAP_PX + topMarginPx;

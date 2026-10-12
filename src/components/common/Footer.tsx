@@ -20,38 +20,78 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   <ToolsbarLogo className="w-full h-full text-indigo-600 dark:text-white" />
                 </div>
               </div>
-              <span className="text-xl font-bold font-display text-slate-900 dark:text-white">Toolsbar</span>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold font-display text-slate-900 dark:text-white leading-none">Toolsbar</span>
+                <span className="text-[10px] uppercase font-semibold text-slate-500 dark:text-neutral-400 tracking-wider mt-0.5">AI Discovery + Utilities</span>
+              </div>
             </div>
             <p className="text-sm text-slate-600 dark:text-neutral-400 max-w-sm leading-relaxed">
-              The premier all-in-one digital utility platform. Designed for pure speed, browser-first execution, and total client privacy.
+              A modern AI tools discovery platform to find software for any task, paired with 12 powerful native utilities running locally in your browser with zero data storage.
             </p>
             <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-neutral-400">
               <span className="flex items-center gap-1">
                 <Lock className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" /> 100% Client-Side Privacy
               </span>
               <span className="flex items-center gap-1">
-                <Zap className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" /> Zero Latency
+                <Zap className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" /> Direct Official Links
               </span>
             </div>
           </div>
 
-          {/* Quick Tools */}
+          {/* AI Tools Discovery */}
           <div className="col-span-1 space-y-3">
-            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white block">Popular Utilities</span>
+            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white block">Discover AI</span>
             <ul className="space-y-2 text-xs">
               <li>
-                <button onClick={() => onNavigate('tools/percentage-calculator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
-                  Percentage Calculator
+                <button onClick={() => onNavigate('ai-tools')} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer text-left">
+                  All AI Tools Directory
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('tools/age-calculator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
-                  Age Calculator
+                <button onClick={() => onNavigate('ai-tools/chat-assistants')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Chat & Assistants
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('tools/images-to-pdf')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
-                  Images to PDF
+                <button onClick={() => onNavigate('ai-tools/image-generation')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Image Generation
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('ai-tools/video-generation')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Video Generation
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('ai-tools/coding-development')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Coding & Dev
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('ai-tools/writing-content')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Writing & Content
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('ai-tools/study-research')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Study & Research
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('ai-tools/design-presentations')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Design & Slides
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Quick Tools */}
+          <div className="col-span-1 space-y-3">
+            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white block">Built-In Utilities</span>
+            <ul className="space-y-2 text-xs">
+              <li>
+                <button onClick={() => onNavigate('tools')} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline cursor-pointer text-left">
+                  All 12 Flagships
                 </button>
               </li>
               <li>
@@ -60,29 +100,40 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('tools/word-counter')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
-                  Word Counter
+                <button onClick={() => onNavigate('tools/images-to-pdf')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Images to PDF
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('tools/qr-generator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
-                  QR Code Generator
+                <button onClick={() => onNavigate('tools/pdf-toolkit')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  PDF Toolkit
                 </button>
               </li>
-            </ul>
-          </div>
-
-          {/* Categories */}
-          <div className="col-span-1 space-y-3">
-            <span className="text-xs uppercase font-bold tracking-wider text-slate-900 dark:text-white block">Tool Categories</span>
-            <ul className="space-y-2 text-xs">
-              {CATEGORIES.slice(0, 6).map((cat) => (
-                <li key={cat.id}>
-                  <button onClick={() => onNavigate(`category/${cat.id}`)} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
-                    {cat.name}
-                  </button>
-                </li>
-              ))}
+              <li>
+                <button onClick={() => onNavigate('tools/image-toolkit')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Image Toolkit
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('tools/percentage-calculator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Percentage Calculator
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('tools/finance-calculator')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Finance Calculator
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('tools/json-studio')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  JSON Studio
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('tools/developer-toolbox')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer text-left">
+                  Developer Toolbox
+                </button>
+              </li>
             </ul>
           </div>
 

@@ -60,7 +60,7 @@ export interface Tool {
   keywords: string[];
   popular?: boolean;
   featured?: boolean;
-  badge?: 'Popular' | 'New' | 'Essential' | 'Updated' | 'Beta' | 'Coming Soon';
+  badge?: 'Popular' | 'New' | 'Essential' | 'Updated' | 'Beta' | 'Coming Soon' | 'Flagship';
   isImplemented: boolean;
   status: 'ready' | 'coming-soon';
   relatedToolSlugs: string[];

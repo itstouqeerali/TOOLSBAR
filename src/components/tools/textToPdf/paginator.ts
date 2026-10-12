@@ -46,14 +46,17 @@ export function calculateDimensions(
     marginPt = 72.0; // 1.0 in
   }
 
-  const headerHeightPt = headerTitle.trim() ? 26.0 : 0;
-  const footerHeightPt = footerText.trim() || includePageNumbers ? 26.0 : 0;
+  const headerHeightPt = headerTitle.trim() ? 28.0 : 0;
+  const footerHeightPt = footerText.trim() || includePageNumbers ? 28.0 : 0;
+
+  // Safe bottom cushion to guarantee body text never touches bottom margin/footer
+  const bottomSafetyBufferPt = 16.0;
 
   const topMarginPt = marginPt + headerHeightPt;
   const bottomMarginPt = marginPt + footerHeightPt;
 
   const contentWidthPt = Math.max(100, w - marginPt * 2);
-  const contentHeightPt = Math.max(100, h - topMarginPt - bottomMarginPt);
+  const contentHeightPt = Math.max(100, h - topMarginPt - bottomMarginPt - bottomSafetyBufferPt);
 
   return {
     pageWidthPt: w,
@@ -116,7 +119,8 @@ export function paginateDocument(
 
     // Explicit Page Break
     if (block.type === 'page-break') {
-      startNewPage(doc.blocks[bIdx + 1]?.pos);
+      const nextPos = doc.blocks[bIdx + 1]?.pos ?? (block.pos !== undefined ? block.pos + 1 : undefined);
+      startNewPage(nextPos);
       continue;
     }
 
@@ -298,60 +302,80 @@ export function paginateDocument(
     const blockLinesHeight = blockLines.reduce((acc, l) => acc + l.lineHeightPt, 0);
     const blockTotalHeight = spacingAbove + blockLinesHeight + spacingBelow;
 
-    // Distribute lines across pages based on remaining page height:
-    // If the entire block fits on a fresh page, but overflows the remaining space on current page,
-    // move the ENTIRE block to the next page cleanly (prevents orphan headers & clipped lists).
+    // Heading keep-with-next protection: headings should never be stranded at the bottom of a page
+    const isHeading = block.type === 'h1' || block.type === 'h2' || block.type === 'h3';
+    const keepWithNextBuffer = isHeading ? 36 : 0;
+
+    // Distribute block across pages:
+    // If the entire block fits on a fresh page (blockTotalHeight <= contentHeightPt),
+    // and it doesn't fit on the current page (or heading keep-with-next requires next page):
+    // move the ENTIRE block to the next page cleanly.
     if (
-      currentPageHeight + blockTotalHeight > contentHeightPt &&
       currentPageSlices.length > 0 &&
-      blockTotalHeight <= contentHeightPt
+      blockTotalHeight <= contentHeightPt &&
+      currentPageHeight + blockTotalHeight + keepWithNextBuffer > contentHeightPt
     ) {
       startNewPage(block.pos);
-      currentPageHeight += spacingAbove;
-    } else if (currentPageHeight + spacingAbove + 14 > contentHeightPt && currentPageSlices.length > 0) {
-      startNewPage(block.pos);
-      currentPageHeight += spacingAbove;
-    } else {
-      currentPageHeight += spacingAbove;
+      currentPageHeight = 0;
     }
 
-    let currentSliceLines: PageLine[] = [];
-
-    for (const line of blockLines) {
-      if (currentPageHeight + line.lineHeightPt > contentHeightPt && (currentPageSlices.length > 0 || currentSliceLines.length > 0)) {
-        // Line overflows current page
-        if (currentSliceLines.length > 0) {
-          currentPageSlices.push({
-            blockId: block.id,
-            type: block.type,
-            align: block.align,
-            indent: block.indent,
-            lines: currentSliceLines,
-          });
-          currentSliceLines = [];
-        }
-        startNewPage(block.pos);
-      }
-
-      currentSliceLines.push(line);
-      currentPageHeight += line.lineHeightPt;
-    }
-
-    if (currentSliceLines.length > 0) {
+    // Now, if the block fits completely on the current page:
+    if (currentPageHeight + blockTotalHeight <= contentHeightPt) {
+      currentPageHeight += spacingAbove;
       currentPageSlices.push({
         blockId: block.id,
         type: block.type,
         align: block.align,
         indent: block.indent,
-        lines: currentSliceLines,
+        lines: blockLines,
       });
-    }
+      currentPageHeight += blockLinesHeight + spacingBelow;
+    } else {
+      // If the block is huge (e.g. paragraph longer than a full page):
+      // distribute line by line
+      currentPageHeight += spacingAbove;
+      let currentSliceLines: PageLine[] = [];
 
-    currentPageHeight += spacingBelow;
+      for (const line of blockLines) {
+        if (
+          currentPageHeight + line.lineHeightPt > contentHeightPt &&
+          (currentPageSlices.length > 0 || currentSliceLines.length > 0)
+        ) {
+          if (currentSliceLines.length > 0) {
+            currentPageSlices.push({
+              blockId: block.id,
+              type: block.type,
+              align: block.align,
+              indent: block.indent,
+              lines: currentSliceLines,
+            });
+            currentSliceLines = [];
+          }
+          startNewPage(block.pos);
+          currentPageHeight = 0;
+        }
+
+        currentSliceLines.push(line);
+        currentPageHeight += line.lineHeightPt;
+      }
+
+      if (currentSliceLines.length > 0) {
+        currentPageSlices.push({
+          blockId: block.id,
+          type: block.type,
+          align: block.align,
+          indent: block.indent,
+          lines: currentSliceLines,
+        });
+      }
+
+      currentPageHeight += spacingBelow;
+    }
   }
 
   // Ensure at least one page exists even if document is completely empty
-  if (currentPageSlices.length > 0 || pages.length === 0) {
+  // OR if the document ends with an explicit page break
+  if (currentPageSlices.length > 0 || pages.length === 0 || currentFirstBlockPos !== undefined) {
     pages.push({
       pageIndex: currentPageIndex,
       pageNumber: currentPageIndex + 1,

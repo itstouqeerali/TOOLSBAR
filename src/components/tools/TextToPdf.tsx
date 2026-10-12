@@ -56,11 +56,24 @@ export const TextToPdf: React.FC = () => {
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
 
   // Editor Stats & Pagination Navigation State
-  const [wordCount, setWordCount] = useState(0);
-  const [charCount, setCharCount] = useState(0);
+  const [wordCount, setWordCount] = useState<number>(() => {
+    return STANDARD_SAMPLE_TEXT.trim().split(/\s+/).filter(Boolean).length;
+  });
+  const [charCount, setCharCount] = useState<number>(() => {
+    return STANDARD_SAMPLE_TEXT.length;
+  });
   const [totalPages, setTotalPages] = useState<number>(1);
   const [activePageIndex, setActivePageIndex] = useState<number>(1);
   const [pageInputVal, setPageInputVal] = useState<string>('1');
+
+  // Mount tracking ref to prevent state updates before mounting or after unmounting
+  const isMountedRef = useRef<boolean>(false);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // DOM Refs
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -88,9 +101,49 @@ export const TextToPdf: React.FC = () => {
   const bottomMarginPx = Math.round(dimensions.bottomMarginPt * ptToPx);
   const headerHeightPx = Math.round(dimensions.headerHeightPt * ptToPx);
   const footerHeightPx = Math.round(dimensions.footerHeightPt * ptToPx);
+  const totalLogicalHeight =
+    totalPages * pageHeightPx + Math.max(0, totalPages - 1) * PAGE_GAP_PX;
+
+  // Responsive visual scaling for mobile/tablet fit
+  // Measures workspace container and computes visual scale:
+  // scale = min(1, availableWorkspaceWidth / logicalPageWidth)
+  const [workspaceWidth, setWorkspaceWidth] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth;
+    }
+    return 1024;
+  });
+
+  useEffect(() => {
+    if (!workspaceRef.current) return;
+    const el = workspaceRef.current;
+    const updateWidth = () => {
+      if (el) {
+        setWorkspaceWidth(el.clientWidth);
+      }
+    };
+    updateWidth();
+
+    const ro = new ResizeObserver(() => {
+      updateWidth();
+    });
+    ro.observe(el);
+
+    window.addEventListener('resize', updateWidth);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateWidth);
+    };
+  }, []);
+
+  // Safe horizontal padding inside workspace: 24px (12px on each side)
+  const safeHorizontalPadding = 24;
+  const availableWorkspaceWidth = Math.max(100, (workspaceWidth || 1024) - safeHorizontalPadding);
+  const visualScale = Math.min(1, availableWorkspaceWidth / pageWidthPx);
 
   // Single Canonical Tiptap Editor Initialization
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: {
@@ -132,17 +185,21 @@ export const TextToPdf: React.FC = () => {
         footerText,
         includePageNumbers,
         onTotalPagesChange: (count: number) => {
-          setTotalPages(Math.max(1, count));
+          if (!isMountedRef.current) return;
+          const safeCount = Math.max(1, count);
+          setTotalPages((prev) => (prev !== safeCount ? safeCount : prev));
         },
       }),
     ],
     content: STANDARD_SAMPLE_HTML,
     onCreate: ({ editor }) => {
+      if (!isMountedRef.current) return;
       const text = editor.getText();
       setCharCount(text.length);
       setWordCount(text.trim().split(/\s+/).filter(Boolean).length);
     },
     onUpdate: ({ editor }) => {
+      if (!isMountedRef.current) return;
       const text = editor.getText();
       setCharCount(text.length);
       setWordCount(text.trim().split(/\s+/).filter(Boolean).length);
@@ -162,9 +219,17 @@ export const TextToPdf: React.FC = () => {
     },
   });
 
+  // Sync initial word/char counts when editor is ready
+  useEffect(() => {
+    if (!editor || editor.isDestroyed || !isMountedRef.current) return;
+    const text = editor.getText();
+    setCharCount(text.length);
+    setWordCount(text.trim().split(/\s+/).filter(Boolean).length);
+  }, [editor]);
+
   // Keep VisualPagination extension in sync with page setup options
   useEffect(() => {
-    if (!editor || editor.isDestroyed) return;
+    if (!editor || editor.isDestroyed || !isMountedRef.current) return;
     editor.view.dispatch(
       editor.state.tr.setMeta(visualPaginationPluginKey, {
         pageSize,
@@ -177,7 +242,9 @@ export const TextToPdf: React.FC = () => {
         footerText,
         includePageNumbers,
         onTotalPagesChange: (count: number) => {
-          setTotalPages(Math.max(1, count));
+          if (!isMountedRef.current) return;
+          const safeCount = Math.max(1, count);
+          setTotalPages((prev) => (prev !== safeCount ? safeCount : prev));
         },
       })
     );
@@ -199,6 +266,27 @@ export const TextToPdf: React.FC = () => {
     setPageInputVal(String(activePageIndex));
   }, [activePageIndex]);
 
+  // Ensure that every piece of user content is covered by a page (no orphan content)
+  useEffect(() => {
+    if (!editorContainerRef.current) return;
+    const el = editorContainerRef.current;
+
+    const checkDomOverflow = () => {
+      if (!el || !isMountedRef.current) return;
+      const actualHeight = el.scrollHeight || el.offsetHeight;
+      if (actualHeight > 0 && pageHeightPx > 0) {
+        const singlePagePitch = pageHeightPx + PAGE_GAP_PX;
+        const requiredPages = Math.max(1, Math.ceil((actualHeight + PAGE_GAP_PX) / singlePagePitch));
+        setTotalPages((prev) => Math.max(prev, requiredPages));
+      }
+    };
+
+    checkDomOverflow();
+    const ro = new ResizeObserver(checkDomOverflow);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [pageHeightPx, PAGE_GAP_PX, editor]);
+
   // Jump to specific page inside the dedicated workspace scroll container
   const handleJumpToPage = useCallback(
     (targetPage: number) => {
@@ -206,31 +294,26 @@ export const TextToPdf: React.FC = () => {
       const clamped = Math.max(1, Math.min(totalPages, targetPage));
       setActivePageIndex(clamped);
 
-      const targetEl = document.getElementById(`page-sheet-${clamped}`);
-      if (targetEl) {
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        const pagePitch = pageHeightPx + PAGE_GAP_PX;
-        workspaceRef.current.scrollTo({
-          top: (clamped - 1) * pagePitch,
-          behavior: 'smooth',
-        });
-      }
+      const scaledPitch = (pageHeightPx + PAGE_GAP_PX) * visualScale;
+      workspaceRef.current.scrollTo({
+        top: (clamped - 1) * scaledPitch,
+        behavior: 'smooth',
+      });
     },
-    [totalPages, pageHeightPx]
+    [totalPages, pageHeightPx, visualScale]
   );
 
   // Scroll listener on workspace container to track active page
   const handleWorkspaceScroll = useCallback(() => {
     if (!workspaceRef.current) return;
     const scrollTop = workspaceRef.current.scrollTop;
-    const pagePitch = pageHeightPx + PAGE_GAP_PX;
+    const scaledPitch = (pageHeightPx + PAGE_GAP_PX) * visualScale;
     const currentPage = Math.min(
       totalPages,
-      Math.max(1, Math.floor((scrollTop + pageHeightPx * 0.3) / pagePitch) + 1)
+      Math.max(1, Math.floor((scrollTop + (pageHeightPx * visualScale) * 0.3) / scaledPitch) + 1)
     );
     setActivePageIndex(currentPage);
-  }, [totalPages, pageHeightPx]);
+  }, [totalPages, pageHeightPx, visualScale]);
 
   // Download Vector PDF Action
   const handleDownloadPdf = async () => {
@@ -599,86 +682,105 @@ export const TextToPdf: React.FC = () => {
         id="document-workspace"
         ref={workspaceRef}
         onScroll={handleWorkspaceScroll}
-        className="w-full h-[62vh] sm:h-[72vh] min-h-[480px] overflow-y-auto overflow-x-auto rounded-2xl bg-slate-300/75 dark:bg-[#070a10] border border-slate-300/80 dark:border-slate-800 shadow-inner p-3 sm:p-8 flex flex-col items-center select-none"
+        className="w-full h-[62vh] sm:h-[72vh] min-h-[480px] overflow-y-auto overflow-x-hidden rounded-2xl bg-slate-300/75 dark:bg-[#070a10] border border-slate-300/80 dark:border-slate-800 shadow-inner p-3 sm:p-8 flex flex-col items-center select-none"
       >
-        {/* Document Centered Paper Desk Stage */}
+        {/* page-shell: Outer wrapper that reserves exactly the scaled dimensions in the layout */}
         <div
-          className="relative mx-auto transition-all"
+          className="page-shell relative mx-auto transition-all"
           style={{
-            width: `${pageWidthPx}px`,
+            width: `${Math.round(pageWidthPx * visualScale)}px`,
+            height: `${Math.round(totalLogicalHeight * visualScale)}px`,
             maxWidth: '100%',
           }}
         >
-          {/* UNDERLAY: Discrete Physical White Paper Sheets */}
-          <div className="flex flex-col select-none pointer-events-none">
-            {Array.from({ length: Math.max(1, totalPages) }).map((_, i) => (
-              <div
-                key={i}
-                id={`page-sheet-${i + 1}`}
-                style={{
-                  width: `${pageWidthPx}px`,
-                  height: `${pageHeightPx}px`,
-                  marginBottom: i < totalPages - 1 ? `${PAGE_GAP_PX}px` : '0px',
-                }}
-                className="bg-white text-slate-900 shadow-2xl border border-slate-200/90 dark:border-slate-700/80 rounded-sm relative flex flex-col justify-between select-none pointer-events-none transition-all"
-              >
-                {/* Running Header on Top of Page */}
-                <div
-                  style={{
-                    height: `${headerHeightPx > 0 ? headerHeightPx : 32}px`,
-                    paddingLeft: `${marginPx}px`,
-                    paddingRight: `${marginPx}px`,
-                    paddingTop: `${Math.max(10, Math.round(marginPx * 0.25))}px`,
-                  }}
-                  className="border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400 select-none pointer-events-none"
-                >
-                  <span className="font-medium truncate max-w-[80%]">{headerTitle || ''}</span>
-                </div>
-
-                {/* Body Area (whitespace of the page) */}
-                <div className="flex-1" />
-
-                {/* Running Footer at Bottom of Page */}
-                <div
-                  style={{
-                    height: `${footerHeightPx > 0 ? footerHeightPx : 32}px`,
-                    paddingLeft: `${marginPx}px`,
-                    paddingRight: `${marginPx}px`,
-                    paddingBottom: `${Math.max(10, Math.round(marginPx * 0.25))}px`,
-                  }}
-                  className="border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400 select-none pointer-events-none"
-                >
-                  <span className="font-medium truncate max-w-[60%]">{footerText || ''}</span>
-                  {includePageNumbers && (
-                    <span className="text-[10px] text-slate-400 font-mono tracking-wider">
-                      Page {i + 1} of {totalPages}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* OVERLAY: Native Tiptap Editor Layer */}
+          {/* scaled-page-wrapper: Visually scales the logical paper pages uniformly */}
           <div
-            ref={editorContainerRef}
-            onClick={() => editor?.commands.focus()}
+            className="scaled-page-wrapper origin-top-left"
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
               width: `${pageWidthPx}px`,
-              fontFamily: getFontFamilyStyle(),
-              fontSize: `${defaultFontSize}pt`,
-              lineHeight: lineSpacing,
-              paddingTop: `${topMarginPx}px`,
-              paddingLeft: `${marginPx}px`,
-              paddingRight: `${marginPx}px`,
-              boxSizing: 'border-box',
+              height: `${totalLogicalHeight}px`,
+              transform: `scale(${visualScale})`,
+              transformOrigin: 'top left',
             }}
-            className="z-10 text-slate-900 cursor-text select-text"
           >
-            <EditorContent editor={editor} className="w-full text-slate-900 select-text" />
+            {/* UNDERLAY: Discrete Physical White Paper Sheets */}
+            <div className="flex flex-col select-none pointer-events-none">
+              {Array.from({ length: Math.max(1, totalPages) }).map((_, i) => (
+                <div
+                  key={i}
+                  id={`page-sheet-${i + 1}`}
+                  style={{
+                    width: `${pageWidthPx}px`,
+                    height: `${pageHeightPx}px`,
+                    marginBottom: i < totalPages - 1 ? `${PAGE_GAP_PX}px` : '0px',
+                  }}
+                  className="bg-white text-slate-900 shadow-2xl border border-slate-200/90 dark:border-slate-700/80 rounded-sm relative flex flex-col justify-between select-none pointer-events-none transition-all"
+                >
+                  {/* Running Header on Top of Page */}
+                  {headerTitle && headerTitle.trim().length > 0 ? (
+                    <div
+                      style={{
+                        height: `${headerHeightPx}px`,
+                        paddingLeft: `${marginPx}px`,
+                        paddingRight: `${marginPx}px`,
+                        paddingTop: `${Math.max(10, Math.round(marginPx * 0.25))}px`,
+                      }}
+                      className="border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400 select-none pointer-events-none"
+                    >
+                      <span className="font-medium truncate max-w-[80%]">{headerTitle}</span>
+                    </div>
+                  ) : null}
+
+                  {/* Body Area (whitespace of the page) */}
+                  <div className="flex-1" />
+
+                  {/* Running Footer at Bottom of Page */}
+                  {(footerText && footerText.trim().length > 0) || includePageNumbers ? (
+                    <div
+                      style={{
+                        height: `${footerHeightPx}px`,
+                        paddingLeft: `${marginPx}px`,
+                        paddingRight: `${marginPx}px`,
+                        paddingBottom: `${Math.max(10, Math.round(marginPx * 0.25))}px`,
+                      }}
+                      className="border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400 select-none pointer-events-none"
+                    >
+                      <span className="font-medium truncate max-w-[60%]">{footerText || ''}</span>
+                      {includePageNumbers && (
+                        <span className="text-[10px] text-slate-400 font-mono tracking-wider">
+                          Page {i + 1} of {totalPages}
+                        </span>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+
+            {/* OVERLAY: Native Tiptap Editor Layer */}
+            <div
+              ref={editorContainerRef}
+              onClick={() => editor?.commands.focus()}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: `${pageWidthPx}px`,
+                fontFamily: getFontFamilyStyle(),
+                fontSize: `${defaultFontSize}pt`,
+                lineHeight: lineSpacing,
+                paddingTop: `${topMarginPx}px`,
+                paddingLeft: `${marginPx}px`,
+                paddingRight: `${marginPx}px`,
+                boxSizing: 'border-box',
+              }}
+              className="z-10 text-slate-900 cursor-text select-text"
+            >
+              <EditorContent editor={editor} className="w-full text-slate-900 select-text" />
+            </div>
           </div>
         </div>
       </div>

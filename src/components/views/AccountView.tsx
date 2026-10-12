@@ -191,9 +191,9 @@ export const AccountView: React.FC<AccountViewProps> = ({
 
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            {userProfile?.photoURL || user.photoURL ? (
+            {(userProfile?.photoURL || user.photoURL) ? (
               <img
-                src={userProfile?.photoURL || user.photoURL || ''}
+                src={userProfile?.photoURL || user.photoURL || undefined}
                 alt={displayName}
                 referrerPolicy="no-referrer"
                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl object-cover border-2 border-indigo-500/30 shadow-md"

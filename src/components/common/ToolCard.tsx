@@ -46,6 +46,7 @@ import {
 import { Tool } from '../../types';
 import { CATEGORIES, CATEGORY_STYLES } from '../../data/categories';
 import { useAuth } from '../../context/AuthContext';
+import { getUtilityTheme, UtilityIllustration, UTILITY_THEMES } from './UtilityCardIllustration';
 
 interface ToolCardProps {
   tool: Tool;
@@ -100,6 +101,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onClick, onOpenAuth })
   const category = CATEGORIES.find(c => c.id === tool.category);
   const IconComponent = (tool.icon && ICON_MAP[tool.icon]) || Sparkles;
   const isReady = tool.isImplemented && tool.status !== 'coming-soon';
+  const utilityTheme = UTILITY_THEMES[tool.slug] || getUtilityTheme(tool.slug);
   const style = CATEGORY_STYLES[tool.category] || CATEGORY_STYLES.calculators;
   const favorited = isFavorite(tool.slug);
 
@@ -116,17 +118,24 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onClick, onOpenAuth })
     <div
       onClick={onClick}
       id={`tool-card-${tool.slug}`}
-      className={`group relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 glass-card flex flex-col justify-between cursor-pointer ${
+      className={`group relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 glass-card flex flex-col justify-between cursor-pointer border border-slate-200/80 dark:border-white/[0.08] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-500/40 ${
         !isReady ? 'opacity-65' : ''
       }`}
     >
       <div>
+        {/* Visual Illustration */}
+        {UTILITY_THEMES[tool.slug] && (
+          <div className="mb-3">
+            <UtilityIllustration slug={tool.slug} className="w-full h-24" />
+          </div>
+        )}
+
         {/* Top Header */}
-        <div className="flex items-center justify-between mb-2.5 sm:mb-4">
+        <div className="flex items-center justify-between mb-2.5 sm:mb-3">
           <div
-            className={`w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all shadow-sm ${
+            className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 shadow-xs ${
               isReady
-                ? `${style.iconBg} border ${style.border} ${style.iconText} group-hover:scale-105 ${style.hoverBg} group-hover:border-transparent group-hover:text-white`
+                ? `${utilityTheme.iconBg} border ${utilityTheme.iconBorder} ${utilityTheme.iconColor} group-hover:scale-110 group-hover:shadow-md`
                 : 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 dark:text-neutral-500'
             }`}
           >
@@ -187,15 +196,21 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onClick, onOpenAuth })
         <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 hidden xs:inline-flex sm:inline-flex items-center gap-1 truncate">
           {isReady ? (
             <>
-              <Zap className="w-3 h-3 text-indigo-500 dark:text-indigo-400 shrink-0" /> Instant in-browser
+              <Zap className="w-3 h-3 text-emerald-500 shrink-0" /> Free & Client-Side
             </>
           ) : (
             <>In Development</>
           )}
         </span>
-        <span className="font-semibold text-indigo-600 group-hover:text-indigo-700 dark:text-indigo-400 dark:group-hover:text-indigo-300 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform text-[11px] sm:text-xs ml-auto xs:ml-0 whitespace-nowrap">
-          {isReady ? 'Open Tool' : 'Preview'} <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-        </span>
+        {isReady ? (
+          <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl font-semibold text-xs shadow-sm transition-all ml-auto xs:ml-0 whitespace-nowrap group-hover:scale-105 ${utilityTheme.buttonBg} ${utilityTheme.buttonShadow}`}>
+            Try Now <ArrowRight className="w-3 h-3" />
+          </span>
+        ) : (
+          <span className="font-semibold text-slate-500 flex items-center gap-1 text-[11px] sm:text-xs ml-auto xs:ml-0 whitespace-nowrap">
+            Preview <ArrowRight className="w-3 h-3" />
+          </span>
+        )}
       </div>
     </div>
   );

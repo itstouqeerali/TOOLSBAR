@@ -16,11 +16,21 @@ const NON_AD_ROUTE_PREFIXES = [
   '/login',
   '/signup',
   '/register',
+  '/category',
 ] as const;
 
 const NON_AD_EXACT_ROUTES = [
   '/404',
+  '/ai-tools',
+  '/tools',
+  '/categories',
+  '/popular',
+  '/privacy',
+  '/terms',
+  '/contact',
   '/tools/color-palette-picker',
+  '/tools/bmi-calculator',
+  '/tools/average-calculator',
 ] as const;
 
 function normalizePath(path: string): string {
@@ -61,22 +71,6 @@ export function isScreenEligibleForAds(
   );
 }
 
-function setRobotsNoIndex(enabled: boolean): void {
-  let robots = document.head.querySelector<HTMLMetaElement>('meta[data-toolsbar-route-robots="true"]');
-
-  if (enabled) {
-    if (!robots) {
-      robots = document.createElement('meta');
-      robots.name = 'robots';
-      robots.dataset.toolsbarRouteRobots = 'true';
-      document.head.appendChild(robots);
-    }
-    robots.content = 'noindex, nofollow';
-  } else {
-    robots?.remove();
-  }
-}
-
 function removeAdSense(): void {
   document
     .querySelectorAll<HTMLScriptElement>(
@@ -113,11 +107,9 @@ export function applyAdSenseRoutePolicy(
 
   if (eligible) {
     document.body.removeAttribute('data-no-ads');
-    setRobotsNoIndex(false);
     loadAdSense();
   } else {
     document.body.setAttribute('data-no-ads', 'true');
-    setRobotsNoIndex(true);
     removeAdSense();
   }
 }
