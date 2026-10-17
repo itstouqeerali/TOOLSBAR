@@ -83,7 +83,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="pt-28 pb-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12" id="contact-us-view">
+    <div className="pt-28 pb-0 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12" id="contact-us-view">
       {/* Hero Header */}
       <div className="space-y-4 max-w-3xl">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-xs font-semibold text-indigo-700 dark:text-indigo-300">

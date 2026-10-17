@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, type Variants } from 'framer-motion';
 import { Flame, Sparkles } from 'lucide-react';
 import { getPopularTools } from '../../data/tools';
 import { ToolCard } from '../common/ToolCard';
@@ -8,11 +9,33 @@ interface PopularViewProps {
   onOpenAuth?: () => void;
 }
 
+const gridContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const gridItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: 'easeOut',
+    },
+  },
+};
+
 export const PopularView: React.FC<PopularViewProps> = ({ onNavigate, onOpenAuth }) => {
   const popularTools = getPopularTools();
 
   return (
-    <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" id="popular-view">
+    <div className="pt-28 pb-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" id="popular-view">
       {/* Header */}
       <div className="space-y-3 max-w-3xl">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
@@ -26,19 +49,29 @@ export const PopularView: React.FC<PopularViewProps> = ({ onNavigate, onOpenAuth
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+      <motion.div 
+        variants={gridContainerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 items-stretch"
+      >
         {popularTools.map((tool) => (
-          <ToolCard
+          <motion.div
             key={tool.id}
-            tool={tool}
-            onClick={() => onNavigate(`tools/${tool.slug}`)}
-            onOpenAuth={onOpenAuth}
-          />
+            variants={gridItemVariants}
+            className="h-full flex flex-col"
+          >
+            <ToolCard
+              tool={tool}
+              onClick={() => onNavigate(`tools/${tool.slug}`)}
+              onOpenAuth={onOpenAuth}
+            />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Editorial Overview Section */}
-      <section className="mt-12 pt-10 border-t border-slate-200/80 dark:border-white/[0.08]" aria-labelledby="popular-overview-heading">
+      <section className="!mt-16 sm:!mt-24 w-full" aria-labelledby="popular-overview-heading">
         <div className="rounded-3xl p-6 sm:p-10 glass-panel space-y-4 max-w-5xl">
           <div className="space-y-1">
             <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">

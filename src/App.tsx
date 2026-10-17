@@ -14,19 +14,22 @@ import { SearchModal } from './components/common/SearchModal';
 import { AuthModal } from './components/common/AuthModal';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
 import { ToolLayout } from './components/common/ToolLayout';
-import { HomeView } from './components/views/HomeView';
-import { ToolsDirectoryView } from './components/views/ToolsDirectoryView';
-import { CategoriesView } from './components/views/CategoriesView';
-import { CategoryDetailView } from './components/views/CategoryDetailView';
-import { PopularView } from './components/views/PopularView';
-import { AdminView } from './components/views/AdminView';
-import { AccountView } from './components/views/AccountView';
-import { PrivacyView } from './components/views/PrivacyView';
-import { TermsView } from './components/views/TermsView';
-import { ContactView } from './components/views/ContactView';
-import { RetiredToolView } from './components/views/RetiredToolView';
-import { AiToolsDirectoryView } from './components/views/AiToolsDirectoryView';
-import { AiToolDetailView } from './components/views/AiToolDetailView';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Code Splitting & Lazy Loading Heavy Views
+const HomeView = React.lazy(() => import('./components/views/HomeView').then(m => ({ default: m.HomeView })));
+const ToolsDirectoryView = React.lazy(() => import('./components/views/ToolsDirectoryView').then(m => ({ default: m.ToolsDirectoryView })));
+const CategoriesView = React.lazy(() => import('./components/views/CategoriesView').then(m => ({ default: m.CategoriesView })));
+const CategoryDetailView = React.lazy(() => import('./components/views/CategoryDetailView').then(m => ({ default: m.CategoryDetailView })));
+const PopularView = React.lazy(() => import('./components/views/PopularView').then(m => ({ default: m.PopularView })));
+const AdminView = React.lazy(() => import('./components/views/AdminView').then(m => ({ default: m.AdminView })));
+const AccountView = React.lazy(() => import('./components/views/AccountView').then(m => ({ default: m.AccountView })));
+const PrivacyView = React.lazy(() => import('./components/views/PrivacyView').then(m => ({ default: m.PrivacyView })));
+const TermsView = React.lazy(() => import('./components/views/TermsView').then(m => ({ default: m.TermsView })));
+const ContactView = React.lazy(() => import('./components/views/ContactView').then(m => ({ default: m.ContactView })));
+const RetiredToolView = React.lazy(() => import('./components/views/RetiredToolView').then(m => ({ default: m.RetiredToolView })));
+const AiToolsDirectoryView = React.lazy(() => import('./components/views/AiToolsDirectoryView').then(m => ({ default: m.AiToolsDirectoryView })));
+const AiToolDetailView = React.lazy(() => import('./components/views/AiToolDetailView').then(m => ({ default: m.AiToolDetailView })));
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { getToolBySlug, TOOLS, LEGACY_ROUTE_MAP, RETIRED_TOOLS } from './data/tools';
@@ -381,7 +384,7 @@ function NotFoundRoute({
     applyPageSEO({
       title: 'Page Not Found — 404 — Toolsbar',
       description: 'The requested page could not be found on Toolsbar.',
-      canonicalPath: '',
+      noindex: true,
     });
   }, []);
 
@@ -405,6 +408,26 @@ function NotFoundRoute({
         >
           Explore All Tools
         </button>
+      </div>
+    </div>
+  );
+}
+
+function ViewLoadingFallback() {
+  return (
+    <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-pulse" aria-busy="true">
+      <div className="space-y-3 max-w-xl">
+        <div className="h-8 w-48 sm:w-64 bg-slate-200/80 dark:bg-white/[0.08] rounded-2xl" />
+        <div className="h-4 w-72 sm:w-96 bg-slate-200/60 dark:bg-white/[0.04] rounded-lg" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pt-4">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="h-40 rounded-3xl bg-slate-100/80 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/[0.06] p-5 space-y-4">
+            <div className="w-10 h-10 rounded-2xl bg-slate-200/80 dark:bg-white/[0.08]" />
+            <div className="h-4 w-2/3 bg-slate-200/80 dark:bg-white/[0.08] rounded-lg" />
+            <div className="h-3 w-full bg-slate-200/50 dark:bg-white/[0.04] rounded" />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -515,11 +538,21 @@ function AppContent() {
       />
 
       {/* Main Routed Content */}
-      <main className="flex-1 relative z-10 animate-page-enter" key={location.pathname}>
-        <Routes>
-          <Route
-            path="/"
-            element={
+      <main className="flex-1 relative z-10 flex flex-col">
+        <React.Suspense fallback={<ViewLoadingFallback />}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="flex-1 flex flex-col"
+            >
+              <Routes location={location} key={location.pathname}>
+                <Route
+                  path="/"
+                  element={
               <HomeRouteWrapper
                 onNavigate={handleNavigate}
                 onOpenSearch={openSearch}
@@ -672,7 +705,10 @@ function AppContent() {
             path="*"
             element={<NotFoundRoute onNavigate={handleNavigate} />}
           />
-        </Routes>
+              </Routes>
+            </motion.div>
+          </AnimatePresence>
+        </React.Suspense>
       </main>
 
       {/* Global Search Command Modal */}

@@ -68,6 +68,28 @@ export const AI_CATEGORIES: AiCategory[] = [
     }
   },
   {
+    id: 'audio-voice-music',
+    slug: 'audio-voice-music',
+    name: 'Audio & Voice AI',
+    icon: 'Mic',
+    shortDesc: 'Realistic voice synthesis, voice cloning, audio cleanup, and full generative music creation.',
+    colorAccent: 'from-indigo-500/20 to-violet-500/20',
+    editorial: {
+      overview: 'Audio and voice platforms produce hyper-realistic human speech, multi-speaker voice clones, studio-grade vocal isolation, background noise reduction, and custom musical compositions across genres.',
+      commonUseCases: [
+        'Synthesizing natural voiceovers for e-learning courses, audiobooks, and documentary narration',
+        'Cleaning up degraded podcast recordings by removing echo, wind, background chatter, and clicks',
+        'Generating bespoke instrumental background tracks tailored to exact video pacing and moods',
+        'Translating spoken audio into foreign languages while preserving the speaker’s original vocal timbre'
+      ],
+      selectionGuide: [
+        'Expressiveness & Latency: Look for natural inflection, pauses, emotional range, and real-time streaming latency.',
+        'Voice Cloning Ethics: Check for voice ownership verification protocols to ensure responsible usage.',
+        'Stems & Mixing: For music generators, evaluate whether separated instrument stems (vocals, drums, bass) can be exported.'
+      ]
+    }
+  },
+  {
     id: 'coding-development',
     slug: 'coding-development',
     name: 'Coding & Development',
@@ -152,28 +174,6 @@ export const AI_CATEGORIES: AiCategory[] = [
         'Ecosystem Compatibility: Ensure native connectors exist for Google Workspace, Microsoft 365, Slack, and Jira.',
         'Reliability & Fallbacks: Choose tools with clear human-in-the-loop review steps for high-stakes automations.',
         'Security Compliance: Confirm SOC 2 Type II, GDPR, and enterprise access control certifications.'
-      ]
-    }
-  },
-  {
-    id: 'audio-voice-music',
-    slug: 'audio-voice-music',
-    name: 'Audio, Voice & Music',
-    icon: 'Mic',
-    shortDesc: 'Realistic voice synthesis, voice cloning, audio cleanup, and full generative music creation.',
-    colorAccent: 'from-indigo-500/20 to-violet-500/20',
-    editorial: {
-      overview: 'Audio and voice platforms produce hyper-realistic human speech, multi-speaker voice clones, studio-grade vocal isolation, background noise reduction, and custom musical compositions across genres.',
-      commonUseCases: [
-        'Synthesizing natural voiceovers for e-learning courses, audiobooks, and documentary narration',
-        'Cleaning up degraded podcast recordings by removing echo, wind, background chatter, and clicks',
-        'Generating bespoke instrumental background tracks tailored to exact video pacing and moods',
-        'Translating spoken audio into foreign languages while preserving the speaker’s original vocal timbre'
-      ],
-      selectionGuide: [
-        'Expressiveness & Latency: Look for natural inflection, pauses, emotional range, and real-time streaming latency.',
-        'Voice Cloning Ethics: Check for voice ownership verification protocols to ensure responsible usage.',
-        'Stems & Mixing: For music generators, evaluate whether separated instrument stems (vocals, drums, bass) can be exported.'
       ]
     }
   },

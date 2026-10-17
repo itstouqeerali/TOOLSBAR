@@ -552,11 +552,11 @@ export const AccountView: React.FC<AccountViewProps> = ({
                 onClick={() => onNavigate('tools')}
                 className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors cursor-pointer shadow-md shadow-indigo-600/20"
               >
-                Browse All 43 Tools
+                Browse All 12 Utilities
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
               {favoriteTools.map((tool) => (
                 <ToolCard
                   key={tool.id}
@@ -615,7 +615,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch">
               {recentToolsWithMeta.map((item) => {
                 const tool = item.tool;
                 if (!tool) return null;
@@ -625,7 +625,7 @@ export const AccountView: React.FC<AccountViewProps> = ({
                   <div
                     key={item.slug}
                     onClick={() => onNavigate(`tools/${item.slug}`)}
-                    className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#0c0e17] border border-slate-200 dark:border-white/[0.08] hover:border-indigo-500/40 hover:shadow-lg transition-all flex flex-col justify-between group cursor-pointer"
+                    className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0c0e17] border border-slate-200 dark:border-white/[0.08] hover:border-indigo-500/40 hover:shadow-lg transition-all h-full flex flex-col justify-between group cursor-pointer"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px]">

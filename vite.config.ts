@@ -116,5 +116,20 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('firebase')) return 'vendor-firebase';
+              if (id.includes('pdf-lib')) return 'vendor-pdf-lib';
+              if (id.includes('@tiptap') || id.includes('tiptap-pagination-plus')) return 'vendor-tiptap';
+              if (id.includes('lucide-react')) return 'vendor-lucide';
+              if (id.includes('motion')) return 'vendor-motion';
+            }
+          },
+        },
+      },
+    },
   };
 });

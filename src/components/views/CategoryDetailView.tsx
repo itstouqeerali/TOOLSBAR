@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, type Variants } from 'framer-motion';
 import { ChevronRight, ArrowLeft, Layers, Sparkles } from 'lucide-react';
 import { CATEGORIES } from '../../data/categories';
 import { TOOLS } from '../../data/tools';
@@ -10,6 +11,28 @@ interface CategoryDetailViewProps {
   onNavigate: (path: string) => void;
   onOpenAuth?: () => void;
 }
+
+const gridContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const gridItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: 'easeOut',
+    },
+  },
+};
 
 export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ categoryId, onNavigate, onOpenAuth }) => {
   const category = CATEGORIES.find(c => c.id === categoryId);
@@ -30,7 +53,7 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category
   }
 
   return (
-    <div className="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" id="category-detail-view">
+    <div className="pt-24 pb-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10" id="category-detail-view">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-neutral-400">
         <button onClick={() => onNavigate('')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
@@ -69,27 +92,32 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({ category
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
-          {categoryTools.map((tool, idx) => (
-            <div
+        <motion.div 
+          variants={gridContainerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 items-stretch"
+        >
+          {categoryTools.map((tool) => (
+            <motion.div
               key={tool.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${Math.min(idx * 35, 360)}ms` }}
+              variants={gridItemVariants}
+              className="h-full flex flex-col"
             >
               <ToolCard
                 tool={tool}
                 onClick={() => onNavigate(`tools/${tool.slug}`)}
                 onOpenAuth={onOpenAuth}
               />
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {/* Semantic Publisher Editorial Guide for this Category */}
       {category.editorial && (
         <article
-          className="rounded-3xl p-6 sm:p-10 glass-panel space-y-8 mt-12"
+          className="rounded-3xl p-6 sm:p-10 glass-panel space-y-8 !mt-16 sm:!mt-24"
           aria-labelledby="category-guide-title"
         >
           <div className="space-y-3">

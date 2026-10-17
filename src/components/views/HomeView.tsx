@@ -1,19 +1,19 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Sparkles, ArrowRight, ShieldCheck, Zap, 
-  Lock, CheckCircle2, ChevronRight, Command, Flame,
-  Layers, Star, Shield, ExternalLink, Bot, Image as ImageIcon,
-  Video, Code2, PenTool, GraduationCap, Mic, Briefcase, 
-  TrendingUp, Presentation, BarChart3, Wrench, Globe, Clock,
-  Check, FileText, FileImage, Percent, Calendar, Type, Binary, QrCode, Scale
+  Lock, CheckCircle2, Star, X,
+  Bot, Image as ImageIcon, Video, Code2, PenTool, GraduationCap, Mic, 
+  Layers, FileText, FileImage, Percent, Calendar, TrendingUp,
+  Check, Globe, Wrench, Shield, ExternalLink
 } from 'lucide-react';
-import { AiTool, AiCategory } from '../../types/aiTools';
-import { AI_CATEGORIES } from '../../data/aiCategories';
 import { getFeaturedAiTools, getPublishedAiTools } from '../../data/aiToolsData';
 import { TOOLS } from '../../data/tools';
 import { AiToolCard } from '../common/AiToolCard';
 import { ToolCard } from '../common/ToolCard';
-import { getUtilityTheme, UtilityIllustration } from '../common/UtilityCardIllustration';
+import { AiToolLogo } from '../common/AiToolLogo';
+import { AI_CATEGORIES } from '../../data/aiCategories';
 
 interface HomeViewProps {
   onNavigate: (path: string) => void;
@@ -21,241 +21,270 @@ interface HomeViewProps {
   onOpenAuth?: () => void;
 }
 
-const CATEGORY_ICON_MAP: Record<string, React.ElementType> = {
-  'chat-assistants': Bot,
-  'image-generation': ImageIcon,
-  'video-generation': Video,
-  'coding-development': Code2,
-  'writing-content': PenTool,
-  'study-research': GraduationCap,
-  'productivity-automation': Zap,
-  'audio-voice-music': Mic,
-  'hr-career': Briefcase,
-  'marketing-business': TrendingUp,
-  'design-presentations': Presentation,
-  'data-analytics': BarChart3,
-};
+import { type Variants } from 'framer-motion';
 
-const UTILITY_ICON_MAP: Record<string, React.ElementType> = {
-  'text-to-pdf': FileText,
-  'images-to-pdf': FileImage,
-  'pdf-toolkit': Layers,
-  'image-toolkit': ImageIcon,
-  'percentage-calculator': Percent,
-  'age-calculator': Calendar,
-  'finance-calculator': TrendingUp,
-  'text-toolkit': Type,
-  'json-studio': Binary,
-  'qr-generator': QrCode,
-  'unit-converter': Scale,
-  'developer-toolbox': Code2,
-};
-
-interface CategoryColorTheme {
-  iconColor: string;
-  iconBg: string;
-  iconBorder: string;
-  hoverBorder: string;
-  hoverText: string;
-  arrowHover: string;
-  hoverShadow: string;
-}
-
-const CATEGORY_COLOR_THEMES: Record<string, CategoryColorTheme> = {
-  'chat-assistants': {
-    iconColor: 'text-cyan-600 dark:text-cyan-400',
-    iconBg: 'bg-cyan-50 dark:bg-cyan-500/15',
-    iconBorder: 'border-cyan-200 dark:border-cyan-500/30',
-    hoverBorder: 'hover:border-cyan-500/40',
-    hoverText: 'group-hover:text-cyan-600 dark:group-hover:text-cyan-300',
-    arrowHover: 'text-cyan-600 dark:text-cyan-400',
-    hoverShadow: 'hover:shadow-cyan-500/10',
-  },
-  'image-generation': {
-    iconColor: 'text-pink-600 dark:text-pink-400',
-    iconBg: 'bg-pink-50 dark:bg-pink-500/15',
-    iconBorder: 'border-pink-200 dark:border-pink-500/30',
-    hoverBorder: 'hover:border-pink-500/40',
-    hoverText: 'group-hover:text-pink-600 dark:group-hover:text-pink-300',
-    arrowHover: 'text-pink-600 dark:text-pink-400',
-    hoverShadow: 'hover:shadow-pink-500/10',
-  },
-  'video-generation': {
-    iconColor: 'text-violet-600 dark:text-violet-400',
-    iconBg: 'bg-violet-50 dark:bg-violet-500/15',
-    iconBorder: 'border-violet-200 dark:border-violet-500/30',
-    hoverBorder: 'hover:border-violet-500/40',
-    hoverText: 'group-hover:text-violet-600 dark:group-hover:text-violet-300',
-    arrowHover: 'text-violet-600 dark:text-violet-400',
-    hoverShadow: 'hover:shadow-violet-500/10',
-  },
-  'coding-development': {
-    iconColor: 'text-blue-600 dark:text-blue-400',
-    iconBg: 'bg-blue-50 dark:bg-blue-500/15',
-    iconBorder: 'border-blue-200 dark:border-blue-500/30',
-    hoverBorder: 'hover:border-blue-500/40',
-    hoverText: 'group-hover:text-blue-600 dark:group-hover:text-blue-300',
-    arrowHover: 'text-blue-600 dark:text-blue-400',
-    hoverShadow: 'hover:shadow-blue-500/10',
-  },
-  'writing-content': {
-    iconColor: 'text-rose-600 dark:text-rose-400',
-    iconBg: 'bg-rose-50 dark:bg-rose-500/15',
-    iconBorder: 'border-rose-200 dark:border-rose-500/30',
-    hoverBorder: 'hover:border-rose-500/40',
-    hoverText: 'group-hover:text-rose-600 dark:group-hover:text-rose-300',
-    arrowHover: 'text-rose-600 dark:text-rose-400',
-    hoverShadow: 'hover:shadow-rose-500/10',
-  },
-  'study-research': {
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    iconBg: 'bg-amber-50 dark:bg-amber-500/15',
-    iconBorder: 'border-amber-200 dark:border-amber-500/30',
-    hoverBorder: 'hover:border-amber-500/40',
-    hoverText: 'group-hover:text-amber-600 dark:group-hover:text-amber-300',
-    arrowHover: 'text-amber-600 dark:text-amber-400',
-    hoverShadow: 'hover:shadow-amber-500/10',
-  },
-  'productivity-automation': {
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    iconBg: 'bg-emerald-50 dark:bg-emerald-500/15',
-    iconBorder: 'border-emerald-200 dark:border-emerald-500/30',
-    hoverBorder: 'hover:border-emerald-500/40',
-    hoverText: 'group-hover:text-emerald-600 dark:group-hover:text-emerald-300',
-    arrowHover: 'text-emerald-600 dark:text-emerald-400',
-    hoverShadow: 'hover:shadow-emerald-500/10',
-  },
-  'audio-voice-music': {
-    iconColor: 'text-red-600 dark:text-red-400',
-    iconBg: 'bg-red-50 dark:bg-red-500/15',
-    iconBorder: 'border-red-200 dark:border-red-500/30',
-    hoverBorder: 'hover:border-red-500/40',
-    hoverText: 'group-hover:text-red-600 dark:group-hover:text-red-300',
-    arrowHover: 'text-red-600 dark:text-red-400',
-    hoverShadow: 'hover:shadow-red-500/10',
-  },
-  'design-presentations': {
-    iconColor: 'text-purple-600 dark:text-purple-400',
-    iconBg: 'bg-purple-50 dark:bg-purple-500/15',
-    iconBorder: 'border-purple-200 dark:border-purple-500/30',
-    hoverBorder: 'hover:border-purple-500/40',
-    hoverText: 'group-hover:text-purple-600 dark:group-hover:text-purple-300',
-    arrowHover: 'text-purple-600 dark:text-purple-400',
-    hoverShadow: 'hover:shadow-purple-500/10',
-  },
-  'marketing-business': {
-    iconColor: 'text-orange-600 dark:text-orange-400',
-    iconBg: 'bg-orange-50 dark:bg-orange-500/15',
-    iconBorder: 'border-orange-200 dark:border-orange-500/30',
-    hoverBorder: 'hover:border-orange-500/40',
-    hoverText: 'group-hover:text-orange-600 dark:group-hover:text-orange-300',
-    arrowHover: 'text-orange-600 dark:text-orange-400',
-    hoverShadow: 'hover:shadow-orange-500/10',
-  },
-  'career-tools': {
-    iconColor: 'text-teal-600 dark:text-teal-400',
-    iconBg: 'bg-teal-50 dark:bg-teal-500/15',
-    iconBorder: 'border-teal-200 dark:border-teal-500/30',
-    hoverBorder: 'hover:border-teal-500/40',
-    hoverText: 'group-hover:text-teal-600 dark:group-hover:text-teal-300',
-    arrowHover: 'text-teal-600 dark:text-teal-400',
-    hoverShadow: 'hover:shadow-teal-500/10',
-  },
-  'data-analytics': {
-    iconColor: 'text-lime-600 dark:text-lime-400',
-    iconBg: 'bg-lime-50 dark:bg-lime-500/15',
-    iconBorder: 'border-lime-200 dark:border-lime-500/30',
-    hoverBorder: 'hover:border-lime-500/40',
-    hoverText: 'group-hover:text-lime-600 dark:group-hover:text-lime-300',
-    arrowHover: 'text-lime-600 dark:text-lime-400',
-    hoverShadow: 'hover:shadow-lime-500/10',
+const gridContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.05,
+    },
   },
 };
 
-const DEFAULT_CATEGORY_THEME: CategoryColorTheme = {
-  iconColor: 'text-indigo-600 dark:text-indigo-400',
-  iconBg: 'bg-indigo-50 dark:bg-indigo-500/15',
-  iconBorder: 'border-indigo-200 dark:border-indigo-500/30',
-  hoverBorder: 'hover:border-indigo-500/40',
-  hoverText: 'group-hover:text-indigo-600 dark:group-hover:text-indigo-300',
-  arrowHover: 'text-indigo-600 dark:text-indigo-400',
-  hoverShadow: 'hover:shadow-indigo-500/10',
+const gridItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: 'easeOut',
+    },
+  },
 };
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, onOpenAuth }) => {
   const [heroSearchInput, setHeroSearchInput] = useState<string>('');
-  const featuredAiTools = getFeaturedAiTools().slice(0, 6);
-  const recentAiTools = getPublishedAiTools().slice(0, 6);
-  const nativeUtilities = TOOLS.filter((t) => t.isImplemented);
+  const [activeAiTab, setActiveAiTab] = useState<string>('all');
+  const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const featuredAiTools = getFeaturedAiTools();
+  const allPublishedAi = getPublishedAiTools();
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const normalizedQuery = heroSearchInput.trim().toLowerCase();
+
+  const matchingUtilities = useMemo(() => {
+    if (!normalizedQuery) return [];
+    return TOOLS.filter((t) => 
+      t.name.toLowerCase().includes(normalizedQuery) ||
+      t.description.toLowerCase().includes(normalizedQuery) ||
+      t.category.toLowerCase().includes(normalizedQuery) ||
+      t.slug.toLowerCase().includes(normalizedQuery)
+    ).slice(0, 4);
+  }, [normalizedQuery]);
+
+  const matchingAiTools = useMemo(() => {
+    if (!normalizedQuery) return [];
+    return allPublishedAi.filter((t) =>
+      t.name.toLowerCase().includes(normalizedQuery) ||
+      t.shortDescription.toLowerCase().includes(normalizedQuery) ||
+      t.primaryCategory.toLowerCase().includes(normalizedQuery) ||
+      (t.tags && t.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery))) ||
+      (t.bestFor && t.bestFor.some((b) => b.toLowerCase().includes(normalizedQuery)))
+    ).slice(0, 5);
+  }, [normalizedQuery, allPublishedAi]);
+
+  const getUtilIcon = (category: string): React.ComponentType<{ className?: string }> => {
+    if (category === 'pdf') return Layers;
+    if (category === 'images') return ImageIcon;
+    if (category === 'calculators') return Percent;
+    if (category === 'developer') return Code2;
+    return Wrench;
+  };
+
+  const flatResults = useMemo(() => {
+    const list: Array<{
+      type: 'utility' | 'ai';
+      id: string;
+      name: string;
+      desc: string;
+      path: string;
+      slug?: string;
+      badge: string;
+      badgeClass: string;
+      icon?: React.ComponentType<{ className?: string }>;
+    }> = [];
+
+    matchingUtilities.forEach((u) => {
+      list.push({
+        type: 'utility',
+        id: `util-${u.id}`,
+        name: u.name,
+        desc: u.description,
+        path: `tools/${u.slug}`,
+        badge: 'Free & Local',
+        badgeClass: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-500/20',
+        icon: getUtilIcon(u.category),
+      });
+    });
+
+    matchingAiTools.forEach((a) => {
+      const isFree = a.pricingType === 'free';
+      const isFreemium = a.pricingType === 'freemium';
+      const badgeText = isFree ? '100% Free' : isFreemium ? (a.hasFreePlan ? 'Free Tier' : 'Freemium') : (a.startingPrice || 'Paid');
+      const badgeClass = isFree || a.hasFreePlan
+        ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-500/20'
+        : 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border-amber-500/20';
+
+      list.push({
+        type: 'ai',
+        id: `ai-${a.id}`,
+        name: a.name,
+        desc: a.shortDescription,
+        path: `ai-tools/${a.slug}`,
+        slug: a.slug,
+        badge: badgeText,
+        badgeClass,
+      });
+    });
+
+    return list;
+  }, [matchingUtilities, matchingAiTools]);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    onOpenSearch(heroSearchInput.trim());
+    if (!heroSearchInput.trim()) {
+      onOpenSearch('');
+      return;
+    }
+    if (flatResults.length > 0 && selectedIndex >= 0 && selectedIndex < flatResults.length) {
+      onNavigate(flatResults[selectedIndex].path);
+    } else if (flatResults.length > 0) {
+      onNavigate(flatResults[0].path);
+    } else {
+      onOpenSearch(heroSearchInput.trim());
+    }
+    setIsSearchFocused(false);
   };
 
-  const quickIntentChips = [
-    { label: 'Generate Images', slug: 'image-generation', icon: ImageIcon },
-    { label: 'Create Videos', slug: 'video-generation', icon: Video },
-    { label: 'AI Chat', slug: 'chat-assistants', icon: Bot },
-    { label: 'Write Content', slug: 'writing-content', icon: PenTool },
-    { label: 'Code Faster', slug: 'coding-development', icon: Code2 },
-    { label: 'Study & Research', slug: 'study-research', icon: GraduationCap },
-    { label: 'Create Presentations', slug: 'design-presentations', icon: Presentation },
-    { label: 'Automate Work', slug: 'productivity-automation', icon: Zap },
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!normalizedQuery || flatResults.length === 0) return;
+
+    // flatResults items + 1 "View all" item at index flatResults.length
+    const totalSelectable = flatResults.length + 1;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % totalSelectable);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev <= 0 ? totalSelectable - 1 : prev - 1));
+    } else if (e.key === 'Escape') {
+      setIsSearchFocused(false);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedIndex >= 0 && selectedIndex < flatResults.length) {
+        onNavigate(flatResults[selectedIndex].path);
+        setIsSearchFocused(false);
+      } else if (selectedIndex === flatResults.length) {
+        onOpenSearch(heroSearchInput.trim());
+        setIsSearchFocused(false);
+      } else {
+        handleHeroSearch(e);
+      }
+    }
+  };
+
+  // Top 6 most useful everyday utilities for Section 1
+  const topSixSlugs = [
+    'text-to-pdf',
+    'images-to-pdf',
+    'pdf-toolkit',
+    'image-toolkit',
+    'age-calculator',
+    'percentage-calculator',
+  ];
+  const topSixUtilities = topSixSlugs
+    .map((slug) => TOOLS.find((t) => t.slug === slug))
+    .filter(Boolean) as typeof TOOLS;
+
+  // Filtered AI tools for Section 2
+  const filteredAiTools = (activeAiTab === 'all'
+    ? featuredAiTools
+    : allPublishedAi.filter(
+        (t) => t.primaryCategory === activeAiTab || t.categories.includes(activeAiTab)
+      )
+  ).slice(0, 6);
+
+  // Intent pills right below hero search
+  const intentPills = [
+    { label: 'Merge / Convert PDF', path: 'tools/pdf-toolkit', icon: Layers, isUtility: true },
+    { label: 'Compress Image', path: 'tools/image-toolkit', icon: ImageIcon, isUtility: true },
+    { label: 'Generate AI Video', path: 'ai-tools/video-generation', icon: Video, isUtility: false },
+    { label: 'Create AI Images', path: 'ai-tools/image-generation', icon: Sparkles, isUtility: false },
+    { label: 'Audio & Voice AI', path: 'ai-tools/audio-voice-music', icon: Mic, isUtility: false },
+    { label: 'Write & Study with AI', path: 'ai-tools/writing-content', icon: PenTool, isUtility: false },
+    { label: 'Calculate Loan / %', path: 'tools/percentage-calculator', icon: Percent, isUtility: true },
   ];
 
   return (
-    <div className="space-y-16 sm:space-y-24 pb-24" id="home-view">
-      {/* 1. Cinematic Hero Section */}
-      <section className="relative pt-32 pb-4 overflow-hidden">
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-          {/* Top Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] backdrop-blur-xl text-xs font-semibold text-indigo-700 dark:text-indigo-300 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+    <div className="space-y-16 sm:space-y-20 pb-0" id="home-view">
+      {/* ========================================================================= */}
+      {/* HERO SECTION: 3-Second Instant Value Proposition */}
+      {/* ========================================================================= */}
+      <section className="relative pt-32 pb-6 overflow-hidden">
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-7">
+          {/* Verified Value Proposition Pill */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/90 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] backdrop-blur-xl text-xs font-semibold text-indigo-700 dark:text-indigo-300 shadow-sm animate-in fade-in duration-300">
             <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span>AI Tools Discovery Platform + 12 Built-In Utilities</span>
+            <span>12 Free Instant Browser Utilities + Verified Directory of 80+ AI Tools</span>
           </div>
 
-          {/* Main Headline */}
+          {/* Main Direct Headline */}
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold font-display tracking-tight text-slate-900 dark:text-white leading-[1.08] max-w-4xl mx-auto">
-            Find the Right AI Tool{' '}
+            Everything You Need.{' '}
             <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 dark:from-indigo-300 dark:via-white dark:to-purple-300 bg-clip-text text-transparent block sm:inline">
-              for Any Task
+              In One Place.
             </span>
           </h1>
 
-          {/* Supporting Text */}
+          {/* Value Prop Subtext */}
           <p className="text-base sm:text-xl text-slate-600 dark:text-neutral-300 font-normal max-w-2xl mx-auto leading-relaxed">
-            Discover AI tools for video, images, writing, coding, research, productivity, business, and more — plus powerful free utilities built directly into Toolsbar.
+            Run free PDF, image, and calculation utilities locally in your browser with zero data storage - or discover verified AI tools for video, coding, writing, and research with clear pricing.
           </p>
 
-          {/* Prominent Hero Search Box */}
-          <div className="w-[calc(100%-2rem)] sm:w-[90%] md:w-[88%] max-w-[760px] mx-auto pt-2">
+          {/* Prominent Search Box with Live Results Dropdown */}
+          <div ref={searchContainerRef} className="relative w-[calc(100%-2rem)] sm:w-[90%] md:w-[88%] max-w-[760px] mx-auto pt-1 z-30">
             <form onSubmit={handleHeroSearch}>
-              <div 
-                className="relative group p-1.5 sm:p-2 rounded-2xl sm:rounded-3xl glass-card transition-all duration-300 shadow-lg hover:shadow-indigo-500/10 border border-slate-200/90 dark:border-white/10"
-              >
+              <div className="relative group p-1.5 sm:p-2 rounded-2xl sm:rounded-3xl glass-card transition-all duration-300 shadow-lg hover:shadow-indigo-500/10 border border-slate-200/90 dark:border-white/10">
                 <div className="flex items-center px-3 sm:px-4 py-1.5 sm:py-2 gap-2.5 sm:gap-3">
                   <Search className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 dark:text-neutral-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors shrink-0" />
                   <input
                     type="text"
                     value={heroSearchInput}
-                    onChange={(e) => setHeroSearchInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        onOpenSearch(heroSearchInput.trim());
-                      }
+                    onChange={(e) => {
+                      setHeroSearchInput(e.target.value);
+                      setSelectedIndex(-1);
+                      setIsSearchFocused(true);
                     }}
-                    placeholder="Search AI tools, utilities, or describe what you want to do..."
-                    className="w-full bg-transparent text-slate-900 dark:text-white text-xs sm:text-sm md:text-base placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none font-medium truncate selection:bg-indigo-500/30"
+                    onFocus={() => setIsSearchFocused(true)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Search AI software, browser utilities, or describe your task..."
+                    className="w-full bg-transparent text-slate-900 dark:text-white text-xs sm:text-sm md:text-base placeholder-slate-400 dark:placeholder-neutral-500 focus:outline-none font-medium truncate"
                   />
                   <div className="flex items-center gap-2 shrink-0">
-                    <kbd className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono bg-slate-200/90 dark:bg-black/50 text-slate-600 dark:text-neutral-400 px-2 py-1 rounded-lg border border-slate-300 dark:border-white/10">
-                      <Command className="w-3 h-3" /> K
-                    </kbd>
+                    {heroSearchInput && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHeroSearchInput('');
+                          setSelectedIndex(-1);
+                        }}
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors cursor-pointer"
+                        aria-label="Clear search input"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       type="submit"
-                      className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all cursor-pointer shrink-0"
+                      className="px-4 py-2 rounded-xl sm:rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all cursor-pointer shrink-0"
                     >
                       Search
                     </button>
@@ -264,20 +293,190 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
               </div>
             </form>
 
-            {/* Quick Intent Chips */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-5 pt-1">
-              <span className="text-xs text-slate-500 dark:text-neutral-500 font-medium mr-1">I want to:</span>
-              {quickIntentChips.map((chip) => {
-                const ChipIcon = chip.icon;
+            {/* Sleek Live-Results Dropdown Panel */}
+            <AnimatePresence>
+              {isSearchFocused && normalizedQuery.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  className="absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl sm:rounded-3xl bg-white/95 dark:bg-[#0c0e18]/95 backdrop-blur-2xl shadow-2xl border border-slate-200/90 dark:border-white/10 overflow-hidden text-left"
+                >
+                {flatResults.length > 0 ? (
+                  <div className="max-h-[60vh] overflow-y-auto p-2 sm:p-3 divide-y divide-slate-100 dark:divide-white/[0.06]">
+                    {/* Native Utilities Section */}
+                    {matchingUtilities.length > 0 && (
+                      <div className="py-2 first:pt-1 space-y-1">
+                        <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                          <Wrench className="w-3 h-3" />
+                          <span>Native Browser Utilities (100% Client-Side)</span>
+                        </div>
+                        {matchingUtilities.map((util) => {
+                          const resultIdx = flatResults.findIndex((r) => r.id === `util-${util.id}`);
+                          const isSelected = selectedIndex === resultIdx;
+                          const UtilIcon = getUtilIcon(util.category);
+                          return (
+                            <div
+                              key={util.id}
+                              onClick={() => {
+                                onNavigate(`tools/${util.slug}`);
+                                setIsSearchFocused(false);
+                              }}
+                              onMouseEnter={() => setSelectedIndex(resultIdx)}
+                              className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                                isSelected
+                                  ? 'bg-emerald-50/90 dark:bg-emerald-500/10 text-emerald-950 dark:text-white ring-1 ring-emerald-500/30'
+                                  : 'hover:bg-slate-50 dark:hover:bg-white/[0.03] text-slate-800 dark:text-neutral-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                  <UtilIcon className="w-4 h-4" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="text-xs sm:text-sm font-semibold truncate flex items-center gap-2">
+                                    <span>{util.name}</span>
+                                  </div>
+                                  <p className="text-[11px] text-slate-500 dark:text-neutral-400 truncate max-w-md">
+                                    {util.description}
+                                  </p>
+                                </div>
+                              </div>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-500/20">
+                                Free & Local
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* AI Tools Section */}
+                    {matchingAiTools.length > 0 && (
+                      <div className="py-2 first:pt-1 space-y-1">
+                        <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3" />
+                          <span>Verified AI Tools & Software</span>
+                        </div>
+                        {matchingAiTools.map((aiTool) => {
+                          const resultIdx = flatResults.findIndex((r) => r.id === `ai-${aiTool.id}`);
+                          const isSelected = selectedIndex === resultIdx;
+                          const isFree = aiTool.pricingType === 'free';
+                          const isFreemium = aiTool.pricingType === 'freemium';
+                          const badgeText = isFree ? '100% Free' : isFreemium ? (aiTool.hasFreePlan ? 'Free Tier' : 'Freemium') : (aiTool.startingPrice || 'Paid');
+                          const badgeClass = isFree || aiTool.hasFreePlan
+                            ? 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-500/10 border-indigo-500/20'
+                            : 'text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 border-amber-500/20';
+
+                          return (
+                            <div
+                              key={aiTool.id}
+                              onClick={() => {
+                                onNavigate(`ai-tools/${aiTool.slug}`);
+                                setIsSearchFocused(false);
+                              }}
+                              onMouseEnter={() => setSelectedIndex(resultIdx)}
+                              className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                                isSelected
+                                  ? 'bg-indigo-50/90 dark:bg-indigo-500/10 text-indigo-950 dark:text-white ring-1 ring-indigo-500/30'
+                                  : 'hover:bg-slate-50 dark:hover:bg-white/[0.03] text-slate-800 dark:text-neutral-200'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-xl bg-white dark:bg-neutral-900 border border-slate-200 dark:border-white/10 p-1 flex items-center justify-center shrink-0">
+                                  <AiToolLogo slug={aiTool.slug} name={aiTool.name} className="w-full h-full object-contain" />
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="text-xs sm:text-sm font-semibold truncate">
+                                    {aiTool.name}
+                                  </div>
+                                  <p className="text-[11px] text-slate-500 dark:text-neutral-400 truncate max-w-md">
+                                    {aiTool.shortDescription}
+                                  </p>
+                                </div>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border shrink-0 ${badgeClass}`}>
+                                {badgeText}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Footer: View All Action */}
+                    <div className="pt-2 px-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenSearch(heroSearchInput.trim());
+                          setIsSearchFocused(false);
+                        }}
+                        onMouseEnter={() => setSelectedIndex(flatResults.length)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all ${
+                          selectedIndex === flatResults.length
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10'
+                        }`}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <Search className="w-3.5 h-3.5" />
+                          <span>View all results for "{heroSearchInput}"</span>
+                        </span>
+                        <span className="text-[11px] opacity-80 flex items-center gap-1">
+                          <span>Press Enter</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-6 text-center space-y-3">
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-white">
+                      No instant matches for "{heroSearchInput}"
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onOpenSearch(heroSearchInput.trim());
+                        setIsSearchFocused(false);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 cursor-pointer transition-all inline-flex items-center gap-1.5"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      <span>Search full directory</span>
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          </div>
+
+          {/* Interactive Task Switcher / Intent Pills */}
+          <div className="mt-5 space-y-2">
+            <span className="text-xs font-semibold text-slate-500 dark:text-neutral-400 block">
+              What do you want to do today?
+            </span>
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-0.5">
+              {intentPills.map((pill) => {
+                const PillIcon = pill.icon;
                 return (
-                  <button
-                    key={chip.slug}
-                    onClick={() => onNavigate(`ai-tools/${chip.slug}`)}
-                    className="inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-full glass-pill text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-100 border border-slate-200/60 dark:border-white/[0.08]"
+                  <motion.div
+                    key={pill.path}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   >
-                    <ChipIcon className="w-3 h-3 text-indigo-500" />
-                    <span>{chip.label}</span>
-                  </button>
+                    <Link
+                      to={`/${pill.path}`}
+                      className="inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-full glass-pill text-slate-700 hover:text-slate-900 dark:text-neutral-300 dark:hover:text-white transition-all cursor-pointer shadow-xs border border-slate-200/70 dark:border-white/[0.08]"
+                    >
+                      <PillIcon className={`w-3.5 h-3.5 ${pill.isUtility ? 'text-emerald-500' : 'text-indigo-500'}`} />
+                      <span>{pill.label}</span>
+                    </Link>
+                  </motion.div>
                 );
               })}
             </div>
@@ -285,367 +484,206 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate, onOpenSearch, on
         </div>
       </section>
 
-      {/* SECTION 1: Explore AI by Category */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8" id="ai-categories-section">
+      {/* ========================================================================= */}
+      {/* STEP / SECTION 1: Instant Daily Utilities (100% Free, Runs in Browser) */}
+      {/* ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8" id="instant-utilities-section">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-              <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Organized Discovery
+          <div className="space-y-1.5 max-w-3xl">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              <span>Step 1 | Instant Daily Utilities</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-[10px] text-emerald-700 dark:text-emerald-300 font-bold">
+                100% Free | No Signup | No File Uploads
+              </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 dark:text-white">
-              Explore AI by Category
+            <h2 className="text-2xl sm:text-4xl font-extrabold font-display text-slate-900 dark:text-white">
+              Instant Browser Utilities
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">
-              Browse 12 specialized disciplines tailored for creators, engineers, researchers, and enterprises.
+            <p className="text-xs sm:text-base text-slate-600 dark:text-neutral-300 leading-relaxed">
+              Fast, client-side tools processed 100% in your device's browser memory. Your documents, photos, and calculations are never uploaded or stored.
             </p>
           </div>
-          <button
-            onClick={() => onNavigate('ai-tools')}
-            className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 cursor-pointer shrink-0"
+
+          <Link
+            to="/tools"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/20 transition-all cursor-pointer shrink-0"
           >
-            View all categories <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+            <span>View All 12 Utilities</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {AI_CATEGORIES.map((cat, idx) => {
-            const Icon = CATEGORY_ICON_MAP[cat.slug] || Bot;
-            const theme = CATEGORY_COLOR_THEMES[cat.slug] || DEFAULT_CATEGORY_THEME;
-            return (
-              <div
-                key={cat.id}
-                onClick={() => onNavigate(`ai-tools/${cat.slug}`)}
-                style={{ animationDelay: `${Math.min(idx * 30, 360)}ms` }}
-                className={`animate-fade-in-up group rounded-3xl p-5 sm:p-6 glass-card cursor-pointer flex flex-col justify-between space-y-4 transition-all duration-300 ease-out hover:shadow-2xl ${theme.hoverShadow} hover:-translate-y-1 ${theme.hoverBorder} border border-slate-200/80 dark:border-white/[0.08]`}
-              >
-                <div className="space-y-3">
-                  <div className={`w-11 h-11 rounded-2xl ${theme.iconBg} border ${theme.iconBorder} flex items-center justify-center ${theme.iconColor} shadow-xs group-hover:scale-110 group-hover:shadow-md transition-all duration-300`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className={`font-bold text-sm sm:text-base text-slate-900 dark:text-white ${theme.hoverText} transition-colors`}>
-                      {cat.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-neutral-400 line-clamp-2 mt-1 leading-relaxed">
-                      {cat.shortDesc}
-                    </p>
-                  </div>
-                </div>
+        {/* 6 Top Everyday Utilities Grid with Staggered Fade-In */}
+        <motion.div
+          variants={gridContainerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-40px' }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch"
+        >
+          {topSixUtilities.map((tool) => (
+            <motion.div key={tool.id} variants={gridItemVariants} className="h-full flex flex-col">
+              <ToolCard
+                tool={tool}
+                onClick={() => onNavigate(`tools/${tool.slug}`)}
+                onOpenAuth={onOpenAuth}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+      </section>
 
-                <div className={`pt-2 border-t border-slate-200/60 dark:border-white/[0.05] flex items-center justify-between text-xs ${theme.iconColor} font-medium`}>
-                  <span>Explore Tools</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
-                </div>
-              </div>
+      {/* ========================================================================= */}
+      {/* STEP / SECTION 2: AI Tools Finder - Know What's Truly Free vs Paid */}
+      {/* ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8" id="ai-tools-finder-section">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="space-y-1.5 max-w-3xl">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <Sparkles className="w-4 h-4 text-indigo-500" />
+              <span>Step 2 | The AI Tools Finder</span>
+              <span className="px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-[10px] text-indigo-700 dark:text-indigo-300 font-bold">
+                Know What's Truly Free vs Paid
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold font-display text-slate-900 dark:text-white">
+              Discover & Compare Verified AI Tools
+            </h2>
+            <p className="text-xs sm:text-base text-slate-600 dark:text-neutral-300 leading-relaxed">
+              Don't waste time on misleading signups. We test each tool and clearly display free plan limits, daily credits, starting prices, and official direct links.
+            </p>
+          </div>
+
+          <Link
+            to="/ai-tools"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl glass-button text-slate-800 dark:text-neutral-200 hover:text-indigo-600 dark:hover:text-white font-semibold text-xs border border-slate-200/90 dark:border-white/10 transition-all cursor-pointer shrink-0"
+          >
+            <span>Browse All 80+ AI Tools</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* Task Category Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {[
+            { id: 'all', label: 'All Featured', icon: Star },
+            { id: 'image-generation', label: 'Image AI', icon: ImageIcon },
+            { id: 'video-generation', label: 'Video AI', icon: Video },
+            { id: 'audio-voice-music', label: 'Voice & Audio AI', icon: Mic },
+            { id: 'study-research', label: 'Study & Research AI', icon: GraduationCap },
+            { id: 'chat-assistants', label: 'Chatbots & Reasoning', icon: Bot },
+            { id: 'coding-development', label: 'Coding & Dev', icon: Code2 },
+          ].map((tab) => {
+            const TabIcon = tab.icon;
+            const isActive = activeAiTab === tab.id;
+            return (
+              <motion.button
+                key={tab.id}
+                type="button"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                onClick={() => setActiveAiTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20'
+                    : 'glass-button text-slate-600 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-white border border-slate-200/70 dark:border-white/[0.08]'
+                }`}
+              >
+                <TabIcon className="w-3.5 h-3.5" />
+                <span>{tab.label}</span>
+              </motion.button>
             );
           })}
         </div>
-      </section>
 
-      {/* SECTION 2: Featured AI Tools */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8" id="featured-ai-section">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-              <Star className="w-4 h-4 fill-amber-500 text-amber-500" /> Handpicked Workspaces
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 dark:text-white">
-              Featured AI Tools
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">
-              Verified flagship artificial intelligence platforms reviewed for capability, pricing transparency, and reliability.
-            </p>
-          </div>
-          <button
-            onClick={() => onNavigate('ai-tools')}
-            className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 cursor-pointer shrink-0"
-          >
-            Browse all AI tools <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredAiTools.map((tool, idx) => (
-            <div
-              key={tool.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${Math.min(idx * 40, 360)}ms` }}
-            >
+        {/* AI Tools Cards Grid with Staggered Reveal and Animation Key */}
+        <motion.div
+          key={activeAiTab}
+          variants={gridContainerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch"
+        >
+          {filteredAiTools.map((tool) => (
+            <motion.div key={tool.id} variants={gridItemVariants} className="h-full flex flex-col">
               <AiToolCard
                 tool={tool}
                 onNavigate={onNavigate}
                 onOpenAuth={onOpenAuth}
               />
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
-      {/* SECTION 3: Task-Oriented Personas: Find AI for Your Work */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8" id="personas-section">
-        <div className="space-y-1 max-w-3xl">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-            <Briefcase className="w-4 h-4" /> Role & Task Navigation
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 dark:text-white">
-            Find AI for Your Work
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">
-            Targeted AI tool bundles grouped by your profession, daily workflow, and specific project goals.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[
-            {
-              role: 'For Developers & Engineers',
-              desc: 'Context-aware code completion, full-stack scaffolders, and automated test generators.',
-              categorySlug: 'coding-development',
-              examples: ['Cursor', 'GitHub Copilot', 'v0 by Vercel'],
-              icon: Code2,
-              iconColor: 'text-blue-600 dark:text-blue-400',
-              iconBg: 'bg-blue-50 dark:bg-blue-500/15',
-              iconBorder: 'border-blue-200 dark:border-blue-500/30',
-              hoverBorder: 'hover:border-blue-500/40',
-              hoverText: 'group-hover:text-blue-600 dark:group-hover:text-blue-300',
-              arrowHover: 'group-hover:text-blue-600 dark:group-hover:text-blue-400',
-              hoverShadow: 'hover:shadow-blue-500/10',
-            },
-            {
-              role: 'For Students & Researchers',
-              desc: 'Semantic literature reviews, evidence-backed scientific search, and citation tools.',
-              categorySlug: 'study-research',
-              examples: ['Perplexity AI', 'Elicit', 'Consensus'],
-              icon: GraduationCap,
-              iconColor: 'text-amber-600 dark:text-amber-400',
-              iconBg: 'bg-amber-50 dark:bg-amber-500/15',
-              iconBorder: 'border-amber-200 dark:border-amber-500/30',
-              hoverBorder: 'hover:border-amber-500/40',
-              hoverText: 'group-hover:text-amber-600 dark:group-hover:text-amber-300',
-              arrowHover: 'group-hover:text-amber-600 dark:group-hover:text-amber-400',
-              hoverShadow: 'hover:shadow-amber-500/10',
-            },
-            {
-              role: 'For Video & Content Creators',
-              desc: 'Cinematic text-to-video synthesis, AI motion brushes, and hyper-realistic voiceovers.',
-              categorySlug: 'video-generation',
-              examples: ['Runway Gen-3', 'Pika', 'ElevenLabs'],
-              icon: Video,
-              iconColor: 'text-violet-600 dark:text-violet-400',
-              iconBg: 'bg-violet-50 dark:bg-violet-500/15',
-              iconBorder: 'border-violet-200 dark:border-violet-500/30',
-              hoverBorder: 'hover:border-violet-500/40',
-              hoverText: 'group-hover:text-violet-600 dark:group-hover:text-violet-300',
-              arrowHover: 'group-hover:text-violet-600 dark:group-hover:text-violet-400',
-              hoverShadow: 'hover:shadow-violet-500/10',
-            },
-            {
-              role: 'For Designers & Marketers',
-              desc: 'Concept art generation, interactive slide decks, and generative copy editing.',
-              categorySlug: 'image-generation',
-              examples: ['Midjourney', 'Gamma', 'Canva Magic Studio'],
-              icon: Presentation,
-              iconColor: 'text-pink-600 dark:text-pink-400',
-              iconBg: 'bg-pink-50 dark:bg-pink-500/15',
-              iconBorder: 'border-pink-200 dark:border-pink-500/30',
-              hoverBorder: 'hover:border-pink-500/40',
-              hoverText: 'group-hover:text-pink-600 dark:group-hover:text-pink-300',
-              arrowHover: 'group-hover:text-pink-600 dark:group-hover:text-pink-400',
-              hoverShadow: 'hover:shadow-pink-500/10',
-            },
-            {
-              role: 'For Writers & Editors',
-              desc: 'Long-form editorial drafting, tone adjustments, conciseness, and proofreading.',
-              categorySlug: 'writing-content',
-              examples: ['Claude', 'Grammarly', 'ChatGPT'],
-              icon: PenTool,
-              iconColor: 'text-rose-600 dark:text-rose-400',
-              iconBg: 'bg-rose-50 dark:bg-rose-500/15',
-              iconBorder: 'border-rose-200 dark:border-rose-500/30',
-              hoverBorder: 'hover:border-rose-500/40',
-              hoverText: 'group-hover:text-rose-600 dark:group-hover:text-rose-300',
-              arrowHover: 'group-hover:text-rose-600 dark:group-hover:text-rose-400',
-              hoverShadow: 'hover:shadow-rose-500/10',
-            },
-            {
-              role: 'For Analysts & Operations',
-              desc: 'Deterministic Python data analysis, spreadsheet modeling, and automated workflows.',
-              categorySlug: 'data-analytics',
-              examples: ['Julius AI', 'ChatGPT Interpreter'],
-              icon: BarChart3,
-              iconColor: 'text-emerald-600 dark:text-emerald-400',
-              iconBg: 'bg-emerald-50 dark:bg-emerald-500/15',
-              iconBorder: 'border-emerald-200 dark:border-emerald-500/30',
-              hoverBorder: 'hover:border-emerald-500/40',
-              hoverText: 'group-hover:text-emerald-600 dark:group-hover:text-emerald-300',
-              arrowHover: 'group-hover:text-emerald-600 dark:group-hover:text-emerald-400',
-              hoverShadow: 'hover:shadow-emerald-500/10',
-            }
-          ].map((persona, idx) => {
-            const Icon = persona.icon;
-            return (
-              <div
-                key={idx}
-                onClick={() => onNavigate(`ai-tools/${persona.categorySlug}`)}
-                style={{ animationDelay: `${Math.min(idx * 40, 320)}ms` }}
-                className={`animate-fade-in-up p-6 rounded-3xl glass-card space-y-4 cursor-pointer group transition-all duration-300 ease-out hover:shadow-2xl ${persona.hoverShadow} hover:-translate-y-1 ${persona.hoverBorder} border border-slate-200/80 dark:border-white/[0.08]`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className={`w-11 h-11 rounded-2xl ${persona.iconBg} border ${persona.iconBorder} flex items-center justify-center ${persona.iconColor} shadow-xs group-hover:scale-110 group-hover:shadow-md transition-all duration-300`}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <ArrowRight className={`w-4 h-4 text-slate-400 ${persona.arrowHover} group-hover:translate-x-1 transition-all duration-300`} />
-                </div>
-
-                <div className="space-y-1">
-                  <h3 className={`font-bold text-base text-slate-900 dark:text-white ${persona.hoverText} transition-colors`}>
-                    {persona.role}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-neutral-400 leading-relaxed">
-                    {persona.desc}
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Featured:</span>
-                  {persona.examples.map((ex, i) => (
-                    <span
-                      key={i}
-                      className="text-[11px] px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-white/[0.04] text-slate-700 dark:text-neutral-300 font-medium"
-                    >
-                      {ex}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* SECTION 4: Built-In Toolsbar Utilities (The 12 Flagships) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8" id="toolsbar-utilities-section">
-        <div className="rounded-3xl p-8 sm:p-12 glass-panel border border-indigo-500/20 bg-gradient-to-b from-indigo-500/[0.03] to-transparent space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="space-y-2 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                <ShieldCheck className="w-3.5 h-3.5" /> 100% Free & Client-Side
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-extrabold font-display text-slate-900 dark:text-white">
-                Toolsbar Built-In Utilities
-              </h2>
-              <p className="text-xs sm:text-base text-slate-600 dark:text-neutral-300 leading-relaxed">
-                In addition to AI tool discovery, Toolsbar includes 12 powerful native digital utilities you can use directly in your browser with zero latency and complete client-side privacy.
-              </p>
-            </div>
-
-            <button
-              onClick={() => onNavigate('tools')}
-              className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/20 transition-all cursor-pointer shrink-0"
-            >
-              Browse All 12 Utilities
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-2">
-            {nativeUtilities.map((utility, idx) => {
-              const theme = getUtilityTheme(utility.slug);
-              const IconComp = UTILITY_ICON_MAP[utility.slug] || Wrench;
-              return (
-                <div
-                  key={utility.id}
-                  onClick={() => onNavigate(`tools/${utility.slug}`)}
-                  style={{ animationDelay: `${Math.min(idx * 30, 360)}ms` }}
-                  className="animate-fade-in-up p-4 sm:p-5 rounded-2xl sm:rounded-3xl glass-card cursor-pointer group flex flex-col justify-between transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-500/40 border border-slate-200/80 dark:border-white/[0.08]"
-                >
-                  <div className="space-y-3">
-                    {/* Visual Illustration */}
-                    <UtilityIllustration slug={utility.slug} className="w-full h-24 mb-1" />
-
-                    {/* Top Row: Distinct Colored Icon and Badges */}
-                    <div className="flex items-center justify-between">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center border shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${theme.iconBg} ${theme.iconBorder} ${theme.iconColor}`}>
-                        <IconComp className="w-4 h-4" />
-                      </div>
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${theme.badgeColor}`}>
-                        100% Free
-                      </span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors leading-snug">
-                        {utility.name}
-                      </h4>
-                      <p className="text-xs text-slate-500 dark:text-neutral-400 line-clamp-2 leading-relaxed">
-                        {utility.shortDesc}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Matching Try Now Button */}
-                  <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-white/[0.06] flex items-center justify-between">
-                    <span className="text-[11px] text-slate-500 dark:text-neutral-400 font-medium">
-                      In-Browser
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onNavigate(`tools/${utility.slug}`);
-                      }}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs shadow-sm transition-all group-hover:scale-105 cursor-pointer ${theme.buttonBg} ${theme.buttonShadow}`}
-                    >
-                      <span>Try Now</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 5: Platform Architecture & Independent Discovery Standard */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" aria-labelledby="platform-standard-heading">
-        <article className="rounded-3xl p-8 sm:p-12 glass-panel space-y-6 border border-slate-200/80 dark:border-white/[0.08]">
-          <div className="space-y-2">
+      {/* ========================================================================= */}
+      {/* STEP / SECTION 3: How Toolsbar Works & Why Trust Us (AdSense Compliance) */}
+      {/* ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" aria-labelledby="how-toolsbar-works-heading">
+        <article className="rounded-3xl p-8 sm:p-12 glass-panel space-y-8 border border-slate-200/80 dark:border-white/[0.08]">
+          <div className="space-y-2 max-w-3xl">
             <span className="text-xs uppercase font-bold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5" /> The Toolsbar Standard
+              <ShieldCheck className="w-4 h-4 text-indigo-500" /> Editorial Standard & Architecture
             </span>
-            <h2 id="platform-standard-heading" className="text-2xl sm:text-3xl font-bold font-display text-slate-900 dark:text-white">
-              Independent AI Discovery + Direct Browser Utilities
+            <h2 id="how-toolsbar-works-heading" className="text-2xl sm:text-3xl font-extrabold font-display text-slate-900 dark:text-white">
+              How Toolsbar Works & Why Trust Us
             </h2>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 leading-relaxed">
+              Toolsbar was built to solve two major frustrations on the web: single-purpose tools that require account creation and secretly store user files, and sponsored AI directories that hide paywalls.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-slate-700 dark:text-neutral-300 leading-relaxed">
-            <div className="space-y-3 p-5 rounded-2xl bg-white/40 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-                <Globe className="w-4 h-4 text-indigo-500" />
-                <span>1. Independent AI Discovery Platform</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-700 dark:text-neutral-300">
+            {/* Pillar 1 */}
+            <div className="p-6 rounded-2xl bg-white/40 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-200 dark:border-emerald-500/20">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                1. 100% Client-Side Privacy
               </h3>
-              <p>
-                Toolsbar helps people navigate the fast-moving artificial intelligence ecosystem without bias. Every AI tool card links directly to the vendor's official website. We review pricing models, verified starting costs, supported platforms, strengths, and limitations so you can choose the right software for your task.
+              <p className="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">
+                When you merge a PDF, convert an image, or calculate financial interest, the code runs in your browser's local JavaScript engine. Your private files are never transmitted to our servers.
               </p>
-              <ul className="space-y-1.5 text-xs text-slate-600 dark:text-neutral-400 pt-1">
-                <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Direct links to official websites only</li>
-                <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Factual pricing models without invented tiers</li>
-                <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Independent pros, cons, and use cases</li>
+              <ul className="space-y-1 text-[11px] text-slate-500 dark:text-neutral-400 pt-1">
+                <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-500" /> Zero cloud file storage</li>
+                <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-500" /> Instant execution with zero latency</li>
               </ul>
             </div>
 
-            <div className="space-y-3 p-5 rounded-2xl bg-white/40 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-emerald-500" />
-                <span>2. Twelve Powerful Native Utilities</span>
+            {/* Pillar 2 */}
+            <div className="p-6 rounded-2xl bg-white/40 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-200 dark:border-indigo-500/20">
+                <Globe className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                2. Transparent, Non-Hallucinated AI Data
               </h3>
-              <p>
-                Unlike single-purpose directories that only link out to third-party services, Toolsbar provides 12 built-in daily utilities. From Text-to-PDF document creation to PDF merging, image compression, JSON formatting, and financial calculations, our tools run client-side in your browser with zero server data storage.
+              <p className="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">
+                We independently verify starting pricing, free plan restrictions, watermark rules, and token limits. Every tool profile links directly to the vendor's official website with zero affiliate cloaking.
               </p>
-              <ul className="space-y-1.5 text-xs text-slate-600 dark:text-neutral-400 pt-1">
-                <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Zero cloud uploads — local browser memory execution</li>
-                <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Instant calculation without server queuing</li>
-                <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-emerald-500" /> Completely free forever with no account required</li>
+              <ul className="space-y-1 text-[11px] text-slate-500 dark:text-neutral-400 pt-1">
+                <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-indigo-500" /> Direct official vendor links</li>
+                <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-indigo-500" /> Free alternative suggestions for paid tools</li>
+              </ul>
+            </div>
+
+            {/* Pillar 3 */}
+            <div className="p-6 rounded-2xl bg-white/40 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/5 space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-200 dark:border-purple-500/20">
+                <Zap className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                3. AdSense-Ready & Free Forever
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">
+                Our flagship tools are completely free to use without requiring paid credits or subscription paywalls. We adhere to high publisher content standards with rich educational documentation for each utility.
+              </p>
+              <ul className="space-y-1 text-[11px] text-slate-500 dark:text-neutral-400 pt-1">
+                <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-purple-500" /> No mandatory paywalls or lockouts</li>
+                <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-purple-500" /> High-quality editorial guidance</li>
               </ul>
             </div>
           </div>

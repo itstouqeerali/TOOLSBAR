@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { motion, type Variants } from 'framer-motion';
 import { 
   Search, Filter, Sparkles, Grid, Layers, ArrowUpDown, 
   Tag, Laptop, DollarSign, X, Check, BookOpen, HelpCircle, Shield 
@@ -7,6 +8,28 @@ import { AiTool, AiPricingType, AiPlatform } from '../../types/aiTools';
 import { AI_CATEGORIES, getAiCategoryBySlug } from '../../data/aiCategories';
 import { fetchAllAiTools, getCachedAiTools } from '../../services/aiToolsService';
 import { AiToolCard } from '../common/AiToolCard';
+
+const gridContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const gridItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: 'easeOut',
+    },
+  },
+};
 
 interface AiToolsDirectoryViewProps {
   onNavigate: (path: string) => void;
@@ -224,7 +247,10 @@ export const AiToolsDirectoryView: React.FC<AiToolsDirectoryViewProps> = ({
 
         {/* Category Horizontal Filter Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none pt-1">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setSelectedCategory('all')}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
               selectedCategory === 'all'
@@ -233,15 +259,18 @@ export const AiToolsDirectoryView: React.FC<AiToolsDirectoryViewProps> = ({
             }`}
           >
             All Categories ({tools.length})
-          </button>
+          </motion.button>
           {AI_CATEGORIES.map((cat) => {
             const count = tools.filter(
               (t) => t.primaryCategory === cat.slug || t.categories.includes(cat.slug)
             ).length;
             const isActive = selectedCategory === cat.slug;
             return (
-              <button
+              <motion.button
                 key={cat.id}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 onClick={() => setSelectedCategory(cat.slug)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                   isActive
@@ -250,7 +279,7 @@ export const AiToolsDirectoryView: React.FC<AiToolsDirectoryViewProps> = ({
                 }`}
               >
                 {cat.name} ({count})
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -267,8 +296,11 @@ export const AiToolsDirectoryView: React.FC<AiToolsDirectoryViewProps> = ({
             { id: 'paid', label: 'Paid' },
             { id: 'free-trial', label: 'Free Trial' },
           ].map((pf) => (
-            <button
+            <motion.button
               key={pf.id}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               onClick={() => setPricingFilter(pf.id)}
               className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-colors cursor-pointer border ${
                 pricingFilter === pf.id
@@ -277,15 +309,18 @@ export const AiToolsDirectoryView: React.FC<AiToolsDirectoryViewProps> = ({
               }`}
             >
               {pf.label}
-            </button>
+            </motion.button>
           ))}
 
           <div className="flex items-center gap-1.5 text-slate-500 dark:text-neutral-400 font-medium ml-3 mr-1">
             <Laptop className="w-3.5 h-3.5" /> Platform:
           </div>
           {['all', 'Web', 'macOS', 'Windows', 'iOS', 'Android', 'API'].map((plat) => (
-            <button
+            <motion.button
               key={plat}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               onClick={() => setPlatformFilter(plat)}
               className={`px-2.5 py-1 rounded-xl text-xs font-medium transition-colors cursor-pointer border ${
                 platformFilter === plat
@@ -294,16 +329,18 @@ export const AiToolsDirectoryView: React.FC<AiToolsDirectoryViewProps> = ({
               }`}
             >
               {plat === 'all' ? 'All Platforms' : plat}
-            </button>
+            </motion.button>
           ))}
 
           {(selectedCategory !== 'all' || pricingFilter !== 'all' || platformFilter !== 'all' || searchQuery) && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={resetFilters}
               className="ml-auto text-xs text-rose-600 dark:text-rose-400 hover:underline cursor-pointer flex items-center gap-1"
             >
               <X className="w-3 h-3" /> Reset Filters
-            </button>
+            </motion.button>
           )}
         </div>
       </div>
@@ -316,26 +353,29 @@ export const AiToolsDirectoryView: React.FC<AiToolsDirectoryViewProps> = ({
         </span>
       </div>
 
-      {/* Grid of AI Tool Cards */}
+      {/* Grid of AI Tool Cards with Staggered Reveal */}
       {filteredTools.length > 0 ? (
-        <div 
+        <motion.div 
           key={`${selectedCategory}-${pricingFilter}-${platformFilter}-${sortBy}`}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          variants={gridContainerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch"
         >
-          {filteredTools.map((tool, idx) => (
-            <div
+          {filteredTools.map((tool) => (
+            <motion.div
               key={tool.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${Math.min(idx * 30, 360)}ms` }}
+              variants={gridItemVariants}
+              className="h-full flex flex-col"
             >
               <AiToolCard
                 tool={tool}
                 onNavigate={onNavigate}
                 onOpenAuth={onOpenAuth}
               />
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
         <div className="rounded-3xl p-12 text-center glass-panel space-y-4 max-w-xl mx-auto">
           <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto">

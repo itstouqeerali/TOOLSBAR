@@ -484,29 +484,29 @@ export const AiToolLogo: React.FC<AiToolLogoProps> = ({
   className = 'w-full h-full',
 }) => {
   const normalizedSlug = slug ? slug.toLowerCase().trim() : '';
-  const item = OFFICIAL_AI_TOOL_LOGOS[normalizedSlug];
-  
-  // Determine primary logo URL
-  const initialUrl = item?.src || '';
+
+  const resolveLogoUrl = (s: string): string => {
+    const item = OFFICIAL_AI_TOOL_LOGOS[s];
+    if (item?.src) return item.src;
+    const tool = getAiToolBySlug(s);
+    if (tool?.officialUrl) {
+      try {
+        const domain = new URL(tool.officialUrl).hostname.replace(/^www\./, '');
+        return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+      } catch {
+        return tool.logoUrl || '';
+      }
+    }
+    return tool?.logoUrl || '';
+  };
+
+  const initialUrl = resolveLogoUrl(normalizedSlug);
   const [currentSrc, setCurrentSrc] = useState<string>(initialUrl);
   const [hasTriedFallback, setHasTriedFallback] = useState<boolean>(false);
 
   useEffect(() => {
-    const url = OFFICIAL_AI_TOOL_LOGOS[normalizedSlug]?.src || '';
-    if (url) {
-      setCurrentSrc(url);
-    } else {
-      // Direct official domain favicon fallback if not in registry
-      const tool = getAiToolBySlug(normalizedSlug);
-      if (tool?.officialUrl) {
-        try {
-          const domain = new URL(tool.officialUrl).hostname.replace(/^www\./, '');
-          setCurrentSrc(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`);
-        } catch {
-          setCurrentSrc(tool.logoUrl || '');
-        }
-      }
-    }
+    const url = resolveLogoUrl(normalizedSlug);
+    setCurrentSrc(url);
     setHasTriedFallback(false);
   }, [normalizedSlug]);
 
@@ -517,17 +517,33 @@ export const AiToolLogo: React.FC<AiToolLogoProps> = ({
       if (tool?.officialUrl) {
         try {
           const domain = new URL(tool.officialUrl).hostname.replace(/^www\./, '');
-          setCurrentSrc(`https://www.google.com/s2/favicons?domain=${domain}&sz=128`);
-          return;
+          const fallback = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+          if (fallback !== currentSrc) {
+            setCurrentSrc(fallback);
+            return;
+          }
         } catch {
           // ignore
         }
       }
       if (tool?.logoUrl && tool.logoUrl !== currentSrc) {
         setCurrentSrc(tool.logoUrl);
+        return;
       }
+      setCurrentSrc('');
+    } else {
+      setCurrentSrc('');
     }
   };
+
+  if (!currentSrc) {
+    const initial = name ? name.charAt(0).toUpperCase() : 'A';
+    return (
+      <div className={`${className} flex items-center justify-center font-bold text-sm text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 rounded-xl select-none`}>
+        {initial}
+      </div>
+    );
+  }
 
   return (
     <img

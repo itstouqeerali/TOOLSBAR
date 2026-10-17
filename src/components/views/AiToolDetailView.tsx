@@ -41,7 +41,7 @@ export const AiToolDetailView: React.FC<AiToolDetailViewProps> = ({ tool, onNavi
     .filter(Boolean) as AiTool[];
 
   return (
-    <div className="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12" id="ai-tool-detail-view">
+    <div className="pt-24 pb-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12" id="ai-tool-detail-view">
       {/* Top Breadcrumb & Navigation */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-neutral-400">
         <div className="flex items-center gap-2">

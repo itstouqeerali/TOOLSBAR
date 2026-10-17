@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   ChevronRight, Sparkles, ShieldCheck, Lock, 
   Share2, Check, ArrowRight, Star, Layers 
@@ -54,21 +55,21 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
   const ToolComponent = tool.component;
 
   return (
-    <div className="pt-24 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12" id="tool-page-layout">
+    <div className="pt-24 pb-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12" id="tool-page-layout">
       {/* Top Breadcrumb & Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-neutral-400">
         <div className="flex items-center gap-2">
-          <button onClick={() => onNavigate('')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+          <Link to="/" className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
             Home
-          </button>
+          </Link>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-600" />
-          <button onClick={() => onNavigate('categories')} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+          <Link to="/categories" className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
             Categories
-          </button>
+          </Link>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-600" />
-          <button onClick={() => onNavigate(`category/${tool.category}`)} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
+          <Link to={`/category/${tool.category}`} className="hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer">
             {category?.name || tool.category}
-          </button>
+          </Link>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-600" />
           <span className="text-slate-900 dark:text-neutral-200 font-semibold truncate max-w-[200px]">{tool.name}</span>
         </div>
@@ -126,7 +127,18 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
         
         <div className="relative z-10">
           {tool.isImplemented && ToolComponent ? (
-            <ToolComponent />
+            <React.Suspense
+              fallback={
+                <div className="p-12 rounded-3xl glass-card flex flex-col items-center justify-center space-y-4 min-h-[320px] text-center border border-slate-200/80 dark:border-white/10">
+                  <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-xs font-medium text-slate-600 dark:text-neutral-300">
+                    Loading {tool.name} workspace...
+                  </p>
+                </div>
+              }
+            >
+              <ToolComponent />
+            </React.Suspense>
           ) : (
             <ToolPlaceholder tool={tool} onNavigate={onNavigate} />
           )}
@@ -143,20 +155,20 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
             <span className="text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-neutral-400 flex items-center gap-2">
               <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Related Utilities
             </span>
-            <button
-              onClick={() => onNavigate('tools')}
+            <Link
+              to="/tools"
               className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer"
             >
               All Tools <ArrowRight className="w-3 h-3" />
-            </button>
+            </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 items-stretch">
             {relatedTools.map((t) => (
-              <div
+              <Link
                 key={t.id}
-                onClick={() => onNavigate(`tools/${t.slug}`)}
-                className="p-3.5 sm:p-5 rounded-2xl glass-card cursor-pointer flex flex-col justify-between group"
+                to={`/tools/${t.slug}`}
+                className="p-4 sm:p-5 rounded-2xl glass-card cursor-pointer h-full flex flex-col justify-between group text-left border border-slate-200/80 dark:border-white/10 dark:bg-[#0c0e18]/80"
               >
                 <div>
                   <h4 className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors">
@@ -168,7 +180,7 @@ export const ToolLayout: React.FC<ToolLayoutProps> = ({ tool, onNavigate, onOpen
                   <span>Open Tool</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

@@ -1,16 +1,18 @@
+import React from 'react';
 import { Tool } from '../types';
-import { TextToPdf } from '../components/tools/TextToPdf';
-import { ImagesToPdf } from '../components/tools/ImagesToPdf';
-import { PdfToolkit } from '../components/tools/PdfToolkit';
-import { ImageToolkit } from '../components/tools/ImageToolkit';
-import { PercentageCalculator } from '../components/tools/PercentageCalculator';
-import { AgeCalculator } from '../components/tools/AgeCalculator';
-import { FinanceCalculator } from '../components/tools/FinanceCalculator';
-import { TextToolkit } from '../components/tools/TextToolkit';
-import { JsonStudio } from '../components/tools/JsonStudio';
-import { QrGenerator } from '../components/tools/QrGenerator';
-import { UnitConverter } from '../components/tools/UnitConverter';
-import { DeveloperToolbox } from '../components/tools/DeveloperToolbox';
+
+const TextToPdf = React.lazy(() => import('../components/tools/TextToPdf').then(m => ({ default: m.TextToPdf })));
+const ImagesToPdf = React.lazy(() => import('../components/tools/ImagesToPdf').then(m => ({ default: m.ImagesToPdf })));
+const PdfToolkit = React.lazy(() => import('../components/tools/PdfToolkit').then(m => ({ default: m.PdfToolkit })));
+const ImageToolkit = React.lazy(() => import('../components/tools/ImageToolkit').then(m => ({ default: m.ImageToolkit })));
+const PercentageCalculator = React.lazy(() => import('../components/tools/PercentageCalculator').then(m => ({ default: m.PercentageCalculator })));
+const AgeCalculator = React.lazy(() => import('../components/tools/AgeCalculator').then(m => ({ default: m.AgeCalculator })));
+const FinanceCalculator = React.lazy(() => import('../components/tools/FinanceCalculator').then(m => ({ default: m.FinanceCalculator })));
+const TextToolkit = React.lazy(() => import('../components/tools/TextToolkit').then(m => ({ default: m.TextToolkit })));
+const JsonStudio = React.lazy(() => import('../components/tools/JsonStudio').then(m => ({ default: m.JsonStudio })));
+const QrGenerator = React.lazy(() => import('../components/tools/QrGenerator').then(m => ({ default: m.QrGenerator })));
+const UnitConverter = React.lazy(() => import('../components/tools/UnitConverter').then(m => ({ default: m.UnitConverter })));
+const DeveloperToolbox = React.lazy(() => import('../components/tools/DeveloperToolbox').then(m => ({ default: m.DeveloperToolbox })));
 
 /**
  * Legacy URL alias mapping table.
@@ -129,7 +131,7 @@ export const TOOLS: Tool[] = [
     component: TextToPdf,
     relatedToolSlugs: ['images-to-pdf', 'pdf-toolkit', 'text-toolkit'],
     seo: {
-      title: 'Text to PDF — Online Document Editor & Vector PDF Generator',
+      title: 'Text to PDF  -  Online Document Editor & Vector PDF Generator',
       description: 'Write, format, and generate publication-quality PDF documents online. Features real-time multi-page pagination, custom margins, headers, footers, and direct vector PDF export.',
       keywords: ['text to pdf', 'online document editor', 'create pdf online', 'rich text to pdf'],
       h1: 'Text to PDF Document Studio',
@@ -184,7 +186,7 @@ export const TOOLS: Tool[] = [
     component: ImagesToPdf,
     relatedToolSlugs: ['text-to-pdf', 'pdf-toolkit', 'image-toolkit'],
     seo: {
-      title: 'Images to PDF — Convert Photos & Graphics to PDF Free',
+      title: 'Images to PDF  -  Convert Photos & Graphics to PDF Free',
       description: 'Convert and combine JPG, PNG, and WebP images into a single multi-page PDF document. Reorder pages, adjust margins, and download high-resolution PDFs.',
       keywords: ['images to pdf', 'jpg to pdf converter', 'photos to pdf', 'convert png to pdf'],
       h1: 'Images to PDF Converter',
@@ -236,7 +238,7 @@ export const TOOLS: Tool[] = [
     component: PdfToolkit,
     relatedToolSlugs: ['text-to-pdf', 'images-to-pdf', 'image-toolkit'],
     seo: {
-      title: 'PDF Toolkit — Merge, Split & Compress PDF Files Online',
+      title: 'PDF Toolkit  -  Merge, Split & Compress PDF Files Online',
       description: 'All-in-one PDF manipulation workspace. Combine multiple PDF documents, extract custom page ranges, and compress PDF file sizes securely in your browser.',
       keywords: ['pdf toolkit', 'merge pdf online', 'split pdf pages', 'compress pdf file', 'combine pdfs'],
       h1: 'PDF Toolkit Workspace',
@@ -288,7 +290,7 @@ export const TOOLS: Tool[] = [
     component: ImageToolkit,
     relatedToolSlugs: ['images-to-pdf', 'pdf-toolkit', 'qr-generator'],
     seo: {
-      title: 'Image Toolkit — Compress, Resize & Convert Images Online',
+      title: 'Image Toolkit  -  Compress, Resize & Convert Images Online',
       description: 'Professional browser image studio. Compress image file size, resize pixel dimensions, and convert across WebP, PNG, and JPG formats with live preview.',
       keywords: ['image toolkit', 'image compressor', 'image resizer', 'webp converter', 'jpg to png'],
       h1: 'Image Toolkit Workspace',
@@ -340,7 +342,7 @@ export const TOOLS: Tool[] = [
     component: PercentageCalculator,
     relatedToolSlugs: ['finance-calculator', 'age-calculator', 'unit-converter'],
     seo: {
-      title: 'Percentage Calculator — Percentages, Discounts, Taxes & Ratios',
+      title: 'Percentage Calculator  -  Percentages, Discounts, Taxes & Ratios',
       description: 'Free online percentage and proportion suite. Calculate percentage increases/decreases, retail store discounts, GST/sales taxes, and mathematical ratios with live formula steps.',
       keywords: ['percentage calculator', 'discount calculator', 'gst calculator', 'ratio calculator', 'percent change'],
       h1: 'Percentage & Proportions Suite',
@@ -359,11 +361,11 @@ export const TOOLS: Tool[] = [
       faq: [
         {
           question: 'How do you calculate percentage increase or decrease?',
-          answer: 'Subtract the original value from the new value, divide by the original value, and multiply by 100: ((New − Original) / Original) × 100.'
+          answer: 'Subtract the original value from the new value, divide by the original value, and multiply by 100: ((New - Original) / Original) x 100.'
         },
         {
           question: 'How do I calculate price before GST or sales tax?',
-          answer: 'To remove tax from a gross price, divide the total by (1 + TaxRate/100). For example, with 10% tax: $110 ÷ 1.10 = $100 net.'
+          answer: 'To remove tax from a gross price, divide the total by (1 + TaxRate/100). For example, with 10% tax: $110 / 1.10 = $100 net.'
         }
       ]
     }
@@ -390,7 +392,7 @@ export const TOOLS: Tool[] = [
     component: AgeCalculator,
     relatedToolSlugs: ['percentage-calculator', 'finance-calculator', 'unit-converter'],
     seo: {
-      title: 'Age Calculator — Exact Chronological Age in Years, Months & Days',
+      title: 'Age Calculator  -  Exact Chronological Age in Years, Months & Days',
       description: 'Calculate your exact chronological age from date of birth. View completed years, months, days, live ticking seconds, total duration alive, and upcoming birthday countdowns.',
       keywords: ['age calculator', 'chronological age calculator', 'birthday countdown', 'days alive'],
       h1: 'Chronological Age Calculator',
@@ -441,7 +443,7 @@ export const TOOLS: Tool[] = [
     component: FinanceCalculator,
     relatedToolSlugs: ['percentage-calculator', 'age-calculator', 'unit-converter'],
     seo: {
-      title: 'Finance Calculator — Loan EMI, Compound & Simple Interest',
+      title: 'Finance Calculator  -  Loan EMI, Compound & Simple Interest',
       description: 'Comprehensive financial calculator. Estimate monthly loan and mortgage repayments with amortization breakdowns, calculate compound investment returns, and compute simple interest.',
       keywords: ['finance calculator', 'loan emi calculator', 'compound interest calculator', 'simple interest calculator'],
       h1: 'Finance & Loan Calculator',
@@ -454,13 +456,13 @@ export const TOOLS: Tool[] = [
       features: [
         'Loan EMI: calculate monthly installments with breakdown of principal vs. interest',
         'Compound Interest: customizable compounding frequencies (annually, quarterly, monthly, daily)',
-        'Simple Interest: standard P × R × T calculation with total payout projections',
+        'Simple Interest: standard P x R x T calculation with total payout projections',
         'Instant clipboard copy and printable financial summaries'
       ],
       faq: [
         {
           question: 'How is monthly loan EMI calculated?',
-          answer: 'EMI is calculated using the standard amortization formula: EMI = [P × R × (1+R)^N] / [(1+R)^N − 1], where P is principal, R is monthly interest rate, and N is tenure in months.'
+          answer: 'EMI is calculated using the standard amortization formula: EMI = [P x R x (1+R)^N] / [(1+R)^N - 1], where P is principal, R is monthly interest rate, and N is tenure in months.'
         },
         {
           question: 'What is the difference between simple and compound interest?',
@@ -493,7 +495,7 @@ export const TOOLS: Tool[] = [
     component: TextToolkit,
     relatedToolSlugs: ['text-to-pdf', 'json-studio', 'developer-toolbox'],
     seo: {
-      title: 'Text Toolkit — Word Counter, Case Converter & Text Utilities',
+      title: 'Text Toolkit  -  Word Counter, Case Converter & Text Utilities',
       description: 'Comprehensive online text workstation. Measure word and character counts with social media limit gauges, convert letter casing, clean up duplicated lines and whitespace, and generate slugs.',
       keywords: ['text toolkit', 'word counter', 'character counter', 'case converter', 'remove duplicate lines', 'slug generator'],
       h1: 'Text & Content Toolkit',
@@ -545,7 +547,7 @@ export const TOOLS: Tool[] = [
     component: JsonStudio,
     relatedToolSlugs: ['developer-toolbox', 'text-toolkit', 'qr-generator'],
     seo: {
-      title: 'JSON Studio — Format, Validate & Minify JSON Online',
+      title: 'JSON Studio  -  Format, Validate & Minify JSON Online',
       description: 'Professional browser JSON workstation. Inspect, validate, beautify with custom indentation, minify for production, and locate syntax errors with real-time diagnostics.',
       keywords: ['json studio', 'json formatter', 'json validator', 'json minifier', 'format json online'],
       h1: 'JSON Studio Workspace',
@@ -596,7 +598,7 @@ export const TOOLS: Tool[] = [
     component: QrGenerator,
     relatedToolSlugs: ['image-toolkit', 'unit-converter', 'developer-toolbox'],
     seo: {
-      title: 'QR Code Generator — Free Custom QR Codes with Colors',
+      title: 'QR Code Generator  -  Free Custom QR Codes with Colors',
       description: 'Create customized, high-resolution QR codes online. Encode website links, Wi-Fi network credentials, vCards, and text with custom colors and downloadable PNG images.',
       keywords: ['qr code generator', 'custom qr code', 'free qr code maker', 'wifi qr code'],
       h1: 'Custom QR Code Generator',
@@ -632,7 +634,7 @@ export const TOOLS: Tool[] = [
     name: 'Universal Unit Converter',
     slug: 'unit-converter',
     category: 'converters',
-    description: 'Universal measurement converter: length, weight/mass, temperature (°C, °F, K), digital data storage, area, speed, and volume.',
+    description: 'Universal measurement converter: length, weight/mass, temperature (deg C, deg F, K), digital data storage, area, speed, and volume.',
     shortDesc: 'Convert length, weight, temperature, data storage & volume.',
     icon: 'Scale',
     keywords: [
@@ -648,7 +650,7 @@ export const TOOLS: Tool[] = [
     component: UnitConverter,
     relatedToolSlugs: ['percentage-calculator', 'finance-calculator', 'developer-toolbox'],
     seo: {
-      title: 'Universal Unit Converter — Metric, Imperial, Temp & Data Storage',
+      title: 'Universal Unit Converter  -  Metric, Imperial, Temp & Data Storage',
       description: 'Free online unit converter. Instantly convert length, weight, temperature (Celsius, Fahrenheit, Kelvin), digital data storage (MB, GB, TB), area, volume, and velocity.',
       keywords: ['unit converter', 'temperature converter', 'data storage converter', 'metric to imperial', 'celsius to fahrenheit'],
       h1: 'Universal Unit Converter',
@@ -667,7 +669,7 @@ export const TOOLS: Tool[] = [
       faq: [
         {
           question: 'How does the temperature conversion handle non-zero baselines?',
-          answer: 'The converter applies exact mathematical formulas: °F = (°C × 9/5) + 32 and K = °C + 273.15 to ensure absolute thermodynamic accuracy.'
+          answer: 'The converter applies exact mathematical formulas: deg F = (deg C x 9/5) + 32 and K = deg C + 273.15 to ensure absolute thermodynamic accuracy.'
         },
         {
           question: 'Are digital storage conversions based on decimal (1000) or binary (1024)?',
@@ -701,7 +703,7 @@ export const TOOLS: Tool[] = [
     component: DeveloperToolbox,
     relatedToolSlugs: ['json-studio', 'text-toolkit', 'unit-converter'],
     seo: {
-      title: 'Developer Toolbox — Code Formatter, Encoders, JWT, Hashes & UUIDs',
+      title: 'Developer Toolbox  -  Code Formatter, Encoders, JWT, Hashes & UUIDs',
       description: 'The all-in-one developer utility suite. Format HTML/CSS/JS, encode Base64 and URLs, decode JWT tokens, generate random UUIDs and passwords, test regex patterns, and convert Unix epoch timestamps.',
       keywords: ['developer toolbox', 'base64 encoder', 'jwt decoder', 'uuid generator', 'hash generator', 'html formatter', 'regex tester'],
       h1: 'Developer Toolbox Workspace',

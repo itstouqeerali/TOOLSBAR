@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Mail, Lock, User as UserIcon, ArrowRight, 
   CheckCircle2, AlertCircle, Loader2, Eye, EyeOff
@@ -186,19 +187,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      id="auth-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
-      onClick={onClose}
-    >
-      <div
-        id="auth-modal-container"
-        className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#0c0e17] border border-slate-200 dark:border-white/[0.12] p-6 sm:p-8 backdrop-blur-2xl shadow-2xl space-y-6 text-left cursor-default animate-in zoom-in-95 duration-150"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          key="auth-modal-backdrop"
+          id="auth-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md cursor-pointer"
+          onClick={onClose}
+        >
+          <motion.div
+            key="auth-modal-container"
+            id="auth-modal-container"
+            initial={{ opacity: 0, scale: 0.95, y: -15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -15 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#0c0e17] border border-slate-200 dark:border-white/[0.12] p-6 sm:p-8 backdrop-blur-2xl shadow-2xl space-y-6 text-left cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Close Icon Button */}
         <button
           onClick={onClose}
@@ -344,7 +355,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-11 py-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -372,7 +383,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   required
-                  placeholder="••••••••"
+                  placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full pl-10 pr-11 py-2.5 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-xs placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -391,8 +402,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
 
           {/* Privacy Note */}
-          <div className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed pt-1">
-            🔒 <strong>Browser-first privacy:</strong> All tool operations (PDFs, images, data conversions) are processed 100% locally in your browser.
+          <div className="text-[11px] text-slate-500 dark:text-neutral-400 leading-relaxed pt-1 flex items-start gap-1.5">
+            <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+            <span><strong>Browser-first privacy:</strong> All tool operations (PDFs, images, data conversions) are processed 100% locally in your browser.</span>
           </div>
 
           {/* Action Button */}
@@ -461,8 +473,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </p>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    )}
+  </AnimatePresence>
   );
 };
 

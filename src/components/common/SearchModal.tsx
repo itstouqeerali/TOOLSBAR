@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, X, ArrowRight, Sparkles, Command, CornerDownLeft, 
   Wrench, ExternalLink, Bot, Layers, ArrowUpRight 
@@ -145,19 +146,29 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div 
-      id="search-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-3 sm:px-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer overflow-y-auto"
-      onClick={onClose}
-    >
-      <div 
-        id="search-modal-container"
-        className="w-full max-w-2xl rounded-3xl glass-popover border border-slate-200/90 dark:border-white/[0.12] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] my-auto sm:my-0 cursor-default animate-in zoom-in-95 duration-150"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          key="search-modal-backdrop"
+          id="search-modal-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-3 sm:px-4 bg-black/80 backdrop-blur-md cursor-pointer overflow-y-auto"
+          onClick={onClose}
+        >
+          <motion.div 
+            key="search-modal-container"
+            id="search-modal-container"
+            initial={{ opacity: 0, scale: 0.95, y: -15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -15 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="w-full max-w-2xl rounded-3xl glass-popover border border-slate-200/90 dark:border-white/[0.12] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] my-auto sm:my-0 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Search Input Bar */}
         <div className="p-3.5 sm:p-5 border-b border-slate-200/80 dark:border-white/[0.08] flex items-center gap-3 bg-white/40 dark:bg-white/[0.02]">
           <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-500/25 flex items-center justify-center shrink-0 text-indigo-600 dark:text-indigo-400">
@@ -324,18 +335,20 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         <div className="p-3 border-t border-slate-200/80 dark:border-white/[0.08] bg-slate-50/50 dark:bg-black/30 flex items-center justify-between text-[11px] text-slate-500 dark:text-neutral-400 px-4">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono">↑</kbd>
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono">↓</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono text-[10px]">Up</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono text-[10px]">Down</kbd>
               <span className="ml-1">Navigate</span>
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono">↵</kbd>
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 font-mono text-[10px]">Enter</kbd>
               <span className="ml-1">Select</span>
             </span>
           </div>
           <span>Esc to exit</span>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+    )}
+  </AnimatePresence>
   );
 };

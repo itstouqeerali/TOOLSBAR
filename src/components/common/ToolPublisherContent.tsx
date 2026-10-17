@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, ShieldCheck, Sparkles, HelpCircle, CheckCircle2, Info } from 'lucide-react';
+import { BookOpen, ShieldCheck, Sparkles, HelpCircle, CheckCircle2, Info, Check, ChevronDown } from 'lucide-react';
 import { Tool } from '../../types';
 import { getToolPublisherData } from '../../data/toolPublisherData';
 
@@ -146,7 +146,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
                 className="p-4 rounded-2xl glass-card flex items-start gap-3 text-xs sm:text-sm text-slate-700 dark:text-neutral-300 leading-relaxed"
               >
                 <span className="w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
-                  ✓
+                  <Check className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
                 </span>
                 <span>{feature}</span>
               </div>
@@ -191,9 +191,7 @@ export const ToolPublisherContent: React.FC<ToolPublisherContentProps> = ({ tool
               >
                 <summary className="w-full p-4 text-left flex items-center justify-between text-sm font-semibold text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors cursor-pointer list-none select-none">
                   <span>{item.question}</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 text-sm font-bold ml-2 shrink-0 transition-transform duration-200 group-open:rotate-180">
-                    ▼
-                  </span>
+                  <ChevronDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 transition-transform duration-200 group-open:rotate-180 ml-2" />
                 </summary>
                 <div className="px-4 pb-4 text-xs sm:text-sm text-slate-600 dark:text-neutral-300 leading-relaxed border-t border-slate-200 dark:border-white/[0.06] pt-3">
                   {item.answer}

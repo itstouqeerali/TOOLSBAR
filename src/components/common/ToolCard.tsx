@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Sparkles,
   ArrowRight,
@@ -106,6 +108,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onClick, onOpenAuth })
   const favorited = isFavorite(tool.slug);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (user) {
       toggleFavorite(tool.slug);
@@ -115,103 +118,111 @@ export const ToolCard: React.FC<ToolCardProps> = ({ tool, onClick, onOpenAuth })
   };
 
   return (
-    <div
-      onClick={onClick}
-      id={`tool-card-${tool.slug}`}
-      className={`group relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 glass-card flex flex-col justify-between cursor-pointer border border-slate-200/80 dark:border-white/[0.08] transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-500/40 ${
-        !isReady ? 'opacity-65' : ''
-      }`}
+    <motion.div
+      whileHover={{ scale: 1.02, y: -3 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      className="h-full flex flex-col"
     >
-      <div>
-        {/* Visual Illustration */}
-        {UTILITY_THEMES[tool.slug] && (
-          <div className="mb-3">
-            <UtilityIllustration slug={tool.slug} className="w-full h-24" />
-          </div>
-        )}
-
-        {/* Top Header */}
-        <div className="flex items-center justify-between mb-2.5 sm:mb-3">
-          <div
-            className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 shadow-xs ${
-              isReady
-                ? `${utilityTheme.iconBg} border ${utilityTheme.iconBorder} ${utilityTheme.iconColor} group-hover:scale-110 group-hover:shadow-md`
-                : 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 dark:text-neutral-500'
-            }`}
-          >
-            <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
-
-          <div className="flex items-center gap-1 sm:gap-1.5">
-            {isReady && (
-              <button
-                type="button"
-                onClick={handleFavoriteClick}
-                title={user ? (favorited ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite'}
-                id={`favorite-btn-${tool.slug}`}
-                className={`p-1 sm:p-1.5 rounded-lg sm:rounded-xl border transition-all cursor-pointer ${
-                  favorited
-                    ? 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/30 text-amber-500 shadow-sm'
-                    : 'bg-slate-50 dark:bg-white/[0.04] border-slate-200/80 dark:border-white/[0.06] text-slate-400 dark:text-neutral-500 hover:text-amber-500 hover:border-amber-300 dark:hover:text-amber-400'
-                }`}
-                aria-label={favorited ? `Remove ${tool.name} from favorites` : `Add ${tool.name} to favorites`}
-              >
-                <Star className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${favorited ? 'fill-amber-500 text-amber-500' : ''}`} />
-              </button>
-            )}
-
-            {tool.badge && isReady && (
-              <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full ${style.badgeBg} ${style.badgeText} border ${style.border}`}>
-                {tool.badge}
-              </span>
-            )}
-            {isReady ? (
-              <span className="hidden sm:inline-flex text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 items-center gap-1">
-                <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" /> Ready
-              </span>
-            ) : (
-              <span className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800/60 text-slate-500 dark:text-neutral-400 border border-slate-200 dark:border-white/5 flex items-center gap-1">
-                <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Coming Soon
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Title & Category */}
-        <div className="space-y-1 sm:space-y-1.5">
-          <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider block truncate">
-            {category?.name || tool.category}
-          </span>
-          <h3 className="text-xs sm:text-lg font-bold font-display text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors leading-snug">
-            {tool.name}
-          </h3>
-          <p className="text-[11px] sm:text-xs text-slate-600 dark:text-neutral-400 line-clamp-2 leading-snug sm:leading-relaxed">
-            {tool.shortDesc || tool.description}
-          </p>
-        </div>
-      </div>
-
-      {/* Bottom Footer */}
-      <div className="mt-3 sm:mt-5 pt-2.5 sm:pt-4 border-t border-slate-200/80 dark:border-white/[0.06] flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400">
-        <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 hidden xs:inline-flex sm:inline-flex items-center gap-1 truncate">
-          {isReady ? (
-            <>
-              <Zap className="w-3 h-3 text-emerald-500 shrink-0" /> Free & Client-Side
-            </>
-          ) : (
-            <>In Development</>
+      <Link
+        to={`/tools/${tool.slug}`}
+        onClick={onClick}
+        id={`tool-card-${tool.slug}`}
+        className={`group relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 glass-card h-full flex flex-col justify-between cursor-pointer border border-slate-200/80 dark:border-white/10 dark:bg-[#0c0e18]/80 transition-all duration-300 text-left ${
+          !isReady ? 'opacity-65' : ''
+        }`}
+      >
+        <div className="flex-1 flex flex-col">
+          {/* Visual Illustration */}
+          {UTILITY_THEMES[tool.slug] && (
+            <div className="mb-3">
+              <UtilityIllustration slug={tool.slug} className="w-full h-24" />
+            </div>
           )}
-        </span>
-        {isReady ? (
-          <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl font-semibold text-xs shadow-sm transition-all ml-auto xs:ml-0 whitespace-nowrap group-hover:scale-105 ${utilityTheme.buttonBg} ${utilityTheme.buttonShadow}`}>
-            Try Now <ArrowRight className="w-3 h-3" />
+
+          {/* Top Header */}
+          <div className="flex items-center justify-between mb-2.5 sm:mb-3">
+            <div
+              className={`w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 shadow-xs ${
+                isReady
+                  ? `${utilityTheme.iconBg} border ${utilityTheme.iconBorder} ${utilityTheme.iconColor} group-hover:scale-110 group-hover:shadow-md`
+                  : 'bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-400 dark:text-neutral-500'
+              }`}
+            >
+              <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
+            </div>
+
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              {isReady && (
+                <button
+                  type="button"
+                  onClick={handleFavoriteClick}
+                  title={user ? (favorited ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite'}
+                  id={`favorite-btn-${tool.slug}`}
+                  className={`p-1 sm:p-1.5 rounded-lg sm:rounded-xl border transition-all cursor-pointer ${
+                    favorited
+                      ? 'bg-amber-50 dark:bg-amber-500/15 border-amber-300 dark:border-amber-500/30 text-amber-500 shadow-sm'
+                      : 'bg-slate-50 dark:bg-white/[0.04] border-slate-200/80 dark:border-white/[0.06] text-slate-400 dark:text-neutral-500 hover:text-amber-500 hover:border-amber-300 dark:hover:text-amber-400'
+                  }`}
+                  aria-label={favorited ? `Remove ${tool.name} from favorites` : `Add ${tool.name} to favorites`}
+                >
+                  <Star className={`w-3.5 h-3.5 ${favorited ? 'fill-amber-500 text-amber-500' : ''}`} />
+                </button>
+              )}
+
+              {tool.badge && isReady && (
+                <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full ${style.badgeBg} ${style.badgeText} border ${style.border}`}>
+                  {tool.badge}
+                </span>
+              )}
+              {isReady ? (
+                <span className="hidden sm:inline-flex text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 items-center gap-1">
+                  <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" /> Ready
+                </span>
+              ) : (
+                <span className="text-[9px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-100 dark:bg-neutral-800/60 text-slate-500 dark:text-neutral-400 border border-slate-200 dark:border-white/5 flex items-center gap-1">
+                  <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Coming Soon
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Title & Category */}
+          <div className="space-y-1 sm:space-y-1.5 flex-1 flex flex-col">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider block truncate">
+              {category?.name || tool.category}
+            </span>
+            <h3 className="text-xs sm:text-lg font-bold font-display text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors leading-snug">
+              {tool.name}
+            </h3>
+            <p className="text-[11px] sm:text-xs text-slate-600 dark:text-neutral-300 line-clamp-2 leading-snug sm:leading-relaxed flex-1">
+              {tool.shortDesc || tool.description}
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom Footer */}
+        <div className="mt-3 sm:mt-5 pt-2.5 sm:pt-4 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between text-xs text-slate-500 dark:text-neutral-400">
+          <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-neutral-400 hidden xs:inline-flex sm:inline-flex items-center gap-1 truncate">
+            {isReady ? (
+              <>
+                <Zap className="w-3 h-3 text-emerald-500 shrink-0" /> Free & Client-Side
+              </>
+            ) : (
+              <>In Development</>
+            )}
           </span>
-        ) : (
-          <span className="font-semibold text-slate-500 flex items-center gap-1 text-[11px] sm:text-xs ml-auto xs:ml-0 whitespace-nowrap">
-            Preview <ArrowRight className="w-3 h-3" />
-          </span>
-        )}
-      </div>
-    </div>
+          {isReady ? (
+            <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl font-semibold text-xs shadow-sm transition-all ml-auto xs:ml-0 whitespace-nowrap group-hover:scale-105 ${utilityTheme.buttonBg} ${utilityTheme.buttonShadow}`}>
+              Try Now <ArrowRight className="w-3 h-3" />
+            </span>
+          ) : (
+            <span className="font-semibold text-slate-500 flex items-center gap-1 text-[11px] sm:text-xs ml-auto xs:ml-0 whitespace-nowrap">
+              Preview <ArrowRight className="w-3 h-3" />
+            </span>
+          )}
+        </div>
+      </Link>
+    </motion.div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion, type Variants } from 'framer-motion';
 import { Search, Grid, Sparkles } from 'lucide-react';
 import { TOOLS } from '../../data/tools';
 import { CATEGORIES } from '../../data/categories';
@@ -8,6 +9,28 @@ interface ToolsDirectoryViewProps {
   onNavigate: (path: string) => void;
   onOpenAuth?: () => void;
 }
+
+const gridContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const gridItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: 'easeOut',
+    },
+  },
+};
 
 export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNavigate, onOpenAuth }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -66,7 +89,10 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
 
         {/* Category Pills */}
         <div className="flex flex-wrap gap-2 pt-1">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setSelectedCategory('all')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
               selectedCategory === 'all'
@@ -75,13 +101,16 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
             }`}
           >
             All Categories ({TOOLS.length})
-          </button>
+          </motion.button>
           {CATEGORIES.map(cat => {
             const count = TOOLS.filter(t => t.category === cat.id).length;
             const isSelected = selectedCategory === cat.id;
             return (
-              <button
+              <motion.button
                 key={cat.id}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isSelected
@@ -90,32 +119,35 @@ export const ToolsDirectoryView: React.FC<ToolsDirectoryViewProps> = ({ onNaviga
                 }`}
               >
                 {cat.name} ({count})
-              </button>
+              </motion.button>
             );
           })}
         </div>
       </div>
 
-      {/* Grid of Filtered Tools */}
+      {/* Grid of Filtered Tools with Staggered Fade-In */}
       {filteredTools.length > 0 ? (
-        <div 
+        <motion.div 
           key={`${selectedCategory}-${searchQuery}`}
-          className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"
+          variants={gridContainerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 items-stretch"
         >
-          {filteredTools.map((tool, idx) => (
-            <div
+          {filteredTools.map((tool) => (
+            <motion.div
               key={tool.id}
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${Math.min(idx * 30, 360)}ms` }}
+              variants={gridItemVariants}
+              className="h-full flex flex-col"
             >
               <ToolCard
                 tool={tool}
                 onClick={() => onNavigate(`tools/${tool.slug}`)}
                 onOpenAuth={onOpenAuth}
               />
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       ) : (
         <div className="py-20 text-center rounded-3xl bg-slate-50 dark:bg-neutral-900/40 border border-slate-200 dark:border-white/10 backdrop-blur-xl space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-white dark:bg-white/5 text-slate-400 dark:text-neutral-400 flex items-center justify-center mx-auto border border-slate-200 dark:border-transparent">

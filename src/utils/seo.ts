@@ -30,7 +30,7 @@ export interface PageSEOMetadata {
   title: string;
   description: string;
   keywords?: string[];
-  canonicalPath: string;
+  canonicalPath?: string;
   ogType?: 'website' | 'article';
   ogImage?: string;
   jsonLd?: Record<string, any>[];
@@ -416,14 +416,21 @@ export function applyPageSEO(meta: PageSEOMetadata): void {
     el.setAttribute('href', href);
   };
 
-  const canonicalUrl = getCanonicalUrl(meta.canonicalPath);
+  const canonicalUrl = meta.canonicalPath !== undefined ? getCanonicalUrl(meta.canonicalPath) : undefined;
 
   // Standard Meta Tags
   setMetaTag('name', 'description', meta.description);
   if (meta.keywords && meta.keywords.length > 0) {
     setMetaTag('name', 'keywords', meta.keywords.join(', '));
   }
-  setLinkTag('canonical', canonicalUrl);
+  if (canonicalUrl) {
+    setLinkTag('canonical', canonicalUrl);
+  } else {
+    const existingCanonical = document.querySelector('link[rel="canonical"]');
+    if (existingCanonical) {
+      existingCanonical.remove();
+    }
+  }
 
   // Robots indexing policy
   if (meta.noindex) {
@@ -435,7 +442,7 @@ export function applyPageSEO(meta: PageSEOMetadata): void {
   // Open Graph
   setMetaTag('property', 'og:title', meta.title);
   setMetaTag('property', 'og:description', meta.description);
-  setMetaTag('property', 'og:url', canonicalUrl);
+  setMetaTag('property', 'og:url', canonicalUrl || window.location.href);
   setMetaTag('property', 'og:type', meta.ogType || 'website');
   setMetaTag('property', 'og:site_name', SITE_CONFIG.name);
   setMetaTag('property', 'og:image', meta.ogImage || SITE_CONFIG.defaultImage);

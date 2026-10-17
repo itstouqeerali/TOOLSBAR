@@ -18,18 +18,18 @@ export const AgeCalculator: React.FC = () => {
 
   const getZodiac = (month: number, day: number) => {
     const dates = [
-      { sign: 'Capricorn', icon: '♑', range: 'Dec 22 - Jan 19', element: 'Earth' },
-      { sign: 'Aquarius', icon: '♒', range: 'Jan 20 - Feb 18', element: 'Air' },
-      { sign: 'Pisces', icon: '♓', range: 'Feb 19 - Mar 20', element: 'Water' },
-      { sign: 'Aries', icon: '♈', range: 'Mar 21 - Apr 19', element: 'Fire' },
-      { sign: 'Taurus', icon: '♉', range: 'Apr 20 - May 20', element: 'Earth' },
-      { sign: 'Gemini', icon: '♊', range: 'May 21 - Jun 20', element: 'Air' },
-      { sign: 'Cancer', icon: '♋', range: 'Jun 21 - Jul 22', element: 'Water' },
-      { sign: 'Leo', icon: '♌', range: 'Jul 23 - Aug 22', element: 'Fire' },
-      { sign: 'Virgo', icon: '♍', range: 'Aug 23 - Sep 22', element: 'Earth' },
-      { sign: 'Libra', icon: '♎', range: 'Sep 23 - Oct 22', element: 'Air' },
-      { sign: 'Scorpio', icon: '♏', range: 'Oct 23 - Nov 21', element: 'Water' },
-      { sign: 'Sagittarius', icon: '♐', range: 'Nov 22 - Dec 21', element: 'Fire' },
+      { sign: 'Capricorn', icon: 'CAP', range: 'Dec 22 - Jan 19', element: 'Earth' },
+      { sign: 'Aquarius', icon: 'AQU', range: 'Jan 20 - Feb 18', element: 'Air' },
+      { sign: 'Pisces', icon: 'PIS', range: 'Feb 19 - Mar 20', element: 'Water' },
+      { sign: 'Aries', icon: 'ARI', range: 'Mar 21 - Apr 19', element: 'Fire' },
+      { sign: 'Taurus', icon: 'TAU', range: 'Apr 20 - May 20', element: 'Earth' },
+      { sign: 'Gemini', icon: 'GEM', range: 'May 21 - Jun 20', element: 'Air' },
+      { sign: 'Cancer', icon: 'CAN', range: 'Jun 21 - Jul 22', element: 'Water' },
+      { sign: 'Leo', icon: 'LEO', range: 'Jul 23 - Aug 22', element: 'Fire' },
+      { sign: 'Virgo', icon: 'VIR', range: 'Aug 23 - Sep 22', element: 'Earth' },
+      { sign: 'Libra', icon: 'LIB', range: 'Sep 23 - Oct 22', element: 'Air' },
+      { sign: 'Scorpio', icon: 'SCO', range: 'Oct 23 - Nov 21', element: 'Water' },
+      { sign: 'Sagittarius', icon: 'SAG', range: 'Nov 22 - Dec 21', element: 'Fire' },
     ];
     const cutoffs = [19, 18, 20, 19, 20, 20, 22, 22, 22, 22, 21, 21];
     const index = day > cutoffs[month - 1] ? month % 12 : month - 1;
@@ -38,20 +38,20 @@ export const AgeCalculator: React.FC = () => {
 
   const getChineseZodiac = (year: number) => {
     const animals = [
-      { name: 'Rat', emoji: '🐀' },
-      { name: 'Ox', emoji: '🐂' },
-      { name: 'Tiger', emoji: '🐅' },
-      { name: 'Rabbit', emoji: '🐇' },
-      { name: 'Dragon', emoji: '🐉' },
-      { name: 'Snake', emoji: '🐍' },
-      { name: 'Horse', emoji: '🐎' },
-      { name: 'Goat', emoji: '🐐' },
-      { name: 'Monkey', emoji: '🐒' },
-      { name: 'Rooster', emoji: '🐓' },
-      { name: 'Dog', emoji: '🐕' },
-      { name: 'Pig', emoji: '🐖' }
+      { name: 'Rat', emoji: 'RAT' },
+      { name: 'Ox', emoji: 'OX' },
+      { name: 'Tiger', emoji: 'TIG' },
+      { name: 'Rabbit', emoji: 'RAB' },
+      { name: 'Dragon', emoji: 'DRA' },
+      { name: 'Snake', emoji: 'SNA' },
+      { name: 'Horse', emoji: 'HOR' },
+      { name: 'Goat', emoji: 'GOA' },
+      { name: 'Monkey', emoji: 'MON' },
+      { name: 'Rooster', emoji: 'ROO' },
+      { name: 'Dog', emoji: 'DOG' },
+      { name: 'Pig', emoji: 'PIG' },
     ];
-    return animals[(year - 4) % 12] || animals[0];
+    return animals[((year - 4) % 12 + 12) % 12] || animals[0];
   };
 
   const calculateAge = () => {
@@ -263,7 +263,9 @@ export const AgeCalculator: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{ageData.zodiac.icon}</span>
+                <span className="px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 font-mono font-extrabold text-sm text-amber-300 tracking-wider">
+                  {ageData.zodiac.icon}
+                </span>
                 <div>
                   <div className="text-xl font-bold text-white">{ageData.zodiac.sign}</div>
                   <div className="text-xs text-neutral-400">{ageData.zodiac.range}</div>
@@ -280,7 +282,9 @@ export const AgeCalculator: React.FC = () => {
                 <span className="text-xs text-neutral-400">Lunar Cycle</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{ageData.chineseZodiac.emoji}</span>
+                <span className="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 font-mono font-extrabold text-sm text-emerald-300 tracking-wider">
+                  {ageData.chineseZodiac.emoji}
+                </span>
                 <div>
                   <div className="text-xl font-bold text-white">Year of the {ageData.chineseZodiac.name}</div>
                   <div className="text-xs text-neutral-400">Chinese Horoscope</div>

@@ -95,7 +95,7 @@ export const CompoundInterestCalculator: React.FC = () => {
             onChange={(e) => setCurrency(e.target.value)}
             className="bg-black/30 text-xs text-white border border-white/10 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500"
           >
-            {['$', '€', '£', '₹', '¥', 'C$', 'A$', 'AED', 'SGD'].map(c => (
+            {['$', 'EUR', 'GBP', 'JPY', 'INR', 'PKR', 'AED', 'CAD', 'AUD'].map(c => (
               <option key={c} value={c} className="bg-neutral-900">{c}</option>
             ))}
           </select>
